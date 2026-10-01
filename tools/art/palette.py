@@ -66,6 +66,7 @@ PALETTE = {
     "3": "#f4e2c8",
     "4": "#e88a8a",
     "5": "#e9a256",
+    "6": "#b4602a",
     # verde de pizarra
     "S": "#2f4a3c",
     "V": "#3d5e4c",

@@ -377,7 +377,7 @@ export class LabScene extends Phaser.Scene {
 
     // --- Byte, la gata, durmiendo en la alfombra
     this.add.image(209, 162, "shadow").setScale(1.5, 1).setDepth(2);
-    this.catSprite = this.add.sprite(198, 148, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
+    this.catSprite = this.add.sprite(195, 147, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
     this.solid(199, 153, 19, 8);
 
     // --- telescopio de Sam junto a la ventana

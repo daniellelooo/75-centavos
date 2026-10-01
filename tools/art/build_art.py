@@ -578,34 +578,75 @@ def rug():
 
 
 def cat(frame):
-    """Byte, la gata atigrada del laboratorio, dormida y enroscada."""
-    c = Canvas(20, 13)
-    rows = [
-        "..kk...kk...........",
-        ".k14k.k41k..kkkkk...",
-        ".k111k111kkk15511kk.",
-        "k111111111k125115211k"[:20],
-        "k1kk111kk1k11211211k",
-        "k11114 1111211211211k".replace(" ", "1")[:20],
-        ".k3333331k111111111k",
-        "..k33333k1112111211k",
-        ".k333kk111111111111k",
-        ".kkkk1211211211113 3k".replace(" ", "3")[:20],
-        "....kkkkkkkkkkkkkkk.",
+    """Byte, la gata atigrada del laboratorio, dormida y enroscada. Cada parte
+    lleva su propio contorno (cuerpo, cola, cabeza) para que se lean por
+    separado. Al respirar, el lomo se hincha un píxel."""
+    W, H = 26, 16
+    c = Canvas(W, H)
+    g = [["." for _ in range(W)] for _ in range(H)]
+
+    def outline_part(cells):
+        """Dibuja una parte (dict (x,y)->color) con contorno de tinta alrededor."""
+        for (x, y) in list(cells):
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                p = (x + dx, y + dy)
+                if p not in cells and 0 <= p[0] < W and 0 <= p[1] < H:
+                    g[p[1]][p[0]] = "k"
+        for (x, y), ch in cells.items():
+            g[y][x] = ch
+
+    # cuerpo: óvalo con luz en el lomo, sombra en la panza y rayas diagonales
+    bx, by, rx, ry = 16.5, 8.4, 8.2, 5.7 + (0.5 if frame else 0)
+    body = {}
+    for y in range(H):
+        for x in range(W):
+            if ((x - bx) / rx) ** 2 + ((y - by) / ry) ** 2 <= 1:
+                ch = "1"
+                if y >= by + ry * 0.45:
+                    ch = "6"
+                elif y <= by - ry * 0.45 and x < bx + 3:
+                    ch = "5"
+                if ch != "6" and (x + (y - 2) // 2) % 4 == 0 and x > 10:
+                    ch = "2"
+                body[(x, y)] = ch
+    outline_part(body)
+    # cola: baja por la derecha y cruza por delante, con la punta clara
+    tail = {}
+    # gruesa en la base, fina hacia la punta, con anillos
+    for x in range(12, 24):
+        thick = 2 if x >= 17 else 1
+        ys = [12] if thick == 1 else [11, 12]
+        if x >= 22:
+            ys = [10, 11]
+        for y in ys:
+            tail[(x, y)] = "2" if x % 3 == 0 else ("6" if y == ys[-1] and thick == 2 else "1")
+    for p in ((12, 12), (13, 12)):
+        tail[p] = "3"
+    outline_part(tail)
+    tail = {}
+    outline_part(tail)
+    # cabeza dibujada a mano, apoyada a la izquierda sobre las patas
+    head = [
+        ".k.......k.",
+        "k4k.....k4k",
+        "k14kkkkk41k",
+        "k112121211k",
+        "k111111111k",
+        "k1kk111kk1k",
+        "k111141111k",
+        "k133333331k",
+        ".k3333333k.",
+        "k33kkkkk33k",
+        "kkk.....kkk",
     ]
-    rows[5] = "k111141111211211211k"[:19] + "k"
-    rows[3] = "k111111111k12511521k"
-    for y, r in enumerate(rows):
-        for x, ch in enumerate(r):
+    for y, row in enumerate(head):
+        for x, ch in enumerate(row):
             if ch != ".":
-                c.put(x, y + 2, ch)
-    if frame:
-        # respira: el lomo sube un píxel
-        lomo = c.im.crop((10, 2, 20, 12))
-        c.rect(10, 1, 10, 11, ".")
-        c.im.alpha_composite(lomo, (10, 1))
-        c.put(10, 11, "k")
-        c.put(19, 11, "k")
+                g[y + 3][x + 1] = ch
+    for y in range(H):
+        for x in range(W):
+            if g[y][x] != ".":
+                c.put(x, y, g[y][x])
     return c
 
 

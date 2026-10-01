@@ -26,7 +26,7 @@ export class BootScene extends Phaser.Scene {
     sheet("marker", "marker.png", 7, 8);
     sheet("net_icons", "net_icons.png", 11, 11);
     sheet("lamp", "lamp.png", 10, 14);
-    sheet("cat", "cat.png", 20, 13);
+    sheet("cat", "cat.png", 26, 16);
     sheet("tapebox", "tapebox.png", 18, 17);
     sheet("satellite", "satellite.png", 21, 13);
     sheet("cooler", "cooler.png", 12, 26);
