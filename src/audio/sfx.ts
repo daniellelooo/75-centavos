@@ -53,3 +53,17 @@ export function sfx(name: SoundName): void {
 }
 
 
+
+/** Nota de piano suave (seno con ataque corto y cola larga). */
+export function pianoNote(freq: number, vol = 0.32): void {
+  if (settings.sfxVol <= 0) return;
+  zzfx(vol, 0, freq, 0.004, 0.04, 0.7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.45);
+}
+
+/** Frase corta para el piano de Margarita: un arpegio lento en do mayor. */
+export function pianoPhrase(): number {
+  const C4 = 261.63, D4 = 293.66, E4 = 329.63, G4 = 392, A4 = 440, C5 = 523.25;
+  const notes: [number, number][] = [[C4, 0], [E4, 380], [G4, 760], [C5, 1140], [A4, 1700], [G4, 2080], [E4, 2460], [D4, 2840], [C4, 3400]];
+  for (const [f, t] of notes) setTimeout(() => pianoNote(f), t);
+  return 3400;
+}

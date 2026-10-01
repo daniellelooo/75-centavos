@@ -66,15 +66,50 @@ def strip(frames):
     im = Image.new("RGBA", (w * len(frames), h), (0, 0, 0, 0))
     for i, f in enumerate(frames):
         im.alpha_composite(f.im, (i * w, 0))
+    im.info["fw"] = w
     return im
 
 
 SAVED = []
 
 
+# Regla de estilo: todo objeto lleva contorno de tinta de 1 px. Los que ya lo
+# tienen no cambian; a los demás, el píxel del borde se vuelve tinta. Los tiles
+# de suelo y pared se repiten unos junto a otros y no llevan contorno.
+NO_OUTLINE = {"floor", "wall", "wall_cap_v", "wall_cap_h", "dialog", "marker"}
+
+
+def ink_outline(im):
+    fw = im.info.get("fw", im.width)
+    out = im.copy()
+    src, px = im.load(), out.load()
+    w, h = im.size
+    ink = (28, 24, 48, 255)
+
+    def solid(x, y):
+        return 0 <= y < h and 0 <= x < w and src[x, y][3] > 0
+
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = src[x, y]
+            if a < 255 or 0.3 * r + 0.59 * g + 0.11 * b < 60:
+                continue
+            lx = x % fw
+            edge = (
+                lx == 0 or lx == fw - 1 or y == 0 or y == h - 1
+                or not solid(x - 1, y) or not solid(x + 1, y) or not solid(x, y - 1) or not solid(x, y + 1)
+            )
+            if edge:
+                px[x, y] = ink
+    out.info["fw"] = fw
+    return out
+
+
 def save(name, im):
     if isinstance(im, Canvas):
         im = im.im
+    if name not in NO_OUTLINE:
+        im = ink_outline(im)
     im.save(os.path.join(OUT, name + ".png"))
     SAVED.append((name, im))
 

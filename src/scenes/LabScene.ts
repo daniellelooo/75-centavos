@@ -1367,10 +1367,10 @@ export class LabScene extends Phaser.Scene {
     this.player.anims.stop();
     setPrompt(null);
     await openNotebook({
-      practice: async (m) => {
+      practice: async (m, training) => {
         this.input.keyboard!.enabled = false;
         hudVisible(false);
-        await openTerminal(m, { practice: true });
+        await openTerminal(m, training ? { training } : { practice: true });
         hudVisible(true);
         this.input.keyboard!.enabled = true;
         this.input.keyboard!.resetKeys();

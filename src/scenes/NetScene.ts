@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { CHEAT } from "../game/cheats";
+import { TRAINING } from "../game/training";
 import { VIEW_H, VIEW_W } from "../config";
 import { save, writeSave } from "../game/state";
 import { MISSIONS, type Line } from "../game/missions";
@@ -407,6 +409,13 @@ export class NetScene extends Phaser.Scene {
       <h2>${this.fin.closing ? "HISTORIA COMPLETADA" : `ACTO ${this.act} COMPLETADO`}</h2>
       <p>${this.act === 1 ? "Empezaste sin saber programar. Ya sabes:" : "Nuevo en tu cuaderno:"}</p>
       <ul>${this.fin.learned.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>
+      <div class="cheat"><small>CHULETA DEL ACTO</small>${acts
+        .map((m) => `<div><span>${esc(m.concept)}</span><code>${esc(CHEAT[m.id] ?? "")}</code></div>`)
+        .join("")}</div>
+      ${(() => {
+        const sets = TRAINING.filter((t) => t.exercises[0].act === this.act && (save.training[t.id] ?? 0) >= t.exercises.length);
+        return sets.length ? `<p class="with-marga">Con Margarita: ${sets.map((t) => esc(t.title)).join(" · ")} · ${sets.length * 3} ejercicios de práctica</p>` : "";
+      })()}
       <table class="stats">${acts.map((m) => {
         const a = save.attempts[m.id] ?? 1;
         const h = save.hintsUsed[m.id] ?? 0;

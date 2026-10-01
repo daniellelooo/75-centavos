@@ -86,3 +86,10 @@ describe("sesiones de los actos 3 a 6: errores típicos", () => {
     expect(play("t8c", "class Instrumento { constructor(n, c) { this.nombre = n; this.cuerdas = c; } }\nclass Violin extends Instrumento { constructor(d) { this.dueno = d; } ficha() { return ''; } }").feedback).toMatch(/super/);
   });
 });
+
+describe("chuleta de fin de acto", () => {
+  it("cada misión tiene su línea", async () => {
+    const { CHEAT } = await import("../src/game/cheats");
+    for (const m of MISSIONS) expect(CHEAT[m.id], m.id).toBeTruthy();
+  });
+});
