@@ -748,7 +748,7 @@ export class LabScene extends Phaser.Scene {
     this.setEmote(null, 0);
     this.stopRinging();
     if (!m) {
-      setObjective("CONTINUARÁ", "Los actos 1 a 3 están completos. Repasa en tu cuaderno [C].");
+      setObjective("CASO CERRADO", "Historia completa. Repasa lo aprendido en tu cuaderno [C].");
       this.pointAt(null);
       return;
     }
