@@ -1,6 +1,7 @@
 // Misiones secundarias: antes de algunos encargos, Ruth o Kessler mandan a Sam a
 // practicar con Margarita, que le enseñó a programar a Ruth en 1971. Cada sesión
 // son tres ejercicios cortos en la terminal de su casa, solo con lo ya aprendido.
+// Hay una sesión antes de las misiones 3, 6, 8, 11, 13, 17, 21 y 26.
 import type { Line, Mission, TestCase } from "./types";
 import type { RunOutput } from "./sandbox";
 import { printed, probeErr, same, show } from "./acts/util";
@@ -351,7 +352,7 @@ export const TRAINING: TrainingSet[] = [
           every(outs, cases, (o, g) => {
             const want = (g.notas as number[]).filter((x) => x >= 6);
             if (!Array.isArray(o.values.aprobadas)) return "Falta la lista aprobadas. Empieza con let aprobadas = [];";
-            if (same(o.values.aprobadas, (g.notas as number[]).filter((x) => x > 6))) return "Faltan los seises: la condición es mayor o igual, >=.";
+            if (!same(o.values.aprobadas, want) && same(o.values.aprobadas, (g.notas as number[]).filter((x) => x > 6))) return "Faltan los seises: la condición es mayor o igual, >=.";
             if (!same(o.values.aprobadas, want)) return `aprobadas quedó ${show(o.values.aprobadas)} y debía ser ${show(want)}.`;
             if (!o.logs.length) return "La lista está bien. Muéstrala con console.log(aprobadas).";
             return null;
@@ -487,6 +488,429 @@ export const TRAINING: TrainingSet[] = [
       { who: "margarita", text: "Ya no te hace falta venir tanto. Pero vuelve igual: el piano suena mejor con público.", mood: "alegre" },
     ],
     back: [{ who: "kessler", text: "¿Volviste sin manual? Perfecto. A trabajar." }],
+  },
+  {
+    id: "t5",
+    before: "m13",
+    title: "El archivo del conservatorio",
+    sendoff: [
+      { who: "ruth", text: "Vas a filtrar registros como un profesional. Pero antes, Margarita quiere verte con objetos." },
+      { who: "ruth", text: "Dice que lleva el archivo de sus alumnos en fichas. Ve. Y abrígate: hace frío en diciembre." },
+    ],
+    welcome: [
+      { who: "margarita", text: "Feliz casi Navidad, Sam. Hoy, fichas: un objeto guarda varios datos con nombre, como una ficha de alumno.", mood: "alegre" },
+    ],
+    exercises: [
+      ex({
+        id: "t5a",
+        act: 3,
+        title: "La ficha de Leo",
+        concept: "Objetos",
+        lesson: {
+          title: "Un objeto, varios datos",
+          body: "Un objeto se escribe entre llaves con pares nombre: valor separados por comas. Se lee con un punto: objeto.dato.",
+          example: 'let gato = { nombre: "Byte", edad: 4 };\nconsole.log(gato.nombre); // Byte',
+        },
+        task: 'Crea el objeto alumno con nombre "Leo", edad 9 e instrumento "piano". Después muestra alumno.instrumento.',
+        cases: [{ label: "ficha nueva", globals: () => ({}) }],
+        capture: ["alumno"],
+        check: ([o]) => {
+          if (o.error) return no(`Error: ${o.error.message}`);
+          const a = o.values.alumno as Record<string, unknown> | undefined;
+          if (!a || typeof a !== "object") return no("Falta el objeto alumno. Empieza con let alumno = { ... };");
+          if (a.nombre !== "Leo") return no(`alumno.nombre vale ${show(a.nombre)} y debía ser "Leo".`);
+          if (a.edad !== 9) return no(`alumno.edad vale ${show(a.edad)}. Es un número: 9, sin comillas.`);
+          if (a.instrumento !== "piano") return no(`alumno.instrumento vale ${show(a.instrumento)} y debía ser "piano".`);
+          if (!printed(o, "piano")) return no("La ficha está bien. Falta console.log(alumno.instrumento).");
+          return ok("Ficha completa. Leo estaría orgulloso.");
+        },
+        hints: ['let alumno = { nombre: "Leo", ... };', "Separa cada dato con una coma: edad: 9, instrumento: \"piano\"", 'let alumno = { nombre: "Leo", edad: 9, instrumento: "piano" };\nconsole.log(alumno.instrumento);'],
+        debrief: "Una ficha por alumno. Antes eran tarjetas perforadas; ahora caben en una línea.",
+      }),
+      ex({
+        id: "t5b",
+        act: 3,
+        title: "Sube de nivel",
+        concept: "Cambiar un dato",
+        lesson: {
+          title: "Modificar un objeto",
+          body: "Un dato de un objeto se cambia igual que una variable: objeto.dato = nuevo valor.",
+          example: "let gato = { nombre: \"Byte\", edad: 4 };\ngato.edad = gato.edad + 1;\nconsole.log(gato.edad); // 5",
+        },
+        task: "El alumno aprobó el examen: súmale 1 a alumno.nivel y muestra el nivel nuevo.",
+        borrowed: ["alumno"],
+        cases: [
+          { label: "Ana, nivel 2", globals: () => ({ alumno: { nombre: "Ana", nivel: 2 } }) },
+          { label: "Leo, nivel 5", globals: () => ({ alumno: { nombre: "Leo", nivel: 5 } }) },
+        ],
+        capture: ["alumno"],
+        check: (outs, cases) =>
+          every(outs, cases, (o, g) => {
+            const want = (g.alumno as { nivel: number }).nivel + 1;
+            const a = o.values.alumno as { nivel?: unknown } | undefined;
+            if (!a || a.nivel === want - 1) return "alumno.nivel no cambió. Escribe alumno.nivel = alumno.nivel + 1;";
+            if (a.nivel !== want) return `alumno.nivel quedó en ${show(a.nivel)} y debía ser ${want}. ¿Escribiste el número a mano?`;
+            if (!printed(o, String(want))) return "El nivel está bien. Muéstralo con console.log(alumno.nivel).";
+            return null;
+          }, "Un nivel más. Y sin crear otra ficha."),
+        hints: ["Usa el punto para leer y para escribir: alumno.nivel", "alumno.nivel = alumno.nivel + 1;", "alumno.nivel = alumno.nivel + 1;\nconsole.log(alumno.nivel);"],
+        debrief: "Así se actualiza un registro. Ruth hace esto con las cuentas todo el día.",
+      }),
+      ex({
+        id: "t5c",
+        act: 3,
+        title: "Las partituras de Chopin",
+        concept: "Lista de objetos",
+        lesson: {
+          title: "Recorrer fichas",
+          body: "En una lista de objetos, partituras[i] es una ficha y partituras[i].autor uno de sus datos.",
+          example: 'let libros = [{ autor: "Christie" }, { autor: "Poe" }];\nconsole.log(libros[1].autor); // Poe',
+        },
+        task: 'Cuenta cuántas partituras de la lista partituras tienen autor "Chopin" y muestra el número.',
+        borrowed: ["partituras"],
+        cases: [
+          {
+            label: "estantería del salón",
+            globals: () => ({
+              partituras: [
+                { titulo: "Nocturno", autor: "Chopin" },
+                { titulo: "Para Elisa", autor: "Beethoven" },
+                { titulo: "Vals", autor: "Chopin" },
+                { titulo: "Gymnopédie", autor: "Satie" },
+              ],
+            }),
+          },
+          {
+            label: "caja del sótano",
+            globals: () => ({
+              partituras: [
+                { titulo: "Preludio", autor: "Bach" },
+                { titulo: "Mazurca", autor: "Chopin" },
+                { titulo: "Balada", autor: "Chopin" },
+                { titulo: "Polonesa", autor: "Chopin" },
+                { titulo: "Claro de luna", autor: "Debussy" },
+              ],
+            }),
+          },
+        ],
+        check: (outs, cases) =>
+          every(outs, cases, (o, g) => {
+            const want = (g.partituras as { autor: string }[]).filter((p) => p.autor === "Chopin").length;
+            const got = o.logs.map((l) => l.trim());
+            if (!got.length) return "No se mostró nada. Muestra el contador al final, fuera del bucle.";
+            if (got.length > 1) return "Se mostraron varios números: el console.log va después del bucle.";
+            if (got[0] !== String(want)) return `Salió ${got[0]} y hay ${want} de Chopin. Compara partituras[i].autor === "Chopin".`;
+            return null;
+          }, "Chopin gana siempre en esta casa."),
+        hints: ["let cuantas = 0; y un for que recorra partituras", 'Dentro: if (partituras[i].autor === "Chopin") cuantas++;', 'let cuantas = 0;\nfor (let i = 0; i < partituras.length; i++) {\n  if (partituras[i].autor === "Chopin") {\n    cuantas++;\n  }\n}\nconsole.log(cuantas);'],
+        debrief: "Contar fichas que cumplen algo. Mañana lo harás con una sola palabra: filter.",
+      }),
+    ],
+    farewell: [{ who: "margarita", text: "Llévate estas galletas de jengibre. Las de forma de disquete son para Ruth.", mood: "alegre" }],
+    back: [{ who: "ruth", text: "Galletas con forma de disquete. Esa mujer es un genio. Bueno: a filtrar." }],
+  },
+  {
+    id: "t6",
+    before: "m17",
+    title: "La lista de la compra",
+    sendoff: [
+      { who: "kessler", text: "Lo de hoy es difícil incluso para mí. Ruth insiste en que repases flechas con Margarita antes." },
+      { who: "kessler", text: "Hay nieve en las colinas. Ve con cuidado con la bici." },
+    ],
+    welcome: [
+      { who: "margarita", text: "Nieve en Berkeley. En cuarenta años no lo había visto. Pasa, que hace frío." },
+      { who: "margarita", text: "Hoy, filter y map. Sirven para todo: hasta para la compra.", mood: "alegre" },
+    ],
+    exercises: [
+      ex({
+        id: "t6a",
+        act: 4,
+        title: "Lo barato",
+        concept: "filter",
+        lesson: {
+          title: "Quedarse con algunos",
+          body: "lista.filter((x) => condición) devuelve una lista nueva solo con los elementos que cumplen la condición.",
+          example: "let edades = [12, 30, 8];\nlet adultos = edades.filter((e) => e >= 18); // [30]",
+        },
+        task: "Crea baratos con los precios menores que 5 usando filter, y muéstralo.",
+        borrowed: ["precios"],
+        cases: [
+          { label: "mercado del sábado", globals: () => ({ precios: [3, 7.5, 1.2, 5, 9] }) },
+          { label: "tienda de la esquina", globals: () => ({ precios: [6, 4.99, 2] }) },
+        ],
+        capture: ["baratos"],
+        check: (outs, cases) =>
+          every(outs, cases, (o, g) => {
+            const want = (g.precios as number[]).filter((p) => p < 5);
+            if (!Array.isArray(o.values.baratos)) return "Falta la lista baratos.";
+            if (!same(o.values.baratos, want) && same(o.values.baratos, (g.precios as number[]).filter((p) => p <= 5))) return "El 5 no es menor que 5: usa <, no <=.";
+            if (!same(o.values.baratos, want)) return `baratos quedó ${show(o.values.baratos)} y debía ser ${show(want)}.`;
+            if (!o.logs.length) return "Muéstrala con console.log(baratos).";
+            return null;
+          }, "Una línea en vez de un bucle entero."),
+        hints: ["let baratos = precios.filter(...);", "La función flecha: (p) => p < 5", "let baratos = precios.filter((p) => p < 5);\nconsole.log(baratos);"],
+        debrief: "filter no toca la lista original. Hace una nueva. Eso es educación.",
+      }),
+      ex({
+        id: "t6b",
+        act: 4,
+        title: "Los nombres",
+        concept: "map",
+        lesson: {
+          title: "Transformar cada uno",
+          body: "lista.map((x) => ...) devuelve una lista nueva del mismo tamaño con lo que devuelve la flecha para cada elemento.",
+          example: "let precios = [2, 4];\nlet dobles = precios.map((p) => p * 2); // [4, 8]",
+        },
+        task: "Crea nombres con el nombre de cada alumno de alumnos usando map, y muéstralo.",
+        borrowed: ["alumnos"],
+        cases: [
+          { label: "clase del martes", globals: () => ({ alumnos: [{ nombre: "Ana", nota: 8 }, { nombre: "Leo", nota: 5 }, { nombre: "Iris", nota: 9 }] }) },
+          { label: "clase del jueves", globals: () => ({ alumnos: [{ nombre: "Tomás", nota: 6 }] }) },
+        ],
+        capture: ["nombres"],
+        check: (outs, cases) =>
+          every(outs, cases, (o, g) => {
+            const want = (g.alumnos as { nombre: string }[]).map((a) => a.nombre);
+            if (!Array.isArray(o.values.nombres)) return "Falta la lista nombres.";
+            if (!same(o.values.nombres, want)) return `nombres quedó ${show(o.values.nombres)} y debía ser ${show(want)}. La flecha devuelve a.nombre.`;
+            if (!o.logs.length) return "Muéstrala con console.log(nombres).";
+            return null;
+          }, "Una lista de fichas convertida en una lista de nombres."),
+        hints: ["let nombres = alumnos.map(...);", "La flecha recibe un alumno y devuelve su nombre: (a) => a.nombre", "let nombres = alumnos.map((a) => a.nombre);\nconsole.log(nombres);"],
+        debrief: "map es como copiar una partitura a otra tonalidad: mismas notas, otro sonido.",
+      }),
+      ex({
+        id: "t6c",
+        act: 4,
+        title: "Diplomas",
+        concept: "filter + map",
+        lesson: {
+          title: "Encadenar",
+          body: "El resultado de filter es una lista, así que se le puede aplicar map justo detrás: lista.filter(...).map(...).",
+          example: "let grandes = [3, 8, 10].filter((n) => n > 5).map((n) => n * 10); // [80, 100]",
+        },
+        task: "Crea diplomas con los nombres de los alumnos con nota mayor o igual a 6, encadenando filter y map. Muéstralo.",
+        borrowed: ["alumnos"],
+        cases: [
+          { label: "clase del martes", globals: () => ({ alumnos: [{ nombre: "Ana", nota: 8 }, { nombre: "Leo", nota: 5 }, { nombre: "Iris", nota: 6 }] }) },
+          { label: "clase del jueves", globals: () => ({ alumnos: [{ nombre: "Tomás", nota: 4 }, { nombre: "Eva", nota: 10 }] }) },
+        ],
+        capture: ["diplomas"],
+        check: (outs, cases) =>
+          every(outs, cases, (o, g) => {
+            const al = g.alumnos as { nombre: string; nota: number }[];
+            const want = al.filter((a) => a.nota >= 6).map((a) => a.nombre);
+            if (!Array.isArray(o.values.diplomas)) return "Falta la lista diplomas.";
+            if (o.values.diplomas.length && typeof o.values.diplomas[0] === "object") return "Te salieron fichas enteras: falta el map que saca el nombre.";
+            if (!same(o.values.diplomas, want) && same(o.values.diplomas, al.filter((a) => a.nota > 6).map((a) => a.nombre))) return "Falta quien sacó un 6 justo: usa >=.";
+            if (!same(o.values.diplomas, want)) return `diplomas quedó ${show(o.values.diplomas)} y debía ser ${show(want)}.`;
+            if (!o.logs.length) return "Muéstrala con console.log(diplomas).";
+            return null;
+          }, "Diplomas impresos. Margarita ya está buscando marcos."),
+        hints: ["Primero filter((a) => a.nota >= 6), después .map(...)", "let diplomas = alumnos.filter((a) => a.nota >= 6).map((a) => a.nombre);", "let diplomas = alumnos.filter((a) => a.nota >= 6).map((a) => a.nombre);\nconsole.log(diplomas);"],
+        debrief: "Filtrar y transformar. Con eso se lee cualquier registro del mundo.",
+      }),
+    ],
+    farewell: [{ who: "margarita", text: "Lo próximo que te enseñe Ruth tiene un nombre raro: closures. No te asustes. Es una caja con memoria." }],
+    back: [{ who: "kessler", text: "¿Te habló de closures? Yo tampoco las entiendo. Por eso estás tú aquí." }],
+  },
+  {
+    id: "t7",
+    before: "m21",
+    title: "Cajas con memoria",
+    sendoff: [
+      { who: "kessler", text: "Cuatro países van a leer nuestros datos. Necesitamos clases y orden. Pero antes, Margarita." },
+      { who: "kessler", text: "Quiere asegurarse de que las closures no se te olvidaron. Y yo también." },
+    ],
+    welcome: [
+      { who: "margarita", text: "Cómo llueve. Pasa, Sam. Hoy, funciones que fabrican funciones. Suena raro; es lo más útil que existe." },
+    ],
+    exercises: [
+      ex({
+        id: "t7a",
+        act: 5,
+        title: "Fábrica de saludos",
+        concept: "Funciones que devuelven funciones",
+        lesson: {
+          title: "Una función que fabrica otra",
+          body: "Una función puede devolver otra función. La de dentro recuerda los parámetros de la de fuera aunque esta ya haya terminado.",
+          example: "function multiplicarPor(n) {\n  return (x) => x * n;\n}\nconst triple = multiplicarPor(3);\nconsole.log(triple(5)); // 15",
+        },
+        task: "Escribe crearSaludo(saludo) que devuelva una función. Esa función recibe un nombre y devuelve SALUDO, NOMBRE. Por ejemplo, crearSaludo(\"Hola\")(\"Ruth\") devuelve Hola, Ruth.",
+        probe: 'typeof crearSaludo !== "function" ? "__nofn" : (() => { const a = crearSaludo("Hola"); const b = crearSaludo("Buenas noches"); if (typeof a !== "function") return "__nofnret"; return [a("Ruth"), b("Sam"), a("Byte")]; })()',
+        cases: [{ label: "tres saludos", globals: () => ({}) }],
+        check: ([o]) => {
+          const p = o.values.__probe;
+          const err = probeErr(o);
+          if (o.error) return no(`Error: ${o.error.message}`);
+          if (p === "__nofn") return no("No encuentro la función crearSaludo.");
+          if (p === "__nofnret") return no("crearSaludo tiene que devolver una función: return (nombre) => ...");
+          if (err) return no(`La función dio un error: ${err}`);
+          const want = ["Hola, Ruth", "Buenas noches, Sam", "Hola, Byte"];
+          if (!same(p, want)) return no(`Los saludos salieron ${show(p)} y debían ser ${show(want)}.`);
+          return ok("Cada saludo recuerda su palabra.");
+        },
+        hints: ["function crearSaludo(saludo) { return ...; }", "Devuelve una flecha: return (nombre) => `${saludo}, ${nombre}`;", "function crearSaludo(saludo) {\n  return (nombre) => `${saludo}, ${nombre}`;\n}"],
+        debrief: "La función de dentro se lleva el saludo en el bolsillo. Eso es una closure.",
+      }),
+      ex({
+        id: "t7b",
+        act: 5,
+        title: "El metrónomo",
+        concept: "Closure con estado",
+        lesson: {
+          title: "Una variable que sobrevive",
+          body: "Si la función de dentro cambia una variable de la de fuera, ese cambio se conserva entre llamadas. Cada fabricación tiene su propia variable.",
+          example: "function crearPasos() {\n  let n = 0;\n  return () => {\n    n++;\n    return n;\n  };\n}",
+        },
+        task: "Escribe crearMetronomo(inicio) que devuelva una función. Cada vez que se llama, suma 1 a la cuenta (que empieza en inicio) y la devuelve.",
+        probe: 'typeof crearMetronomo !== "function" ? "__nofn" : (() => { const a = crearMetronomo(10); const b = crearMetronomo(0); if (typeof a !== "function") return "__nofnret"; return [a(), a(), b(), a(), b()]; })()',
+        cases: [{ label: "dos metrónomos", globals: () => ({}) }],
+        check: ([o]) => {
+          const p = o.values.__probe;
+          const err = probeErr(o);
+          if (o.error) return no(`Error: ${o.error.message}`);
+          if (p === "__nofn") return no("No encuentro la función crearMetronomo.");
+          if (p === "__nofnret") return no("crearMetronomo tiene que devolver una función.");
+          if (err) return no(`Dio un error: ${err}`);
+          if (same(p, [11, 11, 1, 11, 1])) return no("Siempre devuelve lo mismo: la cuenta tiene que vivir fuera de la función devuelta, en crearMetronomo.");
+          if (same(p, [11, 12, 13, 14, 15])) return no("Los dos metrónomos comparten la cuenta: créala dentro de crearMetronomo, no fuera.");
+          if (!same(p, [11, 12, 1, 13, 2])) return no(`Dio ${show(p)} y debía dar [11,12,1,13,2].`);
+          return ok("Tic, tac. Cada metrónomo lleva su propia cuenta.");
+        },
+        hints: ["Dentro de crearMetronomo: let cuenta = inicio;", "Devuelve una flecha que haga cuenta++ y return cuenta;", "function crearMetronomo(inicio) {\n  let cuenta = inicio;\n  return () => {\n    cuenta++;\n    return cuenta;\n  };\n}"],
+        debrief: "Dos metrónomos, dos cuentas. Ninguno le pisa el compás al otro.",
+      }),
+      ex({
+        id: "t7c",
+        act: 5,
+        title: "La hucha con llave",
+        concept: "Objeto con closure",
+        lesson: {
+          title: "Datos privados",
+          body: "Una función puede devolver un objeto con métodos que comparten una variable escondida. Desde fuera solo se usa lo que los métodos permiten.",
+          example: "function crearCaja() {\n  let cosas = 0;\n  return {\n    meter() { cosas++; },\n    cuantas() { return cosas; },\n  };\n}",
+        },
+        task: "Escribe crearHucha() que devuelva un objeto con meter(cantidad), que suma la cantidad al ahorro, y total(), que devuelve el ahorro. El ahorro empieza en 0 y no se ve desde fuera.",
+        probe: 'typeof crearHucha !== "function" ? "__nofn" : (() => { const h = crearHucha(); const g = crearHucha(); if (!h || typeof h.meter !== "function" || typeof h.total !== "function") return "__nometh"; h.meter(5); h.meter(2.5); g.meter(1); return [h.total(), g.total(), Object.keys(h).sort()]; })()',
+        cases: [{ label: "dos huchas", globals: () => ({}) }],
+        check: ([o]) => {
+          const p = o.values.__probe as unknown[];
+          const err = probeErr(o);
+          if (o.error) return no(`Error: ${o.error.message}`);
+          if (p === ("__nofn" as unknown)) return no("No encuentro la función crearHucha.");
+          if (p === ("__nometh" as unknown)) return no("crearHucha tiene que devolver un objeto con los métodos meter y total.");
+          if (err) return no(`Dio un error: ${err}`);
+          if (p[0] === 8.5 && p[1] === 8.5) return no("Las dos huchas comparten el ahorro: la variable va dentro de crearHucha.");
+          if (p[0] !== 7.5 || p[1] !== 1) return no(`Las huchas tienen ${show(p[0])} y ${show(p[1])}; debían tener 7.5 y 1.`);
+          if (!same(p[2], ["meter", "total"])) return no(`El objeto tiene ${show(p[2])}. El ahorro debe ser una variable escondida, no un dato del objeto.`);
+          return ok("Nadie puede tocar el ahorro sin pasar por la ranura.");
+        },
+        hints: ["Dentro de crearHucha: let ahorro = 0; y return { ... };", "meter(cantidad) { ahorro += cantidad; }, total() { return ahorro; }", "function crearHucha() {\n  let ahorro = 0;\n  return {\n    meter(cantidad) {\n      ahorro += cantidad;\n    },\n    total() {\n      return ahorro;\n    },\n  };\n}"],
+        debrief: "Así se protege lo que importa. Con contraseñas se hace igual.",
+      }),
+    ],
+    farewell: [{ who: "margarita", text: "Lo siguiente son las clases: moldes para fabricar objetos. Ya estás preparado, aunque no lo creas.", mood: "alegre" }],
+    back: [{ who: "kessler", text: "Empapado, pero listo. Bien. Clases." }],
+  },
+  {
+    id: "t8",
+    before: "m26",
+    title: "El taller de instrumentos",
+    sendoff: [
+      { who: "ruth", text: "Lo último que te queda es el tiempo: esperar respuestas. Antes, una sesión más con Margarita." },
+      { who: "ruth", text: "Dice que es la última. No le creas: siempre dice eso." },
+    ],
+    welcome: [
+      { who: "margarita", text: "Junio. Las ventanas abiertas y el piano afinado. Hoy, clases: moldes para fabricar objetos iguales.", mood: "alegre" },
+    ],
+    exercises: [
+      ex({
+        id: "t8a",
+        act: 6,
+        title: "El molde",
+        concept: "Clases",
+        lesson: {
+          title: "class y constructor",
+          body: "class Nombre { constructor(a, b) { this.a = a; } } define un molde. new Nombre(...) fabrica un objeto con esos datos.",
+          example: 'class Gato {\n  constructor(nombre) {\n    this.nombre = nombre;\n  }\n}\nconst g = new Gato("Byte");',
+        },
+        task: "Escribe la clase Instrumento con un constructor(nombre, cuerdas) que guarde los dos datos en this.",
+        probe: 'typeof Instrumento !== "function" ? "__nocls" : (() => { const a = new Instrumento("violín", 4); const b = new Instrumento("guitarra", 6); return [a.nombre, a.cuerdas, b.nombre, b.cuerdas]; })()',
+        cases: [{ label: "dos instrumentos", globals: () => ({}) }],
+        check: ([o]) => {
+          const p = o.values.__probe;
+          const err = probeErr(o);
+          if (o.error) return no(`Error: ${o.error.message}`);
+          if (p === "__nocls") return no("No encuentro la clase Instrumento.");
+          if (err) return no(`Dio un error: ${err}`);
+          if (same(p, [undefined, undefined, undefined, undefined])) return no("Los objetos salen vacíos: guarda los datos con this.nombre = nombre;");
+          if (!same(p, ["violín", 4, "guitarra", 6])) return no(`Salió ${show(p)} y debía ser ["violín",4,"guitarra",6].`);
+          return ok("Un molde, tantos instrumentos como quieras.");
+        },
+        hints: ["class Instrumento { constructor(nombre, cuerdas) { ... } }", "Dentro: this.nombre = nombre; this.cuerdas = cuerdas;", "class Instrumento {\n  constructor(nombre, cuerdas) {\n    this.nombre = nombre;\n    this.cuerdas = cuerdas;\n  }\n}"],
+        debrief: "this es el objeto que se está fabricando. Cada uno tiene el suyo.",
+      }),
+      ex({
+        id: "t8b",
+        act: 6,
+        title: "Afinar",
+        concept: "Métodos",
+        lesson: {
+          title: "Métodos con this",
+          body: "Un método se escribe dentro de la clase, después del constructor. Con this lee y cambia los datos del propio objeto.",
+          example: "class Contador {\n  constructor() {\n    this.n = 0;\n  }\n  sumar() {\n    this.n++;\n  }\n}",
+        },
+        task: "Escribe la clase Piano con constructor() que ponga this.afinado = false, el método afinar() que lo ponga en true, y el método estado() que devuelva \"afinado\" o \"desafinado\".",
+        probe: 'typeof Piano !== "function" ? "__nocls" : (() => { const a = new Piano(); const b = new Piano(); if (typeof a.afinar !== "function" || typeof a.estado !== "function") return "__nometh"; const antes = a.estado(); a.afinar(); return [antes, a.estado(), b.estado()]; })()',
+        cases: [{ label: "dos pianos", globals: () => ({}) }],
+        check: ([o]) => {
+          const p = o.values.__probe;
+          const err = probeErr(o);
+          if (o.error) return no(`Error: ${o.error.message}`);
+          if (p === "__nocls") return no("No encuentro la clase Piano.");
+          if (p === "__nometh") return no("Faltan los métodos afinar() o estado() dentro de la clase.");
+          if (err) return no(`Dio un error: ${err}`);
+          if (same(p, ["desafinado", "afinado", "afinado"])) return no("Al afinar uno se afinaron los dos: usa this.afinado, no una variable de fuera.");
+          if (!same(p, ["desafinado", "afinado", "desafinado"])) return no(`Salió ${show(p)} y debía ser ["desafinado","afinado","desafinado"].`);
+          return ok("La 440. Perfecto.");
+        },
+        hints: ["En el constructor: this.afinado = false;", "afinar() { this.afinado = true; } y estado() con un if o un ternario", 'class Piano {\n  constructor() {\n    this.afinado = false;\n  }\n  afinar() {\n    this.afinado = true;\n  }\n  estado() {\n    if (this.afinado) {\n      return "afinado";\n    }\n    return "desafinado";\n  }\n}'],
+        debrief: "Mi piano lleva desafinado desde 1979. No se lo cuentes a nadie.",
+      }),
+      ex({
+        id: "t8c",
+        act: 6,
+        title: "Una familia de instrumentos",
+        concept: "extends y super",
+        lesson: {
+          title: "Heredar",
+          body: "class Hija extends Madre hereda todo. En su constructor hay que llamar primero a super(...) con los datos que necesita la madre.",
+          example: 'class Animal {\n  constructor(nombre) { this.nombre = nombre; }\n}\nclass Gato extends Animal {\n  constructor(nombre) {\n    super(nombre);\n    this.patas = 4;\n  }\n}',
+        },
+        task: "Ya existe la clase Instrumento(nombre, cuerdas). Escribe Violin que extienda Instrumento: su constructor(dueno) llama a super(\"violín\", 4), guarda this.dueno, y tiene el método ficha() que devuelve NOMBRE de DUENO (por ejemplo: violín de Leo).",
+        starter: "class Instrumento {\n  constructor(nombre, cuerdas) {\n    this.nombre = nombre;\n    this.cuerdas = cuerdas;\n  }\n}\n\n// Escribe Violin debajo\n",
+        probe: 'typeof Violin !== "function" ? "__nocls" : (() => { const v = new Violin("Leo"); if (typeof v.ficha !== "function") return "__nometh"; return [v.nombre, v.cuerdas, v.dueno, v.ficha(), v instanceof Instrumento]; })()',
+        cases: [{ label: "el violín de Leo", globals: () => ({}) }],
+        check: ([o]) => {
+          const p = o.values.__probe;
+          const err = probeErr(o);
+          if (o.error) return no(`Error: ${o.error.message}`);
+          if (p === "__nocls") return no("No encuentro la clase Violin.");
+          if (p === "__nometh") return no("Falta el método ficha() en Violin.");
+          if (err) return no(/super/.test(err) || /this/.test(err) ? "En el constructor de Violin hay que llamar a super(\"violín\", 4) antes de usar this." : `Dio un error: ${err}`);
+          if (!same(p, ["violín", 4, "Leo", "violín de Leo", true])) return no(`Salió ${show(p)} y debía ser ["violín",4,"Leo","violín de Leo",true]. ¿Usaste extends Instrumento?`);
+          return ok("Un violín es un instrumento, con lo suyo propio.");
+        },
+        hints: ["class Violin extends Instrumento { constructor(dueno) { super(...); ... } }", 'super("violín", 4); this.dueno = dueno;', 'class Instrumento {\n  constructor(nombre, cuerdas) {\n    this.nombre = nombre;\n    this.cuerdas = cuerdas;\n  }\n}\n\nclass Violin extends Instrumento {\n  constructor(dueno) {\n    super("violín", 4);\n    this.dueno = dueno;\n  }\n  ficha() {\n    return `${this.nombre} de ${this.dueno}`;\n  }\n}'],
+        debrief: "Ya no te queda nada que enseñarme, Sam. Bueno, sí: a esperar. Eso te lo enseñará Ruth.",
+      }),
+    ],
+    farewell: [
+      { who: "margarita", text: "Cuando todo esto termine, ven a tocar el piano conmigo. Una escala. Y luego otra.", mood: "alegre" },
+      { who: "margarita", text: "Repetir, Sam. Así se aprende todo." },
+    ],
+    back: [{ who: "ruth", text: "¿Te dijo que era la última? Ya. A mí me lo dice desde 1975." }],
   },
 ];
 

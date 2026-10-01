@@ -37,6 +37,8 @@ export class TravelScene extends Phaser.Scene {
   preload(): void {
     const key = `view_${this.act}_d`;
     if (!this.textures.exists(key)) this.load.image(key, `/assets/view/${key}.png`);
+    const st = `street_${this.act}`;
+    if (!this.textures.exists(st)) this.load.spritesheet(st, `/assets/${st}.png`, { frameWidth: 64, frameHeight: 64 });
   }
 
   create(): void {
@@ -48,11 +50,10 @@ export class TravelScene extends Phaser.Scene {
     this.street = this.add.graphics().setDepth(5);
     // casas, farolas y árboles que pasan
     const spawn = (x: number) => {
-      // casas, farolas y árboles en pixel art con contorno (tools/art/street.py)
+      // casas, farola y árboles pintados como el paisaje del fondo (tools/art/street.py)
       const kind = Math.random();
-      const tree = this.act === 4 ? 6 : this.act === 3 ? 5 : 4;
-      const frame = kind < 0.45 ? Math.floor(Math.random() * 3) : kind < 0.65 ? 3 : tree;
-      const o = this.add.image(x, GROUND + 1, "street", frame).setOrigin(0, 1).setDepth(frame === 3 ? 4 : 3);
+      const frame = kind < 0.45 ? Math.floor(Math.random() * 3) : kind < 0.62 ? 3 : 4 + Math.floor(Math.random() * 3);
+      const o = this.add.image(x, GROUND + 1, `street_${this.act}`, frame).setOrigin(0, 1).setDepth(frame === 3 ? 4 : 3);
       this.things.push({ o, v: 90, w: 64 });
     };
     for (let x = -20; x < VIEW_W + 40; x += 64 + Math.random() * 30) spawn(x);

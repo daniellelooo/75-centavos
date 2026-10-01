@@ -572,7 +572,7 @@ def build_bike():
     INK = hex2rgba("#1c1830")
     sheet = Image.new("RGBA", (W * N, FH), (0, 0, 0, 0))
     torso = pack_frame("sam", PACK_ROWS[3], 0).crop((0, 0, 16, 19))
-    rear, front, crank = (9, 26), (31, 26), (19, 26)
+    rear, front, crank = (11, 27), (29, 27), (20, 26)
 
     def line(px, a, b, color, thick=1):
         (x0, y0), (x1, y1) = a, b
@@ -601,9 +601,9 @@ def build_bike():
         px = im.load()
         ang = f * math.pi / 2
         # pierna de atrás (más oscura), por detrás del cuadro
-        hip = (16, 17)
-        pb = (round(crank[0] - 3 * math.cos(ang)), round(crank[1] - 3 * math.sin(ang)))
-        kb = (round((hip[0] + pb[0]) / 2 + 3), round((hip[1] + pb[1]) / 2 - 2))
+        hip = (16, 20)
+        pb = (round(crank[0] - 2 * math.cos(ang)), round(crank[1] - 2 * math.sin(ang)))
+        kb = (round((hip[0] + pb[0]) / 2 + 2), round((hip[1] + pb[1]) / 2 - 1))
         line(px, hip, kb, "#3a281c", 2)
         line(px, kb, pb, "#3a281c", 2)
         px[pb[0] + 1, pb[1]] = INK
@@ -611,36 +611,36 @@ def build_bike():
         for cx, cy in (rear, front):
             for t in range(72):
                 a = t * math.pi / 36
-                px[round(cx + 6.5 * math.cos(a)), round(cy + 6.5 * math.sin(a))] = INK
-                px[round(cx + 5.4 * math.cos(a)), round(cy + 5.4 * math.sin(a))] = hex2rgba("#8a8a9a")
+                px[round(cx + 5.5 * math.cos(a)), round(cy + 5.5 * math.sin(a))] = INK
+                px[round(cx + 4.4 * math.cos(a)), round(cy + 4.4 * math.sin(a))] = hex2rgba("#8a8a9a")
             for k in range(2):
                 a = ang / 2 + k * math.pi / 2
-                for r in range(1, 5):
+                for r in range(1, 4):
                     px[round(cx + r * math.cos(a)), round(cy + r * math.sin(a))] = hex2rgba("#c2c2c8")
                     px[round(cx - r * math.cos(a)), round(cy - r * math.sin(a))] = hex2rgba("#c2c2c8")
             px[cx, cy] = INK
         # cuadro rojo, sillín y manillar
         red = "#c83a3a"
         line(px, rear, crank, red, 1)
-        line(px, rear, (15, 17), red, 1)
-        line(px, (15, 17), crank, red, 2)
-        line(px, (15, 17), (28, 17), red, 2)
-        line(px, crank, (28, 17), red, 2)
-        line(px, (28, 15), front, "#8a8a9a", 1)
-        line(px, (12, 15), (17, 15), "#3a281c", 2)
-        line(px, (28, 12), (30, 12), "#3a281c", 1)
-        line(px, (28, 12), (28, 16), "#8a8a9a", 1)
+        line(px, rear, (15, 20), red, 1)
+        line(px, (15, 20), crank, red, 2)
+        line(px, (15, 20), (26, 20), red, 1)
+        line(px, crank, (26, 20), red, 2)
+        line(px, (27, 18), front, "#8a8a9a", 1)
+        line(px, (12, 18), (17, 18), "#3a281c", 2)
+        line(px, (27, 16), (29, 16), "#3a281c", 1)
+        line(px, (27, 16), (27, 19), "#8a8a9a", 1)
         # biela y pedal delantero
-        pf = (round(crank[0] + 3 * math.cos(ang)), round(crank[1] + 3 * math.sin(ang)))
+        pf = (round(crank[0] + 2 * math.cos(ang)), round(crank[1] + 2 * math.sin(ang)))
         line(px, crank, pf, "#8a8a9a", 1)
         outline(im)
         bike = im
         im = Image.new("RGBA", (W, FH), (0, 0, 0, 0))
         im.alpha_composite(bike, (0, OY))
         # Sam: el torso del sprite de siempre (hasta la cintura), sentado en el sillín
-        im.alpha_composite(torso, (8, OY + 17 - 19 + (1 if f % 2 else 0)))
+        im.alpha_composite(torso, (8, OY + 20 - 19 + (1 if f % 2 else 0)))
         # pierna de delante, encima de todo
-        kf = (round((hip[0] + pf[0]) / 2 + 3), round((hip[1] + pf[1]) / 2 - 2))
+        kf = (round((hip[0] + pf[0]) / 2 + 2), round((hip[1] + pf[1]) / 2 - 1))
         leg = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         lp = leg.load()
         line(lp, hip, kf, "#5c402c", 2)
@@ -652,8 +652,8 @@ def build_bike():
         # brazo hacia el manillar
         arm = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         ap = arm.load()
-        line(ap, (18, 13), (27, 12), "#f4ecd8", 1)
-        ap[28, 12] = hex2rgba("#f6d0a8")
+        line(ap, (18, 16), (26, 16), "#f4ecd8", 1)
+        ap[27, 16] = hex2rgba("#f6d0a8")
         outline(arm)
         im.alpha_composite(arm, (0, OY + (1 if f % 2 else 0)))
         sheet.alpha_composite(im, (f * W, 0))

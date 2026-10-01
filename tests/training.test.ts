@@ -65,3 +65,24 @@ describe("errores típicos con mensaje claro", () => {
     expect(play("t4c", "function gastoTotal(p) { let t = 0; for (let i = 0; i < p.length; i++) { t += p[i]; return t; } }").pass).toBe(false);
   });
 });
+
+describe("sesiones de los actos 3 a 6: errores típicos", () => {
+  it("t6a: <= en vez de <", () => {
+    expect(play("t6a", "let baratos = precios.filter((p) => p <= 5);\nconsole.log(baratos);").feedback).toMatch(/menor que 5/);
+  });
+  it("t6c: sin map", () => {
+    expect(play("t6c", "let diplomas = alumnos.filter((a) => a.nota >= 6);\nconsole.log(diplomas);").feedback).toMatch(/map/);
+  });
+  it("t7b: cuenta compartida", () => {
+    expect(play("t7b", "let cuenta = 0;\nfunction crearMetronomo(inicio) { if (cuenta === 0) cuenta = inicio; return () => { cuenta++; return cuenta; }; }").pass).toBe(false);
+  });
+  it("t7c: ahorro visible en el objeto", () => {
+    expect(play("t7c", "function crearHucha() { return { ahorro: 0, meter(c) { this.ahorro += c; }, total() { return this.ahorro; } }; }").feedback).toMatch(/escondida/);
+  });
+  it("t8b: estado compartido", () => {
+    expect(play("t8b", 'let af = false;\nclass Piano { constructor() {} afinar() { af = true; } estado() { return af ? "afinado" : "desafinado"; } }').feedback).toMatch(/this.afinado/);
+  });
+  it("t8c: sin super", () => {
+    expect(play("t8c", "class Instrumento { constructor(n, c) { this.nombre = n; this.cuerdas = c; } }\nclass Violin extends Instrumento { constructor(d) { this.dueno = d; } ficha() { return ''; } }").feedback).toMatch(/super/);
+  });
+});

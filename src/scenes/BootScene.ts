@@ -33,7 +33,6 @@ export class BootScene extends Phaser.Scene {
     sheet("radio", "radio.png", 16, 10);
     sheet("emotes", "emotes.png", 11, 11);
     sheet("sam_bike", "sam_bike.png", 40, 38);
-    sheet("street", "street.png", 64, 60);
     for (const f of [
       "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
       "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge", "paper_item", "folder_item",

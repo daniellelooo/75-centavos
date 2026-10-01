@@ -26,6 +26,13 @@ GROUPS = [
     (0, 9, 2, 9),     # alfombra (cada fila es una alfombra)
     (0, 12, 9, 12),   # muebles de cocina en fila
     (19, 17, 21, 17), # estanterías bajas
+    (20, 12, 21, 12), # mapa ancho
+    (20, 13, 21, 13), # vista de ciudad ancha
+    (20, 14, 21, 14), # mapamundi ancho
+    (19, 15, 19, 16), # cuadros altos
+    (20, 15, 20, 16),
+    (21, 15, 21, 16),
+    (22, 14, 22, 15), # espejo alto
 ]
 
 

@@ -724,9 +724,9 @@ export class LabScene extends Phaser.Scene {
       writeSave(save);
       if (m.act === 1) showControls();
     } else if (this.back) {
-      // vuelve de casa de Margarita
+      // vuelve de casa de Margarita (entra lo bastante para no quedarse en la puerta)
       this.player.setPosition(208, 240);
-      await this.walk(this.player, "sam", [[208, 200]], 50);
+      await this.walk(this.player, "sam", [[208, 188]], 50);
       this.facing = "up";
       this.player.setFrame(charFrame("sam", "up"));
     } else if (this.arrive && m) {

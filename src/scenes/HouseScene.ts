@@ -8,7 +8,7 @@ import { trainingById, type TrainingSet } from "../game/training";
 import { playDialog, isDialogOpen } from "../ui/dialog";
 import { openTerminal } from "../ui/terminal";
 import { setClock, setObjective, setPrompt, hudVisible, setNotebookAction } from "../ui/hud";
-import { fadeOut, fadeIn, showCard } from "../ui/fade";
+import { fadeOut, showCard } from "../ui/fade";
 import { setPauseHooks } from "../ui/pause";
 import { sfx } from "../audio/sfx";
 
@@ -162,9 +162,10 @@ export class HouseScene extends Phaser.Scene {
     // en la pared: cuadros, ventana y reloj
     this.img("kenney", 20, 6, kenney(19, 12)).setDepth(3);
     this.img("kenney", 40, 6, kenney(20, 12)).setDepth(3);
-    this.img("window", 120, 2, 0).setDepth(3);
+    this.img("kenney", 56, 6, kenney(21, 12)).setDepth(3);
+    this.img("window", 120, 2, [4, 5].includes(this.set.exercises[0].act) ? 2 : 0).setDepth(3);
     this.img("clock", 160, 8).setDepth(3);
-    this.img("kenney", 252, 4, kenney(20, 16)).setDepth(3);
+    this.img("kenney", 252, 6, kenney(19, 14)).setDepth(3);
     this.img("kenney", 274, 6, kenney(19, 13)).setDepth(3);
 
     // piano vertical contra la pared
@@ -184,24 +185,21 @@ export class HouseScene extends Phaser.Scene {
     this.add.sprite(204, 36, "terminal", 0).setOrigin(0, 0).setDepth(100 + 72).play("term-on");
     this.prop("lamp", 226, 44);
     this.solid(196, 56, 48, 14);
-    // rincón de lectura: sillón, alfombra y mesita con té
-    this.img("kenney", 120, 104, kenney(0, 9)).setDepth(1);
-    this.img("kenney", 136, 104, kenney(1, 9)).setDepth(1);
-    this.img("kenney", 152, 104, kenney(1, 9)).setDepth(1);
-    this.img("kenney", 168, 104, kenney(2, 9)).setDepth(1);
-    this.prop("kenney", 176, 92, kenney(14, 9));
-    this.solid(176, 98, 16, 10);
-    this.prop("table", 140, 116);
-    this.prop("mug", 150, 117);
-    this.solid(140, 122, 26, 10);
-    // plantas y un espejo
+    // rincón de lectura: dos sillones y una mesita con té entre ellos
+    this.prop("kenney", 120, 100, kenney(14, 9));
+    this.solid(120, 106, 16, 10);
+    this.prop("table", 140, 102);
+    this.prop("mug", 149, 103);
+    this.solid(140, 108, 26, 10);
+    this.prop("kenney", 170, 100, kenney(14, 9)).setFlipX(true);
+    this.solid(170, 106, 16, 10);
+    // plantas
     this.prop("kenney", 296, 26, kenney(16, 0));
     this.solid(298, 36, 12, 6);
     this.prop("kenney", 2, 160, kenney(17, 0));
     this.solid(4, 170, 12, 6);
     this.prop("kenney", 300, 150, kenney(16, 0));
     this.solid(302, 160, 12, 6);
-    this.img("kenney", 296, 66, kenney(22, 15)).setDepth(3);
   }
 
   private defineThings(): void {
@@ -234,7 +232,7 @@ export class HouseScene extends Phaser.Scene {
         use: () => say([{ who: "sam", text: "Manuales de FORTRAN, de COBOL, partituras de Chopin y una novela de Agatha Christie. Todo subrayado." }]),
       },
       {
-        id: "tea", x: 152, y: 136, r: 12,
+        id: "tea", x: 153, y: 124, r: 12,
         label: () => "Té",
         use: () => say([{ who: "sam", text: "Té de manzanilla. Todavía caliente." }]),
       },
@@ -249,13 +247,14 @@ export class HouseScene extends Phaser.Scene {
   // ------------------------------------------------------------------ flujo
 
   private async arrive(): Promise<void> {
+    // la tarjeta va sobre negro, antes de ver la casa (showCard abre la escena al terminar)
+    hudVisible(false);
+    await showCard("Casa de Margarita", "Elmwood, Berkeley");
     hudVisible(true);
     setClock("17:30");
     this.refresh();
-    await fadeIn();
-    if (!(this.set.id in save.training) || save.training[this.set.id] === 0) await showCard("Casa de Margarita", "Elmwood, Berkeley");
     this.player.play("sam-walk-up");
-    await new Promise<void>((r) => this.tweens.add({ targets: this.player, y: 164, duration: 700, onComplete: () => r() }));
+    await new Promise<void>((r) => this.tweens.add({ targets: this.player, y: 150, duration: 900, onComplete: () => r() }));
     this.player.anims.stop();
     this.player.setFrame(charFrame("sam", "up"));
     if (this.solved === 0) await this.talk(this.set.welcome);

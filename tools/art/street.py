@@ -1,159 +1,140 @@
-"""Lo que pasa por la calle en el viaje en bici: casas de madera de Berkeley,
-farolas y árboles. Mismo estilo que todo el juego: colores planos con una
-sombra, y contorno de tinta de 1 px.
+"""Lo que pasa por la calle en el viaje en bici: casas de Berkeley, farolas y
+árboles. Se pinta con el mismo pintor y la misma paleta por acto que el paisaje
+de fondo (view.py): tramado Bayer, luz desde arriba a la izquierda y sin
+contorno de tinta, para que delante y detrás parezcan un solo cuadro.
 
-Salida: public/assets/street.png (cuadros de 64x60)
-  0-2 casas (crema, verde salvia, terracota), 3 farola,
-  4 árbol verde, 5 árbol de otoño, 6 árbol nevado
+Salida: public/assets/street_{acto}.png (cuadros de 64x64)
+  0-2 casas, 3 farola, 4 roble, 5 ciprés, 6 eucalipto
 """
 import os
+import random
+
 from PIL import Image
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "..", "public", "assets", "street.png")
-PREV = os.path.join(HERE, "preview", "street.png")
-W, H = 64, 60
-INK = (28, 24, 48, 255)
+import view as V
+
+OUT = V.OUT.replace(os.path.join("assets", "view"), "assets")
+FW, FH = 64, 64
+KEY = (255, 0, 255)
 
 
-def rgb(h):
-    h = h.lstrip("#")
-    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), 255)
+def fresh():
+    p = V.Painter()
+    p.rect(0, 0, FW, FH, KEY)
+    return p
 
 
-class C:
-    def __init__(self):
-        self.im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        self.px = self.im.load()
-
-    def put(self, x, y, c):
-        if 0 <= x < W and 0 <= y < H:
-            self.px[x, y] = rgb(c) if isinstance(c, str) else c
-
-    def rect(self, x, y, w, h, c):
-        for j in range(y, y + h):
-            for i in range(x, x + w):
-                self.put(i, j, c)
-
-    def disc(self, cx, cy, r, c):
-        for j in range(cy - r, cy + r + 1):
-            for i in range(cx - r, cx + r + 1):
-                if (i - cx) ** 2 + (j - cy) ** 2 <= r * r + r * 0.6:
-                    self.put(i, j, c)
-
-    def outline(self):
-        src = self.im.copy().load()
-        for y in range(H):
-            for x in range(W):
-                if src[x, y][3]:
-                    continue
-                if any(0 <= x + dx < W and 0 <= y + dy < H and src[x + dx, y + dy][3] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                    self.px[x, y] = INK
+def to_frame(p):
+    im = p.im.crop((0, 0, FW, FH)).convert("RGBA")
+    px = im.load()
+    for y in range(FH):
+        for x in range(FW):
+            if px[x, y][:3] == KEY:
+                px[x, y] = (0, 0, 0, 0)
+    return im
 
 
-def house(wall, shade, roof, roof_s, trim):
-    c = C()
-    base = H - 1
-    # tejado a dos aguas
-    for i in range(16):
-        y = base - 34 - i
-        c.rect(4 + i, y, 56 - 2 * i, 1, roof if i % 3 else roof_s)
-    c.rect(2, base - 34, 60, 2, roof_s)
-    # fachada de tablas
-    c.rect(6, base - 32, 52, 32, wall)
-    for y in range(base - 32, base, 3):
-        c.rect(6, y, 52, 1, shade)
-    c.rect(6, base - 32, 52, 1, trim)
-    # ventanas con marco y reflejo
+def big_house(L, seed):
+    """Casa de madera de dos aguas, pintada como las del fondo pero de cerca."""
+    rnd = random.Random(seed)
+    p = fresh()
+    base = FH - 1
+    wall = L["wall"][seed % len(L["wall"])]
+    roof = L["roof"][seed % len(L["roof"])]
+    shade = V.mix(wall, (0, 0, 0), 0.16)
+    deep = V.mix(wall, (0, 0, 0), 0.32)
+    x0, x1, h = 6, 58, 30
+    # fachada de tablas, con sombra del alero y el lado derecho más oscuro
+    for y in range(base - h, base):
+        for x in range(x0, x1):
+            c = wall
+            if (y - base) % 3 == 0:
+                c = shade
+            if x >= x1 - 5 and V.BAYER[y % 4][x % 4] > 5:
+                c = shade
+            if y < base - h + 3 and V.BAYER[y % 4][x % 4] > 3:
+                c = deep
+            p.put(x, y, c)
+    # tejado con tramado: más claro arriba a la izquierda
+    rh = 17
+    for k in range(rh):
+        y = base - h - 1 - k
+        for x in range(x0 - 3 + k, x1 + 3 - k):
+            t = (x - x0) / (x1 - x0)
+            c = roof
+            if t > 0.55 and V.BAYER[y % 4][x % 4] > 6:
+                c = V.mix(roof, (0, 0, 0), 0.22)
+            if k > rh - 6 and t < 0.45 and V.BAYER[y % 4][x % 4] > 9:
+                c = V.mix(roof, (255, 255, 255), 0.18)
+            p.put(x, y, c)
+    p.rect(x0 - 3, base - h - 1, x1 - x0 + 6, 1, V.mix(roof, (0, 0, 0), 0.35))
+    if L.get("snow"):
+        snow = V.SNOW
+        for k in range(rh):
+            y = base - h - 1 - k
+            p.rect(x0 - 3 + k, y, 3, 1, snow)
+            p.rect(x1 + 1 - k, y, 2, 1, V.mix(snow, (0, 0, 0), 0.1))
+        p.rect(x0 + 13, base - h - rh, x1 - x0 - 26, 2, snow)
+    trim = V.mix(wall, (255, 255, 255), 0.45)
+    glass, glass_l = (58, 90, 138), (143, 190, 230)
     for wx in (11, 41):
-        c.rect(wx - 1, base - 26, 13, 12, trim)
-        c.rect(wx, base - 25, 11, 10, "#3a5a8a")
-        c.rect(wx, base - 25, 11, 2, "#8fd3ff")
-        c.rect(wx + 5, base - 25, 1, 10, trim)
-        c.rect(wx - 2, base - 14, 15, 1, trim)
-    # puerta y escalón
-    c.rect(26, base - 19, 12, 19, trim)
-    c.rect(27, base - 18, 10, 18, "#6e4c3c")
-    c.rect(28, base - 16, 8, 6, "#5e3c26")
-    c.put(35, base - 9, "#fed018")
-    c.rect(24, base - 1, 16, 1, "#968a74")
-    c.outline()
-    return c.im
+        p.rect(wx - 1, base - 25, 13, 12, trim)
+        p.rect(wx, base - 24, 11, 10, glass)
+        for i in range(4):
+            p.put(wx + 1 + i, base - 23 + i, glass_l)
+        p.rect(wx + 5, base - 24, 1, 10, trim)
+        p.rect(wx - 2, base - 13, 15, 1, deep)
+    p.rect(26, base - 19, 12, 19, trim)
+    p.rect(27, base - 18, 10, 18, (110, 76, 60))
+    p.rect(27, base - 18, 2, 18, (130, 92, 72))
+    p.put(35, base - 9, (254, 208, 24))
+    if L.get("xmas"):
+        cols = [(232, 52, 78), (75, 168, 109), (254, 208, 24), (32, 146, 219)]
+        for x in range(x0 - 3, x1 + 3, 3):
+            p.put(x, base - h, cols[(x // 3) % 4])
+    # matorral delante de la casa
+    for k in range(2):
+        V.tree_blob(p, L, 8 + k * 46 + rnd.randrange(0, 4), base - 3, 5, seed + k)
+    return to_frame(p)
 
 
-def lamp():
-    c = C()
-    base = H - 1
-    c.rect(30, base - 44, 3, 44, "#2e2a48")
-    c.rect(31, base - 44, 1, 44, "#4a4470")
-    c.rect(28, base - 2, 7, 2, "#2e2a48")
-    c.rect(26, base - 50, 11, 3, "#2e2a48")
-    c.rect(27, base - 47, 9, 3, "#fed018")
-    c.rect(28, base - 47, 3, 1, "#fff4c9")
-    c.outline()
-    return c.im
-
-
-def tree(leaf, leaf_s, leaf_l, snow=False):
-    """Copa irregular hecha de racimos pequeños, sombra abajo a la derecha y
-    luz arriba a la izquierda con tramado, para que no parezca una bola."""
-    import random
-    rnd = random.Random(7)
-    c = C()
-    base = H - 1
-    # tronco con dos ramas
-    c.rect(29, base - 24, 4, 24, "#5e3c26")
-    c.rect(29, base - 24, 1, 24, "#7a4e32")
-    for i in range(6):
-        c.put(28 - i, base - 24 - i, "#5e3c26")
-        c.put(33 + i, base - 26 - i, "#5e3c26")
-    clusters = []
-    for _ in range(26):
-        ang = rnd.uniform(0, 6.283)
-        d = rnd.uniform(0, 1) ** 0.6
-        x = 31 + int(19 * d * __import__("math").cos(ang))
-        y = base - 40 + int(13 * d * __import__("math").sin(ang))
-        clusters.append((x, y, rnd.randint(3, 5)))
-    clusters.sort(key=lambda t: t[1])
-    for x, y, r in clusters:
-        c.disc(x, y, r, leaf_s)
-    for x, y, r in clusters:
-        for j in range(y - r, y + r + 1):
-            for i in range(x - r, x + r + 1):
-                if (i - x) ** 2 + (j - y) ** 2 <= (r - 1) ** 2 and (i - x) + (j - y) < r - 1:
-                    c.put(i, j, leaf)
-    for x, y, r in clusters:
-        if y < base - 40 or x < 28:
-            for j in range(y - r + 1, y):
-                for i in range(x - r + 1, x):
-                    if (i - x) ** 2 + (j - y) ** 2 <= (r - 1) ** 2 and (i + j) % 2 == 0:
-                        c.put(i, j, leaf_l)
-    if snow:
-        for x, y, r in clusters:
-            if y < base - 36:
-                c.rect(x - r + 2, y - r + 1, 2 * r - 3, 1, "#ffffff")
-    c.outline()
-    return c.im
+def lamp(L):
+    p = fresh()
+    base = FH - 1
+    iron, iron_l = (46, 42, 72), (74, 68, 112)
+    p.rect(31, base - 46, 3, 46, iron)
+    p.rect(31, base - 46, 1, 46, iron_l)
+    p.rect(29, base - 3, 7, 3, iron)
+    p.rect(27, base - 52, 11, 2, iron)
+    p.rect(28, base - 50, 9, 4, (254, 208, 24))
+    p.rect(28, base - 50, 3, 1, (255, 244, 201))
+    p.rect(28, base - 46, 9, 1, iron)
+    return to_frame(p)
 
 
 def build():
-    frames = [
-        house("#e2cfa6", "#cbb68c", "#8a5a3a", "#6e4c3c", "#fff4c9"),
-        house("#a9c4b4", "#8fae9c", "#5e3c26", "#4a2e1e", "#efe4cc"),
-        house("#c98f6a", "#b07a58", "#4a4470", "#3a3460", "#fff4c9"),
-        lamp(),
-        tree("#4b8139", "#3f6b3a", "#79b894"),
-        tree("#c87a2e", "#8a5a2e", "#e8a85a"),
-        tree("#6f8f96", "#4f6f78", "#c8d8de", snow=True),
-    ]
-    sheet = Image.new("RGBA", (W * len(frames), H), (0, 0, 0, 0))
-    for i, f in enumerate(frames):
-        sheet.alpha_composite(f, (i * W, 0))
-    sheet.save(OUT)
-    prev = Image.new("RGBA", sheet.size, (120, 150, 190, 255))
-    prev.alpha_composite(sheet)
-    prev.resize((sheet.width * 4, sheet.height * 4), Image.NEAREST).save(PREV)
-    print("ok", sheet.size)
+    for act in range(1, 7):
+        L = V.look(act, False)
+        frames = [big_house(L, s) for s in (1, 2, 3)]
+        frames.append(lamp(L))
+        p = fresh()
+        V.tree_oak(p, L, 32, FH - 1, 20, 40 + act)
+        frames.append(to_frame(p))
+        p = fresh()
+        V.tree_cypress(p, L, 32, FH - 1, 52, 50 + act)
+        frames.append(to_frame(p))
+        p = fresh()
+        V.tree_eucalyptus(p, L, 32, FH - 1, 50, 60 + act)
+        frames.append(to_frame(p))
+        sheet = Image.new("RGBA", (FW * len(frames), FH), (0, 0, 0, 0))
+        for i, f in enumerate(frames):
+            sheet.alpha_composite(f, (i * FW, 0))
+        sheet.save(os.path.join(OUT, f"street_{act}.png"))
+        if act == 1:
+            prev = Image.new("RGBA", sheet.size, (190, 160, 90, 255))
+            prev.alpha_composite(sheet)
+            prev.resize((sheet.width * 4, sheet.height * 4), Image.NEAREST).save(os.path.join(V.PREV, "street.png"))
+    print("ok")
 
 
 if __name__ == "__main__":
