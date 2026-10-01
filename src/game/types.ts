@@ -3,7 +3,7 @@
 
 import type { RunOutput } from "./sandbox";
 
-export type Speaker = "ruth" | "sam" | "kessler" | "narrador" | "sistema";
+export type Speaker = "ruth" | "sam" | "kessler" | "margarita" | "narrador" | "sistema";
 
 export type Mood = "normal" | "sorpresa" | "serio" | "alegre";
 

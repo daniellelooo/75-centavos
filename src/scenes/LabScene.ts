@@ -835,6 +835,14 @@ export class LabScene extends Phaser.Scene {
     if (ms) this.time.delayedCall(ms, () => this.setEmote(null, 0));
   }
 
+  /** Burbuja sobre quien habla cuando la línea lleva emoción: ! sorpresa, ... serio, nota alegre. */
+  private moodBubble(line: Line): void {
+    const frame = { sorpresa: 0, serio: 2, alegre: 3 }[line.mood as string];
+    if (frame === undefined) return;
+    const who = line.who === "sam" ? this.player : line.who === "ruth" || line.who === "kessler" ? this.npcs[line.who] : null;
+    if (who?.visible) this.emote(who, frame, 1600);
+  }
+
   /** Burbuja breve que no reemplaza a la principal. */
   private emote(target: Phaser.GameObjects.GameObject & { x: number; y: number; height?: number }, frame: number, ms: number): void {
     const top = (target as Phaser.GameObjects.Sprite).getTopCenter?.() ?? { x: target.x, y: target.y - 24 };
@@ -1132,7 +1140,7 @@ export class LabScene extends Phaser.Scene {
     this.busy = true;
     this.player.anims.stop();
     setPrompt(null);
-    await playDialog(lines);
+    await playDialog(lines, (line) => this.moodBubble(line));
     this.lastClose = performance.now();
     this.busy = false;
   }

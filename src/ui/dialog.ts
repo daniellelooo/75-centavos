@@ -8,6 +8,7 @@ const NAMES: Record<Speaker, string> = {
   sam: "SAM",
   ruth: "RUTH",
   kessler: "DR. KESSLER",
+  margarita: "MARGARITA",
   narrador: "",
   sistema: "TERMINAL",
 };
@@ -18,17 +19,18 @@ export const isDialogOpen = () => open;
 const MOODS: Mood[] = ["normal", "sorpresa", "serio", "alegre"];
 
 function portraitStyle(who: Speaker, mood: Mood = "normal"): string | null {
-  if (who !== "sam" && who !== "ruth" && who !== "kessler") return null;
+  if (!(who in CHAR)) return null;
   const s = 2; // escala del retrato en píxeles de arte
   const col = Math.max(0, MOODS.indexOf(mood));
   return [
-    `background-size: calc(${64 * s} * var(--u)) calc(${60 * s} * var(--u))`,
-    `background-position: calc(${4 - col * 16 * s} * var(--u)) calc(${-(CHAR[who] * 20 * s)} * var(--u))`,
+    `background-size: calc(${64 * s} * var(--u)) calc(${80 * s} * var(--u))`,
+    `background-position: calc(${4 - col * 16 * s} * var(--u)) calc(${-(CHAR[who as keyof typeof CHAR] * 20 * s)} * var(--u))`,
   ].join(";");
 }
 
-/** Muestra una secuencia de líneas. Resuelve cuando el jugador las pasa todas. */
-export function playDialog(lines: Line[]): Promise<void> {
+/** Muestra una secuencia de líneas. Resuelve cuando el jugador las pasa todas.
+ *  `onLine` avisa de cada línea que aparece (la escena pone la burbuja de emoción). */
+export function playDialog(lines: Line[], onLine?: (line: Line) => void): Promise<void> {
   return new Promise((resolve) => {
     open = true;
     const box = el("div", "dialog pixel-frame");
@@ -54,6 +56,7 @@ export function playDialog(lines: Line[]): Promise<void> {
       const ps = portraitStyle(line.who, line.mood);
       portrait.className = ps ? "portrait" : "portrait none";
       if (ps) portrait.setAttribute("style", ps);
+      onLine?.(line);
       full = line.text;
       let n = 0;
       typing = true;

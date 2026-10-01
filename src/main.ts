@@ -37,6 +37,8 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.NONE, zoom },
   scene: [BootScene, LabScene, NetScene, ViewScene],
 });
+// solo en desarrollo: acceso al juego desde la consola para las pruebas
+if (import.meta.env.DEV) (window as unknown as { __game: Phaser.Game }).__game = game;
 
 const onResize = () => {
   const z = fitZoom();

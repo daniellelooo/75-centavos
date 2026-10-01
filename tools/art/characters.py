@@ -334,7 +334,38 @@ def autoshade(rows, style):
     return ["".join(r) for r in out]
 
 
+# Paso de frente/espaldas de Kessler al estilo del pack: el cuerpo baja un
+# píxel y un pie se adelanta (zapato entero) mientras el otro queda atrás.
+KESSLER_STEP = {
+    "a": [
+        "....kpPppPpk....",
+        "....kpPkkPpk....",
+        "...kBbbkkPpk....",
+        "...kkkk..kk.....",
+    ],
+    "b": [
+        "....kpPppPpk....",
+        "....kpPkkPpk....",
+        "....kpPkkbbBk...",
+        ".....kk..kkkk...",
+    ],
+}
+
+
 def frame(name, view, step):
+    if name == "kessler" and view in ("down", "up") and step != "stand":
+        pal = {**COMMON, **CHARS[name]}
+        rows = [""] + VIEWS[name][view] + KESSLER_STEP[step]
+        im = Image.new("RGBA", (16, 24), (0, 0, 0, 0))
+        for y, row in enumerate(rows):
+            for x, ch in enumerate(row):
+                if ch != ".":
+                    im.putpixel((x, y), hex2rgba(pal[ch]))
+        return im
+    return frame_raw(name, view, step)
+
+
+def frame_raw(name, view, step):
     pal = {**COMMON, **CHARS[name]}
     rows = VIEWS[name][view]
     if name in ("sam", "ruth"):
@@ -391,7 +422,7 @@ def portrait(name, mood):
 
 
 def build_portraits():
-    order = ["sam", "ruth", "kessler"]
+    order = ["sam", "ruth", "kessler", "margarita"]
     sheet = Image.new("RGBA", (16 * len(MOODS), 20 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for m, mood in enumerate(MOODS):
@@ -409,7 +440,7 @@ def build_portraits():
 # izquierda (por eso al principio Sam "caminaba al revés").
 
 PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source", "piano_characters.png")
-PACK_INDEX = {"sam": 5, "ruth": 8}
+PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 13}
 PACK_ROWS = [0, 3, 2, 1]  # abajo, izquierda, arriba, derecha
 
 PACK_SRC = {
@@ -424,7 +455,7 @@ def pack_color(name, ch, y):
     skin, skin_s, skin_l = "#f6d0a8", "#dca27e", "#fbe2c4"
     if ch == "k":
         return "#1c1830"
-    if ch == "W":
+    if ch == "W" and not (name == "sam" and not head):
         return "#fffbe8"
     if ch == "s":
         return skin
@@ -433,11 +464,19 @@ def pack_color(name, ch, y):
     if name == "sam":
         if head:
             return {"b": "#4a4470", "B": "#6a6494", "p": "#b4504a" if y == 11 else skin_s, "r": "#c83a3a", "o": "#6e4c2c", "y": "#fed018"}[ch]
-        return {"b": "#3d5a8a", "B": "#5a7aaa", "p": skin_s, "r": "#c83a3a", "o": "#6e4c2c", "y": "#fed018"}[ch]
+        # chaleco y pantalón marrones, camisa crema, corbata granate
+        if ch == "W":
+            return "#f4ecd8"
+        return {"b": "#5c402c", "B": "#8a6446", "p": skin_s, "r": "#8e2a2a", "o": "#3a281c", "y": "#fed018"}[ch]
+    if name == "margarita":
+        # pelo plateado, rebeca morada y blusa crema
+        if ch == "H":
+            return "#c2c2c8" if y % 3 else "#dfdfe2"
+        return {"r": "#7a4a9a", "p": "#b4504a" if y == 11 else "#a57cc4", "y": "#fed018", "b": "#3e3a5c", "B": "#8fd3ff", "o": "#4a3426"}[ch]
     # ruth
     if head:
         return {"r": "#cc4a2e", "p": "#f08a5a" if y <= 6 else ("#b4504a" if y == 11 else "#f0a39a"), "B": "#bfe6ff", "b": "#3e3a5c", "o": "#fed018", "y": "#fed018"}[ch]
-    return {"r": "#cc4a2e", "p": "#f08a5a", "B": "#2f8f8a", "b": "#1f6662", "o": "#4a3426", "y": "#79b894"}[ch]
+    return {"r": "#cc4a2e", "p": "#f08a5a", "B": "#f4ecd8", "b": "#d8c7a4", "o": "#4a3426", "y": "#efe4cc", "D": "#2f7a74", "E": "#22605c"}[ch]
 
 
 def pack_frame(name, row, col, edits=()):
@@ -451,6 +490,23 @@ def pack_frame(name, row, col, edits=()):
             c = src.getpixel((col * 16 + x, base_y + y))
             line.append("." if c[3] == 0 else PACK_SRC["#%02x%02x%02x" % c[:3]])
         grid.append(line)
+    if name == "ruth":
+        # el uniforme marino del pack pasa a vestido turquesa (solo el interior, no el contorno)
+        def edge_r(x, y):
+            return any(not (0 <= x + dx < 16 and 0 <= y + dy < 24) or grid[y + dy][x + dx] == "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+        for y in range(13, 19):
+            for x in range(16):
+                if grid[y][x] == "k" and not edge_r(x, y):
+                    grid[y][x] = "D" if (x + y) % 5 else "E"
+    if name == "margarita":
+        # el pelo negro del pack pasa a plateado: los píxeles oscuros interiores
+        # (no los del contorno) se vuelven pelo
+        def edge(x, y):
+            return any(not (0 <= x + dx < 16 and 0 <= y + dy < 24) or grid[y + dy][x + dx] == "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+        for y in range(24):
+            for x in range(16):
+                if grid[y][x] == "k" and not edge(x, y) and (y <= 15 or row in (1, 2, 3)):
+                    grid[y][x] = "H"
     for y, x, ch in edits:
         grid[y][x] = ch
     for y in range(24):
@@ -464,21 +520,26 @@ def pack_frame(name, row, col, edits=()):
 
 
 PACK_MOODS = {
-    "sam": {
-        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830")],
-        "serio": [(11, 7, "#dca27e"), (11, 8, "#dca27e"), (8, 5, "#1c1830"), (8, 10, "#1c1830")],
-        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a")],
-    },
-    "ruth": {
+    "margarita": {
         "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830")],
         "serio": [(11, 7, "#dca27e"), (11, 8, "#dca27e")],
+        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a")],
+    },
+    "sam": {
+        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830"), (7, 4, "#1c1830"), (7, 11, "#1c1830"), (10, 13, "#8fd3ff")],
+        "serio": [(11, 6, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830"), (11, 9, "#1c1830"), (7, 6, "#1c1830"), (7, 9, "#1c1830")],
+        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a"), (10, 3, "#f0a39a"), (10, 12, "#f0a39a")],
+    },
+    "ruth": {
+        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830"), (7, 4, "#1c1830"), (7, 11, "#1c1830")],
+        "serio": [(11, 6, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830"), (11, 9, "#1c1830"), (7, 5, "#1c1830"), (7, 10, "#1c1830")],
         "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a"),(12, 6, "#f0a39a"), (12, 9, "#f0a39a")],
     },
 }
 
 
 def build():
-    order = ["sam", "ruth", "kessler"]
+    order = ["sam", "ruth", "kessler", "margarita"]
     sheet = Image.new("RGBA", (64, 24 * 4 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for d, view in enumerate(["down", "left", "up", "right"]):
@@ -493,8 +554,8 @@ def build():
                 sheet.alpha_composite(im, (f * 16, (c * 4 + d) * 24))
     sheet.save(os.path.join(OUT, "characters.png"))
     # vista previa: cada personaje en una columna, x6
-    big = Image.new("RGBA", (64 * 3 + 40, 96), (60, 66, 92, 255))
-    for c in range(3):
+    big = Image.new("RGBA", (64 * 4 + 60, 96), (60, 66, 92, 255))
+    for c in range(4):
         big.alpha_composite(sheet.crop((0, c * 96, 64, c * 96 + 96)), (c * (64 + 20), 0))
     big.resize((big.width * 6, big.height * 6), Image.NEAREST).save(os.path.join(PREV, "characters.png"))
     # primer plano: cuadro quieto de frente y de perfil de cada uno, x10

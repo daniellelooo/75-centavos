@@ -5,7 +5,7 @@ export const VIEW_H = 270;
 export const TILE = 16;
 
 /** Índices de personaje dentro de assets/characters.png (tools/art/characters.py). */
-export const CHAR = { sam: 0, ruth: 1, kessler: 2 } as const;
+export const CHAR = { sam: 0, ruth: 1, kessler: 2, margarita: 3 } as const;
 export type CharName = keyof typeof CHAR;
 
 /** Fila de la hoja de cada dirección. */
