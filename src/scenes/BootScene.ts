@@ -1,0 +1,57 @@
+import Phaser from "phaser";
+import { CHAR, type CharName } from "../config";
+
+const A = "/assets/";
+
+export class BootScene extends Phaser.Scene {
+  constructor() {
+    super("boot");
+  }
+
+  preload(): void {
+    const sheet = (key: string, file: string, w: number, h: number) =>
+      this.load.spritesheet(key, A + file, { frameWidth: w, frameHeight: h });
+
+    this.load.spritesheet("kenney", A + "vendor/kenney_indoor.png", { frameWidth: 16, frameHeight: 16, spacing: 1 });
+    sheet("chars", "vendor/characters.png", 16, 24);
+    sheet("floor", "floor.png", 16, 16);
+    sheet("window", "window.png", 32, 26);
+    sheet("terminal", "terminal.png", 18, 20);
+    sheet("vax_tape", "vax_tape.png", 16, 34);
+    sheet("vax_panel", "vax_panel.png", 16, 34);
+    sheet("printer", "printer.png", 20, 18);
+    sheet("corkboard", "corkboard.png", 36, 24);
+    sheet("coffee", "coffee.png", 14, 18);
+    sheet("door", "door.png", 18, 34);
+    sheet("marker", "marker.png", 7, 8);
+    sheet("net_icons", "net_icons.png", 11, 11);
+    sheet("lamp", "lamp.png", 10, 14);
+    for (const f of [
+      "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
+      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug",
+    ]) {
+      this.load.image(f, A + f + ".png");
+    }
+  }
+
+  create(): void {
+    const dirs = ["down", "left", "up", "right"] as const;
+    for (const name of Object.keys(CHAR) as CharName[]) {
+      dirs.forEach((dir, d) => {
+        const base = (CHAR[name] * 4 + d) * 4;
+        this.anims.create({
+          key: `${name}-walk-${dir}`,
+          frames: this.anims.generateFrameNumbers("chars", { frames: [base + 1, base + 2, base + 3, base] }),
+          frameRate: 8,
+          repeat: -1,
+        });
+      });
+    }
+    this.anims.create({ key: "vax-tape", frames: this.anims.generateFrameNumbers("vax_tape", {}), frameRate: 6, repeat: -1 });
+    this.anims.create({ key: "vax-panel", frames: this.anims.generateFrameNumbers("vax_panel", {}), frameRate: 3, repeat: -1 });
+    this.anims.create({ key: "term-on", frames: this.anims.generateFrameNumbers("terminal", { frames: [0, 1] }), frameRate: 2, repeat: -1 });
+    this.anims.create({ key: "printer-run", frames: this.anims.generateFrameNumbers("printer", {}), frameRate: 4, repeat: -1 });
+    this.anims.create({ key: "marker-bob", frames: this.anims.generateFrameNumbers("marker", {}), frameRate: 3, repeat: -1 });
+    this.scene.start("lab", { mode: "title" });
+  }
+}
