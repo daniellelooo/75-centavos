@@ -373,6 +373,8 @@ FACE_EDITS = {
 
 
 def portrait(name, mood):
+    if name in PACK_INDEX:
+        return pack_frame(name, 0, 0, PACK_MOODS[name].get(mood, [])).crop((0, 0, 16, 20))
     rows = [list(r) for r in VIEWS[name]["down"]]
     for y, x, ch in FACE_EDITS[name].get(mood, []):
         rows[y][x] = ch
@@ -400,16 +402,94 @@ def build_portraits():
     bg.resize((sheet.width * 10, sheet.height * 10), Image.NEAREST).save(os.path.join(PREV, "portraits.png"))
 
 
+# ------------------------------------------------------------------ Sam y Ruth desde el pack
+# Daniel prefirió la personalidad de los personajes del pack de piano_no_renshu
+# (CC0), pero sus colores chocaban con el juego. Aquí se recolorean con la paleta
+# del laboratorio. Ojo: en el pack la fila 1 mira a la DERECHA y la 3 a la
+# izquierda (por eso al principio Sam "caminaba al revés").
+
+PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source", "piano_characters.png")
+PACK_INDEX = {"sam": 5, "ruth": 8}
+PACK_ROWS = [0, 3, 2, 1]  # abajo, izquierda, arriba, derecha
+
+PACK_SRC = {
+    "#000048": "k", "#006db6": "b", "#2092db": "B", "#ffb692": "s", "#ffdbb6": "S",
+    "#ffffff": "W", "#ff6d6d": "p", "#ff2448": "r", "#b66d24": "o", "#ffff92": "y",
+}
+
+
+def pack_color(name, ch, y):
+    """Color nuevo según personaje, símbolo original y fila (cabeza o cuerpo)."""
+    head = y <= 12
+    skin, skin_s, skin_l = "#f6d0a8", "#dca27e", "#fbe2c4"
+    if ch == "k":
+        return "#1c1830"
+    if ch == "W":
+        return "#fffbe8"
+    if ch == "s":
+        return skin
+    if ch == "S":
+        return skin_l
+    if name == "sam":
+        if head:
+            return {"b": "#4a4470", "B": "#6a6494", "p": "#b4504a" if y == 11 else skin_s, "r": "#c83a3a", "o": "#6e4c2c", "y": "#fed018"}[ch]
+        return {"b": "#3d5a8a", "B": "#5a7aaa", "p": skin_s, "r": "#c83a3a", "o": "#6e4c2c", "y": "#fed018"}[ch]
+    # ruth
+    if head:
+        return {"r": "#cc4a2e", "p": "#f08a5a" if y <= 6 else ("#b4504a" if y == 11 else "#f0a39a"), "B": "#bfe6ff", "b": "#3e3a5c", "o": "#fed018", "y": "#fed018"}[ch]
+    return {"r": "#cc4a2e", "p": "#f08a5a", "B": "#2f8f8a", "b": "#1f6662", "o": "#4a3426", "y": "#79b894"}[ch]
+
+
+def pack_frame(name, row, col, edits=()):
+    src = Image.open(PACK).convert("RGBA")
+    base_y = PACK_INDEX[name] * 96 + row * 24
+    im = Image.new("RGBA", (16, 24), (0, 0, 0, 0))
+    grid = []
+    for y in range(24):
+        line = []
+        for x in range(16):
+            c = src.getpixel((col * 16 + x, base_y + y))
+            line.append("." if c[3] == 0 else PACK_SRC["#%02x%02x%02x" % c[:3]])
+        grid.append(line)
+    for y, x, ch in edits:
+        grid[y][x] = ch
+    for y in range(24):
+        for x in range(16):
+            ch = grid[y][x]
+            if ch == ".":
+                continue
+            color = ch if ch.startswith("#") else pack_color(name, ch, y)
+            im.putpixel((x, y), hex2rgba(color))
+    return im
+
+
+PACK_MOODS = {
+    "sam": {
+        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830")],
+        "serio": [(11, 7, "#dca27e"), (11, 8, "#dca27e"), (8, 5, "#1c1830"), (8, 10, "#1c1830")],
+        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a")],
+    },
+    "ruth": {
+        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830")],
+        "serio": [(11, 7, "#dca27e"), (11, 8, "#dca27e")],
+        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a"),(12, 6, "#f0a39a"), (12, 9, "#f0a39a")],
+    },
+}
+
+
 def build():
     order = ["sam", "ruth", "kessler"]
     sheet = Image.new("RGBA", (64, 24 * 4 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for d, view in enumerate(["down", "left", "up", "right"]):
             for f, step in enumerate(["stand", "a", "stand", "b"]):
-                src = "left" if view == "right" else view
-                im = frame(name, src, step)
-                if view == "right":
-                    im = im.transpose(Image.FLIP_LEFT_RIGHT)
+                if name in PACK_INDEX:
+                    im = pack_frame(name, PACK_ROWS[d], f)
+                else:
+                    src = "left" if view == "right" else view
+                    im = frame(name, src, step)
+                    if view == "right":
+                        im = im.transpose(Image.FLIP_LEFT_RIGHT)
                 sheet.alpha_composite(im, (f * 16, (c * 4 + d) * 24))
     sheet.save(os.path.join(OUT, "characters.png"))
     # vista previa: cada personaje en una columna, x6
