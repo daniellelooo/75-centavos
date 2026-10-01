@@ -70,6 +70,8 @@ export class LabScene extends Phaser.Scene {
   private carried: Phaser.GameObjects.Image | null = null;
   private ringTimer: Phaser.Time.TimerEvent | null = null;
   private kesslerOut = false;
+  private npcBusy: Partial<Record<CharName, boolean>> = {};
+  private breaths = new Map<Phaser.GameObjects.Sprite, Phaser.Tweens.Tween>();
   private catSprite!: Phaser.GameObjects.Sprite;
   private playerShadow!: Phaser.GameObjects.Image;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
@@ -102,6 +104,8 @@ export class LabScene extends Phaser.Scene {
     this.carried = null;
     this.ringTimer = null;
     this.kesslerOut = false;
+    this.npcBusy = {};
+    this.breaths = new Map();
   }
 
   create(): void {
@@ -416,21 +420,20 @@ export class LabScene extends Phaser.Scene {
         loop: true,
         callback: () => {
           const k = this.npcs.kessler;
-          if (!k || this.busy) return;
+          if (!k || this.busy || this.npcBusy.kessler || this.kesslerOut) return;
           k.setFrame(charFrame("kessler", Phaser.Utils.Array.GetRandom(["down", "down", "left", "right"] as Dir[])));
         },
       });
       // respiración: un píxel arriba y abajo, cada uno a su ritmo
-      [this.npcs.ruth, this.npcs.kessler].forEach((n, i) =>
-        this.tweens.add({ targets: n, y: n!.y - 1, duration: 700 + i * 260, yoyo: true, repeat: -1, ease: "Stepped", delay: i * 300 }),
-      );
+      this.breathe(this.npcs.ruth, true);
+      this.breathe(this.npcs.kessler, true);
       // Ruth mira alrededor de vez en cuando
       this.time.addEvent({
         delay: 3200,
         loop: true,
         callback: () => {
           const r = this.npcs.ruth;
-          if (!r || this.busy) return;
+          if (!r || this.busy || this.npcBusy.ruth) return;
           const dirs: Dir[] = ["left", "down", "left", "up"];
           r.setFrame(charFrame("ruth", Phaser.Utils.Array.GetRandom(dirs)));
         },
@@ -440,12 +443,13 @@ export class LabScene extends Phaser.Scene {
     if (this.night && this.mode === "play" && stageOf(MISSIONS[save.done]?.id).ruthAtNight) {
       this.npcs.ruth = this.add.sprite(132, 106, "chars", charFrame("ruth", "left")).setOrigin(0.5, 1);
       this.npcSolids.ruth = this.solid(125, 100, 14, 8);
-      this.tweens.add({ targets: this.npcs.ruth, y: 105, duration: 760, yoyo: true, repeat: -1, ease: "Stepped" });
+      this.breathe(this.npcs.ruth, true);
     }
     for (const s of [this.player, ...Object.values(this.npcs)]) s?.setDepth(100 + s.y);
     // sombras bajo los personajes (siguen a cada uno si camina)
     this.playerShadow = this.add.image(this.player.x, this.player.y - 1, "shadow").setDepth(2);
     for (const n of Object.values(this.npcs)) this.shadows.set(n!, this.add.image(n!.x, n!.y - 1, "shadow").setDepth(2));
+    if (this.mode === "play") this.startRoutines();
   }
 
   private defineInteractables(): void {
@@ -879,7 +883,8 @@ export class LabScene extends Phaser.Scene {
     const k = this.npcs.kessler;
     if (!k || this.kesslerOut) return;
     this.kesslerOut = true;
-    this.tweens.killTweensOf(k);
+    while (this.npcBusy.kessler) await new Promise((r) => this.time.delayedCall(200, r));
+    this.breathe(k, false);
     if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: -99, y: -99 });
     await this.walk(k, "kessler", [[261, 70], [250, 128]], 40);
     if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: 243, y: 120, w: 14, h: 8 });
@@ -894,7 +899,97 @@ export class LabScene extends Phaser.Scene {
     await this.walk(k, "kessler", [[261, 128], [261, 48]], 44);
     if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: 254, y: 40, w: 14, h: 10 });
     k.setFrame(charFrame("kessler", "down"));
-    this.tweens.add({ targets: k, y: k.y - 1, duration: 960, yoyo: true, repeat: -1, ease: "Stepped" });
+    this.breathe(k, true);
+  }
+
+  /** Respiración: un píxel arriba y abajo. Se apaga mientras caminan. */
+  private breathe(n: Phaser.GameObjects.Sprite | undefined, on: boolean): void {
+    if (!n) return;
+    this.breaths.get(n)?.stop();
+    this.breaths.delete(n);
+    if (on) this.breaths.set(n, this.tweens.add({ targets: n, y: n.y - 1, duration: 760 + Math.random() * 300, yoyo: true, repeat: -1, ease: "Stepped" }));
+  }
+
+  /**
+   * Rutinas de Ruth y Kessler: cada cierto tiempo van a hacer algo por el
+   * laboratorio y vuelven a su sitio. Caminan por el pasillo central (y = 130)
+   * para no atravesar muebles, y se paran si Sam está ocupado.
+   */
+  private startRoutines(): void {
+    type Act = { path: [number, number][]; face: Dir; ms: number; doing?: () => void };
+    const ruthHome: [number, number] = this.night ? [132, 106] : [238, 100];
+    const kessHome: [number, number] = [261, 48];
+    const typing = (n: Phaser.GameObjects.Sprite) => () => {
+      this.emote(n, 2, 3200);
+      for (let i = 0; i < 6; i++) this.time.delayedCall(i * 480, () => sfx("key"));
+    };
+    const ruthDay: Act[] = [
+      { path: [[214, 104]], face: "up", ms: 4200, doing: () => this.npcs.ruth && typing(this.npcs.ruth)() },
+      {
+        path: [[238, 130], [309, 130], [309, 78]],
+        face: "up",
+        ms: 2600,
+        doing: () => {
+          this.printerSprite.play("printer-run");
+          printerChatter(800);
+          this.time.delayedCall(1800, () => {
+            this.printerSprite.anims.stop();
+            this.printerSprite.setFrame(0);
+          });
+        },
+      },
+      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => this.npcs.ruth && this.emote(this.npcs.ruth, 3, 1800) },
+      { path: [[238, 130], [396, 136]], face: "up", ms: 2600, doing: () => this.npcs.ruth && this.emote(this.npcs.ruth, 2, 2000) },
+      { path: [[238, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600) },
+      { path: [[238, 130], [48, 130], [48, 78]], face: "up", ms: 3200, doing: () => this.npcs.ruth && this.emote(this.npcs.ruth, 2, 2400) },
+    ];
+    const ruthNight: Act[] = [
+      { path: [[132, 130], [26, 130], [26, 190]], face: "up", ms: 3000 },
+      { path: [[132, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600) },
+    ];
+    const kessDay: Act[] = [
+      { path: [[261, 130], [356, 130], [356, 52]], face: "up", ms: 3200, doing: () => this.npcs.kessler && this.emote(this.npcs.kessler, 2, 2400) },
+      { path: [[261, 130], [40, 130], [40, 190]], face: "up", ms: 3000 },
+      { path: [[261, 92]], face: "down", ms: 2200, doing: () => this.npcs.kessler && this.emote(this.npcs.kessler, 1, 1400) },
+    ];
+
+    const run = (name: "ruth" | "kessler", acts: Act[], home: [number, number], homeFace: Dir) => {
+      const loop = () => {
+        this.time.delayedCall(6000 + Math.random() * 9000, async () => {
+          const n = this.npcs[name];
+          const m = this.mission;
+          const blocked =
+            !n ||
+            this.busy ||
+            isDialogOpen() ||
+            this.npcBusy[name] ||
+            (name === "kessler" && (this.kesslerOut || (m?.giver === "kessler" && !save.briefed)));
+          if (blocked) return loop();
+          // si Ruth tiene un encargo pendiente, no se aleja de su mesa
+          const pool = name === "ruth" && m?.giver === "ruth" && !save.briefed && !this.night ? acts.slice(0, 1) : acts;
+          const a = pool[Math.floor(Math.random() * pool.length)];
+          this.npcBusy[name] = true;
+          this.breathe(n, false);
+          await this.walk(n, name, a.path, 38);
+          n.setFrame(charFrame(name, a.face));
+          a.doing?.();
+          await new Promise((r) => this.time.delayedCall(a.ms, r));
+          const back = [...a.path].reverse().slice(1) as [number, number][];
+          await this.walk(n, name, [...back, home], 38);
+          n.setFrame(charFrame(name, homeFace));
+          this.breathe(n, true);
+          this.npcBusy[name] = false;
+          loop();
+        });
+      };
+      loop();
+    };
+    if (this.night) {
+      if (this.npcs.ruth) run("ruth", ruthNight, ruthHome, "left");
+    } else {
+      run("ruth", ruthDay, ruthHome, "left");
+      run("kessler", kessDay, kessHome, "down");
+    }
   }
 
   /** La cámara se acerca al corcho y se ve clavar la pista nueva. */
@@ -1174,6 +1269,11 @@ export class LabScene extends Phaser.Scene {
     }
     if (this.carried) this.carried.setPosition(Math.round(this.player.x), Math.round(this.player.y - 31 + Math.sin(this.time.now / 250)));
     for (const [n, sh] of this.shadows) sh.setPosition(Math.round(n.x), Math.round(n.y) - 1);
+    for (const name of ["ruth", "kessler"] as const) {
+      const n = this.npcs[name];
+      const r = this.npcSolids[name];
+      if (n && r && r.x !== -99) Object.assign(r, { x: Math.round(n.x) - 7, y: Math.round(n.y) - 6, w: 14, h: 8 });
+    }
     for (const t of this.things) {
       if (t.id === "ruth" && this.npcs.ruth) [t.x, t.y] = [this.npcs.ruth.x, this.npcs.ruth.y + 4];
       if (t.id === "kessler" && this.npcs.kessler) [t.x, t.y] = [this.npcs.kessler.x, this.npcs.kessler.y + 6];
