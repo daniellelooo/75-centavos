@@ -1,5 +1,6 @@
 import { CHAR } from "../config";
 import type { Line, Speaker } from "../game/missions";
+import type { Mood } from "../game/types";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui } from "./dom";
 
@@ -14,13 +15,15 @@ const NAMES: Record<Speaker, string> = {
 let open = false;
 export const isDialogOpen = () => open;
 
-function portraitStyle(who: Speaker): string | null {
+const MOODS: Mood[] = ["normal", "sorpresa", "serio", "alegre"];
+
+function portraitStyle(who: Speaker, mood: Mood = "normal"): string | null {
   if (who !== "sam" && who !== "ruth" && who !== "kessler") return null;
   const s = 2; // escala del retrato en píxeles de arte
-  const row = CHAR[who] * 4; // fila "mirando abajo"
+  const col = Math.max(0, MOODS.indexOf(mood));
   return [
-    `background-size: calc(${64 * s} * var(--u)) calc(${288 * s} * var(--u))`,
-    `background-position: calc(${4} * var(--u)) calc(${-(row * 24 * s) + 1} * var(--u))`,
+    `background-size: calc(${64 * s} * var(--u)) calc(${60 * s} * var(--u))`,
+    `background-position: calc(${4 - col * 16 * s} * var(--u)) calc(${-(CHAR[who] * 20 * s)} * var(--u))`,
   ].join(";");
 }
 
@@ -48,7 +51,7 @@ export function playDialog(lines: Line[]): Promise<void> {
       box.classList.toggle("narrator", line.who === "narrador");
       box.classList.toggle("system", line.who === "sistema");
       name.textContent = NAMES[line.who];
-      const ps = portraitStyle(line.who);
+      const ps = portraitStyle(line.who, line.mood);
       portrait.className = ps ? "portrait" : "portrait none";
       if (ps) portrait.setAttribute("style", ps);
       full = line.text;

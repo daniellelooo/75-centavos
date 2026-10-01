@@ -73,7 +73,7 @@ export const ACT3: Mission[] = [
       'let conexion = { cuenta: "hunter", hora: 3, minutos: 47 };\nconsole.log(conexion.cuenta);',
     ],
     debrief: [
-      { who: "kessler", text: "Eso. Así se lleva un expediente." },
+      { who: "kessler", text: "Eso. Así se lleva un expediente.", mood: "alegre" },
       { who: "kessler", text: "Por cierto: llamó alguien del gobierno. Ahora sí les interesa. Dicen que \"buscaba cosas que no debía\"." },
     ],
     clue: { title: "Expediente", text: "El gobierno ahora sí se interesa. Algo grave buscaba." },
@@ -122,7 +122,7 @@ export const ACT3: Mission[] = [
       'if (registros[i].cuenta === "hunter") { veces++; }',
       'let veces = 0;\nfor (let i = 0; i < registros.length; i++) {\n  if (registros[i].cuenta === "hunter") {\n    veces++;\n  }\n}\nconsole.log(veces);',
     ],
-    debrief: [{ who: "ruth", text: "Funciona, pero es mucho código para una pregunta tan simple. Déjame enseñarte un truco." }],
+    debrief: [{ who: "ruth", text: "Funciona, pero es mucho código para una pregunta tan simple. Déjame enseñarte un truco.", mood: "alegre" }],
     clue: { title: "Puntual", text: "Tres conexiones por semana, siempre de madrugada." },
   },
   {
@@ -214,8 +214,8 @@ export const ACT3: Mission[] = [
       'const busquedas = registros\n  .filter((r) => r.cuenta === "hunter")\n  .map((r) => r.comando);\nconsole.log(busquedas);',
     ],
     debrief: [
-      { who: "sam", text: "Nuclear. SDI. NORAD. No le interesa nuestra VAX. La usa de puente para llegar a otras." },
-      { who: "kessler", text: "...Voy a llamar otra vez a ese hombre del gobierno." },
+      { who: "sam", text: "Nuclear. SDI. NORAD. No le interesa nuestra VAX. La usa de puente para llegar a otras.", mood: "sorpresa" },
+      { who: "kessler", text: "...Voy a llamar otra vez a ese hombre del gobierno.", mood: "serio" },
     ],
     clue: { title: "Lo que busca", text: "nuclear, SDI, NORAD: usa la VAX de puente a redes militares." },
   },
@@ -265,7 +265,7 @@ export const ACT3: Mission[] = [
     ],
     debrief: [
       { who: "sistema", text: "03:57 — LLAMADA TELEFONICA EXTERNA — rastreo completado" },
-      { who: "ruth", text: "Sam... tienen la dirección." },
+      { who: "ruth", text: "Sam... tienen la dirección.", mood: "sorpresa" },
     ],
     clue: { title: "Rastreo", text: "97 minutos en línea: la telefónica completa el rastreo." },
   },

@@ -90,8 +90,8 @@ export const ACT1: Mission[] = [
     ],
     debrief: [
       { who: "sam", text: "Setenta y cinco centavos. Nueve segundos de computadora que nadie pagó." },
-      { who: "ruth", text: "Un redondeo. Olvídalo." },
-      { who: "sam", text: "Los astrónomos no olvidamos nueve segundos. Así se encuentran planetas." },
+      { who: "ruth", text: "Un redondeo. Olvídalo.", mood: "serio" },
+      { who: "sam", text: "Los astrónomos no olvidamos nueve segundos. Así se encuentran planetas.", mood: "alegre" },
     ],
     clue: { title: "El descuadre", text: "$0.75 sin pagar. 9 segundos de CPU." },
   },
@@ -141,9 +141,9 @@ export const ACT1: Mission[] = [
       "let informe = `Cuenta sin dueño: ${cuenta}`;\nconsole.log(informe);",
     ],
     debrief: [
-      { who: "kessler", text: "¿hunter? No tenemos a nadie llamado hunter. Ciérrala." },
+      { who: "kessler", text: "¿hunter? No tenemos a nadie llamado hunter. Ciérrala.", mood: "serio" },
       { who: "sam", text: "Si la cierro, se va. Si la vigilo, quizá vuelva." },
-      { who: "kessler", text: "Tienes una semana." },
+      { who: "kessler", text: "Tienes una semana.", mood: "serio" },
     ],
     clue: { title: "La cuenta", text: "\"hunter\" — nadie en el laboratorio la reconoce." },
   },
@@ -250,7 +250,7 @@ export const ACT1: Mission[] = [
     ],
     debrief: [
       { who: "sistema", text: "02:51 — CONEXION ENTRANTE — cuenta: hunter" },
-      { who: "sam", text: "Está aquí. Ahora mismo." },
+      { who: "sam", text: "Está aquí. Ahora mismo.", mood: "sorpresa" },
     ],
     clue: { title: "Doce noches", text: "12 conexiones en agosto, todas de madrugada." },
   },

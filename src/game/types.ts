@@ -5,9 +5,13 @@ import type { RunOutput } from "./sandbox";
 
 export type Speaker = "ruth" | "sam" | "kessler" | "narrador" | "sistema";
 
+export type Mood = "normal" | "sorpresa" | "serio" | "alegre";
+
 export interface Line {
   who: Speaker;
   text: string;
+  /** Expresión del retrato (por defecto, normal). */
+  mood?: Mood;
 }
 
 export interface TestCase {

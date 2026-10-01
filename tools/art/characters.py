@@ -350,6 +350,56 @@ def frame(name, view, step):
     return im
 
 
+MOODS = ["normal", "sorpresa", "serio", "alegre"]
+
+# Cambios de cara por expresión: (fila, columna, carácter) sobre la vista de frente.
+FACE_EDITS = {
+    "sam": {
+        "sorpresa": [(11, 7, "k"), (11, 8, "k"), (12, 7, "k"), (12, 8, "k")],
+        "serio": [(11, 7, "S"), (11, 8, "S"), (7, 5, "d"), (7, 6, "d"), (7, 9, "d"), (7, 10, "d")],
+        "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (11, 3, "R"), (11, 12, "R")],
+    },
+    "ruth": {
+        "sorpresa": [(11, 7, "k"), (11, 8, "k"), (7, 4, "k"), (7, 5, "k"), (7, 10, "k"), (7, 11, "k")],
+        "serio": [(11, 7, "S"), (11, 8, "S"), (8, 4, "k"), (8, 5, "k"), (8, 10, "k"), (8, 11, "k")],
+        "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (9, 4, "k"), (9, 5, "k"), (9, 10, "k"), (9, 11, "k"), (10, 5, "s"), (10, 10, "s")],
+    },
+    "kessler": {
+        "sorpresa": [(11, 7, "k"), (11, 8, "k"), (7, 3, "s"), (7, 4, "s"), (7, 11, "s"), (7, 12, "s"), (6, 4, "d"), (6, 5, "d"), (6, 10, "d"), (6, 11, "d")],
+        "serio": [(11, 7, "m"), (11, 8, "m"), (8, 6, "d"), (8, 9, "d"), (7, 6, "d"), (7, 9, "d")],
+        "alegre": [(11, 7, "W"), (11, 8, "W"), (8, 4, "k"), (8, 5, "k"), (8, 10, "k"), (8, 11, "k"), (9, 5, "s"), (9, 10, "s")],
+    },
+}
+
+
+def portrait(name, mood):
+    rows = [list(r) for r in VIEWS[name]["down"]]
+    for y, x, ch in FACE_EDITS[name].get(mood, []):
+        rows[y][x] = ch
+    rows = ["".join(r) for r in rows]
+    if name in ("sam", "ruth"):
+        rows = autoshade(rows, "strands" if name == "sam" else "curls")
+    pal = {**COMMON, **CHARS[name]}
+    im = Image.new("RGBA", (16, 20), (0, 0, 0, 0))
+    for y, row in enumerate(rows[:20]):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                im.putpixel((x, y), hex2rgba(pal[ch]))
+    return im
+
+
+def build_portraits():
+    order = ["sam", "ruth", "kessler"]
+    sheet = Image.new("RGBA", (16 * len(MOODS), 20 * len(order)), (0, 0, 0, 0))
+    for c, name in enumerate(order):
+        for m, mood in enumerate(MOODS):
+            sheet.alpha_composite(portrait(name, mood), (m * 16, c * 20))
+    sheet.save(os.path.join(OUT, "portraits.png"))
+    bg = Image.new("RGBA", sheet.size, (43, 58, 99, 255))
+    bg.alpha_composite(sheet)
+    bg.resize((sheet.width * 10, sheet.height * 10), Image.NEAREST).save(os.path.join(PREV, "portraits.png"))
+
+
 def build():
     order = ["sam", "ruth", "kessler"]
     sheet = Image.new("RGBA", (64, 24 * 4 * len(order)), (0, 0, 0, 0))
@@ -378,3 +428,4 @@ def build():
 
 if __name__ == "__main__":
     build()
+    build_portraits()

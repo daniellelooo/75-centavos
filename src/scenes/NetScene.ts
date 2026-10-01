@@ -64,7 +64,7 @@ const FINALES: Record<number, Finale> = {
   1: {
     hops: [...ROUTE(["02:51", "02:52", "02:53", "02:53"]), { ll: [9.7, 52.4], label: "???", log: "02:54  ORIGEN: FUERA DEL PAÍS", kind: 3 }],
     dialog: [
-      { who: "sam", text: "No es un estudiante aburrido. La llamada cruza un océano." },
+      { who: "sam", text: "No es un estudiante aburrido. La llamada cruza un océano.", mood: "sorpresa" },
       { who: "sam", text: "Setenta y cinco centavos. Alguien al otro lado del mundo está usando nuestra máquina para llegar a otra parte." },
       { who: "sam", text: "Si la cierro, desaparece. Si lo observo... quizá me lleve hasta él." },
     ],
@@ -98,10 +98,10 @@ const FINALES: Record<number, Finale> = {
       ],
     },
     dialog: [
-      { who: "ruth", text: "Hannover. Un apartamento. Hay un nombre en el contrato del teléfono." },
+      { who: "ruth", text: "Hannover. Un apartamento. Hay un nombre en el contrato del teléfono.", mood: "sorpresa" },
       { who: "sam", text: "Todo empezó con setenta y cinco centavos." },
       { who: "narrador", text: "Pero en la última sesión de hunter aparece algo que nadie esperaba: una lista de compradores." },
-      { who: "sam", text: "No trabaja solo. Vende lo que encuentra. Y alguien paga." },
+      { who: "sam", text: "No trabaja solo. Vende lo que encuentra. Y alguien paga.", mood: "serio" },
     ],
     learned: ["{ objetos }", ".propiedad", "arrays de objetos", "filter", "map", "=>", "for...of", "+="],
     teaser: "Próximamente — Acto 4, \"El comprador\": alcance y closures.",

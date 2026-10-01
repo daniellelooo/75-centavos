@@ -20,7 +20,7 @@ export const ACT2: Mission[] = [
     giver: "ruth",
     clock: "10:40",
     briefing: [
-      { who: "ruth", text: "Malas noticias. hunter no viene solo: anoche entraron otras dos cuentas que nadie usa." },
+      { who: "ruth", text: "Malas noticias. hunter no viene solo: anoche entraron otras dos cuentas que nadie usa.", mood: "serio" },
       { who: "ruth", text: "quasar y nadir. Las tres a la misma hora, desde la misma línea." },
       { who: "ruth", text: "Apúntalas juntas. Una variable para cada una no escala, Sam." },
     ],
@@ -104,7 +104,7 @@ export const ACT2: Mission[] = [
     ],
     debrief: [
       { who: "sam", text: "Entre la una y las cinco. Como si su día empezara cuando el nuestro acaba." },
-      { who: "ruth", text: "O como si viviera en otra zona horaria." },
+      { who: "ruth", text: "O como si viviera en otra zona horaria.", mood: "sorpresa" },
       { who: "sam", text: "..." },
     ],
     clue: { title: "Huso horario", text: "Solo entra entre la 1 y las 5. ¿Su mañana es nuestra noche?" },
@@ -120,7 +120,7 @@ export const ACT2: Mission[] = [
     briefing: [
       { who: "kessler", text: "Sam. El FBI dice que setenta y cinco centavos no son asunto federal. La policía dice que es asunto del FBI." },
       { who: "kessler", text: "Así que es asunto tuyo. Pero quiero un aviso automático: si entra una de esas cuentas, que el sistema lo sepa." },
-      { who: "kessler", text: "Y que no me despierte a mí." },
+      { who: "kessler", text: "Y que no me despierte a mí.", mood: "serio" },
     ],
     lesson: {
       title: "Funciones: una pregunta que puedes repetir",
@@ -160,7 +160,7 @@ export const ACT2: Mission[] = [
       'function esSospechosa(cuenta) {\n  return cuenta === "hunter" || cuenta === "quasar" || cuenta === "nadir";\n}',
     ],
     debrief: [
-      { who: "kessler", text: "Bien. Una función. Eso puedo explicárselo al decano." },
+      { who: "kessler", text: "Bien. Una función. Eso puedo explicárselo al decano.", mood: "alegre" },
       { who: "ruth", text: "Le conecté tu función a un pitido en mi terminal. Si suena de noche, te llamo." },
     ],
     clue: { title: "Sin ayuda", text: "FBI y policía no quieren el caso. Estamos solos." },
@@ -227,7 +227,7 @@ export const ACT2: Mission[] = [
       { who: "narrador", text: "Medianoche en el sótano. Ruth se quedó; dice que por el café, pero no ha bebido ni una taza." },
       { who: "ruth", text: "Busca proyectos militares. Pues démosle uno. Montones de archivos falsos con nombres jugosos." },
       { who: "ruth", text: "Que tarde horas en leerlos. Y mientras lee, la telefónica sigue la línea." },
-      { who: "sam", text: "Un proyecto que no existe, con documentos que nadie escribió. Me gusta." },
+      { who: "sam", text: "Un proyecto que no existe, con documentos que nadie escribió. Me gusta.", mood: "alegre" },
     ],
     lesson: {
       title: "Funciones dentro de bucles",
@@ -267,7 +267,7 @@ export const ACT2: Mission[] = [
     debrief: [
       { who: "sistema", text: "03:12 — CONEXION ENTRANTE — cuenta: quasar" },
       { who: "sistema", text: "03:14 — quasar abre SDINET-misiles.txt" },
-      { who: "ruth", text: "Mordió." },
+      { who: "ruth", text: "Mordió.", mood: "alegre" },
     ],
     clue: { title: "El anzuelo", text: "Archivos SDINET falsos. quasar los está leyendo." },
   },
