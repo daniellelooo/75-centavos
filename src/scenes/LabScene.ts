@@ -11,7 +11,7 @@ import { openBoard } from "../ui/board";
 import { showTitle } from "../ui/title";
 import { fadeOut, fadeIn, showCard } from "../ui/fade";
 import { showControls } from "../ui/hud";
-import { sfx } from "../audio/sfx";
+import { sfx, printerChatter } from "../audio/sfx";
 import { buildLighting, buildDaylight, type Light, type LightRig } from "./lighting";
 import { addSnow, addRain, addLightning, addXmasLights } from "./weather";
 import { startHum, setHum, stopHum } from "../audio/ambient";
@@ -92,6 +92,9 @@ export class LabScene extends Phaser.Scene {
     this.things = [];
     this.npcs = {};
     this.busy = false;
+    // la luz de una noche anterior ya no existe: no reutilizarla
+    this.rig = null;
+    this.lightSources = [];
     this.shadows = new Map();
     this.npcSolids = {};
     this.emoteSprite = null;
@@ -167,7 +170,11 @@ export class LabScene extends Phaser.Scene {
 
     setPauseHooks(
       {
-        freeze: (v) => (v ? this.scene.pause() : this.scene.resume()),
+        freeze: (v) => {
+          this.input.keyboard?.resetKeys();
+          if (v) this.scene.pause();
+          else this.scene.resume();
+        },
         toTitle: async () => {
           await fadeOut();
           this.scene.start("lab", { mode: "title" });
@@ -184,6 +191,18 @@ export class LabScene extends Phaser.Scene {
       },
       () => this.busy || this.mode === "title",
     );
+
+    // Al cambiar a pantalla completa, perder el foco o cambiar de pestaña, el
+    // navegador puede tragarse el keyup: Sam seguiría caminando solo.
+    const unstick = () => this.input.keyboard?.resetKeys();
+    window.addEventListener("blur", unstick);
+    document.addEventListener("visibilitychange", unstick);
+    document.addEventListener("fullscreenchange", unstick);
+    this.events.once("shutdown", () => {
+      window.removeEventListener("blur", unstick);
+      document.removeEventListener("visibilitychange", unstick);
+      document.removeEventListener("fullscreenchange", unstick);
+    });
 
     if (this.mode === "play") {
       startHum();
@@ -315,12 +334,12 @@ export class LabScene extends Phaser.Scene {
       // la impresora trabaja a ratos
       const burst = () => {
         pr.play("printer-run");
-        sfx("printer");
+        printerChatter(800);
         this.time.delayedCall(2600, () => {
           pr.anims.stop();
           pr.setFrame(0);
         });
-        this.time.delayedCall(14000 + Math.random() * 12000, burst);
+        this.time.delayedCall(25000 + Math.random() * 20000, burst);
       };
       this.time.delayedCall(4000 + Math.random() * 5000, burst);
     }
@@ -764,7 +783,7 @@ export class LabScene extends Phaser.Scene {
       let from: [number, number];
       if (pk.at === "printer") {
         this.printerSprite.play("printer-run");
-        sfx("printer");
+        printerChatter(800);
         await new Promise((r) => this.time.delayedCall(1400, r));
         this.printerSprite.anims.stop();
         this.printerSprite.setFrame(0);
@@ -1018,7 +1037,7 @@ export class LabScene extends Phaser.Scene {
 
   /** Recalcula la luz nocturna según lámpara y radio. */
   private relight(): void {
-    if (!this.rig) return;
+    if (!this.rig || !this.night || !this.sys.isActive() && !this.sys.isPaused()) return;
     const lamp = this.lightSources.find((l) => l.x === 104 && l.y === 66);
     const radio = this.lightSources.find((l) => l.x === 397);
     if (lamp) lamp.power = this.lampOn ? 0.8 : 0;

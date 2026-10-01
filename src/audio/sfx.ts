@@ -22,7 +22,7 @@ const SOUNDS = {
   meow: [0.7, 0.15, 620, 0.05, 0.14, 0.22, 0, 1.4, -4, 2, 0, 0, 0, 0.2, 0, 0, 0, 0.6, 0.05],
   water: [0.4, 0.5, 300, 0.02, 0.05, 0.12, 0, 2, 0, 0, 120, 0.05, 0.05, 0.4],
   click: [0.5, 0, 1400, 0, 0.01, 0.02, 4, 1, 0, 0, 0, 0, 0, 0.5],
-  printer: [0.25, 0.6, 180, 0.01, 0.9, 0.15, 4, 0.2, 0, 0, 0, 0, 0.035, 2.2, 0, 0.1],
+  printTick: [0.06, 0.05, 1500, 0, 0.003, 0.008, 1, 0.6],
   lamp: [0.4, 0, 1800, 0, 0.005, 0.03, 4, 1, 0, 0, 0, 0, 0, 0.8],
   thunder: [0.9, 0.2, 60, 0.05, 0.6, 1.4, 4, 0.5, 0, 0, 0, 0, 0, 1.8, 0, 0.4, 0.1, 0.5],
   ring: [0.45, 0, 1180, 0.01, 0.35, 0.05, 1, 0, 0, 0, 0, 0, 0.04, 0, 0, 0, 0, 0.7],
@@ -31,6 +31,17 @@ const SOUNDS = {
 } as const;
 
 export type SoundName = keyof typeof SOUNDS;
+
+/** Repiqueteo de impresora matricial: una ráfaga de golpecitos, sin ruido blanco. */
+export function printerChatter(ms = 1600): void {
+  if (settings.sfxVol <= 0) return;
+  const lines = Math.floor(ms / 400);
+  for (let l = 0; l < lines; l++) {
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => sfx("printTick"), l * 400 + i * 40 + Math.random() * 6);
+    }
+  }
+}
 
 export function sfx(name: SoundName): void {
   if (settings.sfxVol <= 0) return;

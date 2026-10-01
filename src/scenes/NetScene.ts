@@ -157,6 +157,8 @@ const FINALES: Record<number, Finale> = {
       { who: "narrador", text: "Años después hubo un juicio en Alemania. La historia real que inspiró este juego es todavía más extraña." },
       { who: "narrador", text: "Ruth pidió vacaciones por primera vez en seis años. Byte se quedó con su silla." },
       { who: "narrador", text: "Sam volvió al telescopio. Pero ya no miraba solo las estrellas: ahora también leía los registros." },
+      { who: "narrador", text: "Un año antes no sabía qué era una variable. Ahora escribía funciones, clases y promesas sin pedir permiso a nadie." },
+      { who: "narrador", text: "No se volvió experto de la noche a la mañana. Pero había superado el primer nivel de un camino largo: el de desarrollador JavaScript junior." },
       { who: "narrador", text: "Todo empezó por setenta y cinco centavos. Y por alguien que no quiso olvidarlos." },
     ],
     learned: ["setTimeout", "promesas", ".then()", "async / await", "try / catch", "Promise.all"],
@@ -411,6 +413,7 @@ export class NetScene extends Phaser.Scene {
         const star = a === 1 && h === 0 ? "PERFECTO" : h === 0 ? "SIN PISTAS" : `${h} PISTA${h > 1 ? "S" : ""}`;
         return `<tr><td>${esc(m.title)}</td><td>${a} intento${a > 1 ? "s" : ""}</td><td class="${a === 1 && h === 0 ? "gold" : ""}">${star}</td></tr>`;
       }).join("")}</table>
+      ${this.fin.closing ? `<div class="levelup"><small>NIVEL ALCANZADO</small><b>Desarrollador JavaScript junior</b><span>Nivel 1 de varios · el camino sigue</span></div>` : ""}
       ${this.fin.closing ? `<p>${MISSIONS.length} misiones resueltas · ${MISSIONS.filter((m) => (save.attempts[m.id] ?? 1) === 1 && !(save.hintsUsed[m.id] ?? 0)).length} perfectas. Todo lo aprendido sigue en tu cuaderno.</p>` : ""}
       <p>${esc(this.fin.teaser)}</p>
       <div class="row"><button class="btn primary back">${next ? `CONTINUAR: ACTO ${next}` : "VOLVER AL LABORATORIO"}</button><button class="btn menu">MENU PRINCIPAL</button></div>

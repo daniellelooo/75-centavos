@@ -718,3 +718,17 @@ html, body {
 }
 .term .keybar button:hover { background: var(--amber); color: #120806; text-shadow: none; }
 .term .keybar .kb-tip { margin-left: auto; }
+
+.endcard .levelup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u);
+  padding: calc(4 * var(--u)) calc(6 * var(--u));
+  border: var(--u) solid var(--amber);
+  background: rgba(254, 208, 24, 0.08);
+  animation: stamp 0.5s cubic-bezier(0.2, 2.2, 0.4, 1) both;
+  transform: none;
+}
+.endcard .levelup small { font-family: var(--font-title); font-size: calc(4.5 * var(--u)); color: var(--amber-2); letter-spacing: 0.1em; }
+.endcard .levelup b { font-family: var(--font-crt); font-weight: normal; font-size: calc(12 * var(--u)); color: var(--amber); text-shadow: 0 0 calc(4 * var(--u)) rgba(254, 208, 24, 0.6); }
+.endcard .levelup span { font-size: calc(6.5 * var(--u)); color: #c9d3ea; }

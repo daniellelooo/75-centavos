@@ -78,6 +78,9 @@ function render(): void {
     row.tabIndex = 0;
     row.classList.toggle("sel", i === sel);
     row.onmouseenter = () => {
+      // solo si el ratón se movió de verdad: si el panel se abre bajo el cursor,
+      // no debe robarle la selección al teclado
+      if (!mouseMoved) return;
       sel = i;
       highlight();
     };
@@ -86,6 +89,7 @@ function render(): void {
 }
 
 let sel = 0;
+let mouseMoved = false;
 function rows() {
   return [...(root?.querySelectorAll<HTMLDivElement>(".p-row") ?? [])];
 }
@@ -94,6 +98,15 @@ function highlight() {
 }
 
 function act(k: string, dir: number, click = false): void {
+  try {
+    doAct(k, dir, click);
+  } catch (e) {
+    console.error(e);
+    render();
+  }
+}
+
+function doAct(k: string, dir: number, click = false): void {
   const step = 0.1 * dir;
   switch (k) {
     case "resume":
@@ -105,8 +118,8 @@ function act(k: string, dir: number, click = false): void {
       hooks?.onMusic?.();
       break;
     case "track":
+      // cambiar de emisora no enciende la radio: solo elige qué sonará
       setTrack((settings.track + (dir || 1) + TRACKS.length) % TRACKS.length);
-      if (!isMusicOn()) startMusic();
       hooks?.onMusic?.();
       break;
     case "mvol":
@@ -168,6 +181,8 @@ export function openPause(): void {
   sfx("open");
   root = el("div", "pause");
   root.innerHTML = `<div class="p-panel pixel-frame"><h2>PAUSA</h2><div class="p-body"></div></div>`;
+  mouseMoved = false;
+  root.addEventListener("mousemove", () => (mouseMoved = true), { once: true });
   ui.append(root);
   render();
   window.addEventListener("keydown", onKey, true);
