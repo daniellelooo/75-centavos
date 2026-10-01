@@ -1,12 +1,13 @@
 // El cuaderno de Sam: el mapa de ruta de lo aprendido y un sitio para repasar.
 // Página izquierda: los actos como una línea de metro. Página derecha: la ficha
 // del concepto, una pregunta de "¿qué imprime?" y práctica en la terminal.
-import { ACTS, FUTURE_ACTS, MISSIONS, type Mission } from "../game/missions";
+import { ACTS, MISSIONS, type Mission } from "../game/missions";
 import { QUIZ } from "../game/concepts";
 import { TRAINING, type TrainingSet } from "../game/training";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui } from "./dom";
+import { badgeHtml, storiesHtml } from "./badge";
 
 const DAY = 24 * 60 * 60 * 1000;
 let openNow = false;
@@ -48,7 +49,8 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
       const learnedCount = Math.min(save.done, MISSIONS.length);
       const review = MISSIONS.filter((m, i) => learned(i) && needsReview(m)).length;
       let html = `<h2>CUADERNO DE SAM</h2>
-        <div class="nb-sub">${learnedCount} de ${MISSIONS.length} conceptos${review ? ` · <b>${review} para repasar</b>` : ""}</div>`;
+        <div class="nb-sub">${learnedCount} de ${MISSIONS.length} conceptos${review ? ` · <b>${review} para repasar</b>` : ""}</div>
+        ${badgeHtml()}`;
       for (const act of ACTS) {
         const ms = MISSIONS.map((m, i) => ({ m, i })).filter((x) => x.m.act === act.n);
         html += `<div class="nb-act"><div class="nb-act-title">ACTO ${act.n} · ${esc(act.title)}</div><ol class="nb-line">`;
@@ -56,7 +58,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
           const state = learned(i) ? "done" : i === save.done ? "next" : "locked";
           const dot = learned(i) && needsReview(m) ? `<span class="nb-due" title="para repasar"></span>` : "";
           html += `<li class="nb-stop ${state} ${i === selected && !selectedSet ? "sel" : ""}" data-i="${i}">
-            <span class="nb-node"></span><span class="nb-name">${state === "locked" ? "???" : esc(m.concept)}</span>${dot}</li>`;
+            <span class="nb-node"></span><span class="nb-name">${state === "locked" ? "???" : esc(m.concept)}</span>${state === "next" ? `<span class="nb-now">AHORA</span>` : dot}</li>`;
         }
         html += `</ol>`;
         const sets = finishedSets().filter((t) => t.exercises[0].act === act.n);
@@ -68,9 +70,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
         }
         html += `</div>`;
       }
-      for (const f of FUTURE_ACTS) {
-        html += `<div class="nb-act future"><div class="nb-act-title">ACTO ${f.n} · ${esc(f.title)}</div><div class="nb-future">Próximamente: ${esc(f.topics)}</div></div>`;
-      }
+      html += storiesHtml();
       left.innerHTML = html;
       left.querySelectorAll<HTMLLIElement>(".nb-stop").forEach((li) => {
         li.onclick = () => {

@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { CHEAT } from "../game/cheats";
 import { TRAINING } from "../game/training";
+import { rankOf } from "../game/rank";
 import { VIEW_H, VIEW_W } from "../config";
 import { save, writeSave } from "../game/state";
 import { MISSIONS, type Line } from "../game/missions";
@@ -424,6 +425,7 @@ export class NetScene extends Phaser.Scene {
       }).join("")}</table>
       ${this.fin.closing ? `<div class="levelup"><small>NIVEL ALCANZADO</small><b>Desarrollador JavaScript junior</b><span>Nivel 1 de varios · el camino sigue</span></div>` : ""}
       ${this.fin.closing ? `<p>${MISSIONS.length} misiones resueltas · ${MISSIONS.filter((m) => (save.attempts[m.id] ?? 1) === 1 && !(save.hintsUsed[m.id] ?? 0)).length} perfectas. Todo lo aprendido sigue en tu cuaderno.</p>` : ""}
+      ${this.fin.closing ? "" : `<p class="newrank"><small>NUEVO RANGO</small>${esc(rankOf(save.done))}</p>`}
       <p>${esc(this.fin.teaser)}</p>
       <div class="row"><button class="btn primary back">${next ? `CONTINUAR: ACTO ${next}` : "VOLVER AL LABORATORIO"}</button><button class="btn menu">MENU PRINCIPAL</button></div>
     `;

@@ -20,6 +20,8 @@ import { setPauseHooks } from "../ui/pause";
 import { stageOf } from "../game/stage";
 import { settings } from "../game/settings";
 import { trainingBefore } from "../game/training";
+import { rankOf } from "../game/rank";
+import { showBadge } from "../ui/badge";
 
 // Medidas de la sala (en píxeles de arte, origen en la esquina superior del muro).
 const ROOM_W = 416;
@@ -719,6 +721,21 @@ export class LabScene extends Phaser.Scene {
       const info = ACTS[m.act - 1];
       await showCard(`Acto ${info.n} · ${info.title}`, `Berkeley, California · ${info.date}`);
       await this.talk(info.opening);
+      if (m.act > 1) {
+        // Kessler le da a Sam la credencial del rango nuevo
+        const lines: Record<number, string> = {
+          2: "Sam. Administración dice que ya no eres astrónomo. Toma tu tarjeta nueva.",
+          3: "Tarjeta nueva. Con esta puedes entrar en la sala de la VAX sin que Ruth te abra.",
+          4: "Te han subido de rango. No me preguntes quién lo firmó: fui yo.",
+          5: "El gobierno pidió que el responsable técnico tuviera un cargo. Ahora lo tienes.",
+          6: "Última tarjeta que te doy, Sam. La siguiente te la ganas fuera de este sótano.",
+        };
+        await this.talk([
+          { who: "kessler", text: lines[m.act] ?? "Tarjeta nueva, Sam." },
+          { who: "sam", text: `${rankOf(save.done)}. Suena serio.`, mood: "alegre" },
+        ]);
+        await showBadge();
+      }
       save.actIntro = m.act;
       save.introSeen = true;
       writeSave(save);

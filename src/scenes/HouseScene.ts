@@ -7,6 +7,7 @@ import { save, writeSave } from "../game/state";
 import { trainingById, type TrainingSet } from "../game/training";
 import { playDialog, isDialogOpen } from "../ui/dialog";
 import { openTerminal } from "../ui/terminal";
+import { openNotebook, isNotebookOpen } from "../ui/notebook";
 import { setClock, setObjective, setPrompt, hudVisible, setNotebookAction } from "../ui/hud";
 import { fadeOut, showCard } from "../ui/fade";
 import { setPauseHooks } from "../ui/pause";
@@ -88,7 +89,8 @@ export class HouseScene extends Phaser.Scene {
     const onKey = (ev: KeyboardEvent) => {
       if (ev.repeat) return;
       const t = ev.target as HTMLElement | null;
-      if (t && (t.closest(".term") || t.tagName === "BUTTON")) return;
+      if (t && (t.closest(".term") || t.closest(".notebook") || t.tagName === "BUTTON")) return;
+      if (ev.code === "KeyC") return void this.openCuaderno();
       if (["KeyE", "Space", "Enter"].includes(ev.code)) void this.interact();
     };
     window.addEventListener("keydown", onKey);
@@ -102,7 +104,7 @@ export class HouseScene extends Phaser.Scene {
       document.removeEventListener("visibilitychange", unstick);
       document.removeEventListener("fullscreenchange", unstick);
     });
-    setNotebookAction(null);
+    setNotebookAction(() => void this.openCuaderno());
     setPauseHooks(
       {
         freeze: (v) => {
@@ -114,6 +116,7 @@ export class HouseScene extends Phaser.Scene {
           await fadeOut();
           this.scene.start("lab", { mode: "title" });
         },
+        notebook: () => void this.openCuaderno(),
       },
       () => this.busy,
     );
@@ -463,8 +466,28 @@ export class HouseScene extends Phaser.Scene {
     this.scene.start("travel", { to: "lab", set: this.set.id });
   }
 
+  /** El cuaderno también se abre en casa de Margarita: es buen sitio para repasar. */
+  private async openCuaderno(): Promise<void> {
+    if (this.busy || isDialogOpen() || isNotebookOpen() || document.querySelector(".pause")) return;
+    this.busy = true;
+    this.player.anims.stop();
+    setPrompt(null);
+    await openNotebook({
+      practice: async (m, training) => {
+        this.input.keyboard!.enabled = false;
+        hudVisible(false);
+        await openTerminal(m, training ? { training } : { practice: true });
+        hudVisible(true);
+        this.input.keyboard!.enabled = true;
+        this.input.keyboard!.resetKeys();
+      },
+    });
+    this.lastClose = performance.now();
+    this.busy = false;
+  }
+
   private async interact(): Promise<void> {
-    if (this.busy || isDialogOpen()) return;
+    if (this.busy || isDialogOpen() || isNotebookOpen()) return;
     if (performance.now() - this.lastClose < 400) return;
     if (!this.near) return;
     sfx("select");

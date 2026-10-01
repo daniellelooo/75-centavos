@@ -93,3 +93,14 @@ describe("chuleta de fin de acto", () => {
     for (const m of MISSIONS) expect(CHEAT[m.id], m.id).toBeTruthy();
   });
 });
+
+describe("expediente de Sam", () => {
+  it("el rango sube al cerrar cada acto", async () => {
+    const { actsDone, rankOf, RANKS } = await import("../src/game/rank");
+    expect(actsDone(0)).toBe(0);
+    expect(actsDone(4)).toBe(0);
+    expect(actsDone(5)).toBe(1);
+    expect(actsDone(MISSIONS.length)).toBe(6);
+    expect(rankOf(MISSIONS.length)).toBe(RANKS[6]);
+  });
+});

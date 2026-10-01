@@ -18,7 +18,7 @@ export const isDialogOpen = () => open;
 
 const MOODS: Mood[] = ["normal", "sorpresa", "serio", "alegre"];
 
-function portraitStyle(who: Speaker, mood: Mood = "normal"): string | null {
+export function portraitStyle(who: Speaker, mood: Mood = "normal"): string | null {
   if (!(who in CHAR)) return null;
   const s = 2; // escala del retrato en píxeles de arte
   const col = Math.max(0, MOODS.indexOf(mood));
