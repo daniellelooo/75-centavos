@@ -13,7 +13,7 @@ export class BootScene extends Phaser.Scene {
       this.load.spritesheet(key, A + file, { frameWidth: w, frameHeight: h });
 
     this.load.spritesheet("kenney", A + "vendor/kenney_indoor.png", { frameWidth: 16, frameHeight: 16, spacing: 1 });
-    sheet("chars", "vendor/characters.png", 16, 24);
+    sheet("chars", "characters.png", 16, 24);
     sheet("floor", "floor.png", 16, 16);
     sheet("window", "window.png", 32, 26);
     sheet("terminal", "terminal.png", 18, 20);
@@ -26,9 +26,12 @@ export class BootScene extends Phaser.Scene {
     sheet("marker", "marker.png", 7, 8);
     sheet("net_icons", "net_icons.png", 11, 11);
     sheet("lamp", "lamp.png", 10, 14);
+    sheet("cat", "cat.png", 18, 12);
+    sheet("cooler", "cooler.png", 12, 26);
+    sheet("radio", "radio.png", 16, 10);
     for (const f of [
       "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
-      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug",
+      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "tapebox", "postit",
     ]) {
       this.load.image(f, A + f + ".png");
     }
@@ -52,6 +55,9 @@ export class BootScene extends Phaser.Scene {
     this.anims.create({ key: "term-on", frames: this.anims.generateFrameNumbers("terminal", { frames: [0, 1] }), frameRate: 2, repeat: -1 });
     this.anims.create({ key: "printer-run", frames: this.anims.generateFrameNumbers("printer", {}), frameRate: 4, repeat: -1 });
     this.anims.create({ key: "marker-bob", frames: this.anims.generateFrameNumbers("marker", {}), frameRate: 3, repeat: -1 });
+    this.anims.create({ key: "cat-sleep", frames: this.anims.generateFrameNumbers("cat", {}), frameRate: 1.2, repeat: -1 });
+    this.anims.create({ key: "cooler-bubble", frames: this.anims.generateFrameNumbers("cooler", {}), frameRate: 6, repeat: 3 });
+    this.anims.create({ key: "radio-play", frames: this.anims.generateFrameNumbers("radio", {}), frameRate: 3.5, repeat: -1 });
     this.scene.start("lab", { mode: "title" });
   }
 }

@@ -8,8 +8,11 @@ import { setClock, setObjective, setPrompt, hudVisible } from "../ui/hud";
 import { openBoard } from "../ui/board";
 import { showTitle } from "../ui/title";
 import { fadeOut, fadeIn, showCard } from "../ui/fade";
+import { showControls } from "../ui/hud";
 import { sfx } from "../audio/sfx";
-import { buildLighting, type Light } from "./lighting";
+import { buildLighting, buildDaylight, type Light } from "./lighting";
+import { startMusic, stopMusic, isMusicOn } from "../audio/music";
+import { isMuted } from "../audio/sfx";
 
 // Medidas de la sala (en píxeles de arte, origen en la esquina superior del muro).
 const ROOM_W = 416;
@@ -43,6 +46,9 @@ export class LabScene extends Phaser.Scene {
   private marker!: Phaser.GameObjects.Sprite;
   private cork!: Phaser.GameObjects.Image;
   private coffee!: Phaser.GameObjects.Sprite;
+  private radio!: Phaser.GameObjects.Sprite;
+  private cooler!: Phaser.GameObjects.Sprite;
+  private catTalks = 0;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private busy = false;
   private stepTimer = 0;
@@ -84,18 +90,32 @@ export class LabScene extends Phaser.Scene {
           { x: 104, y: 66, r: 34, color: [255, 230, 160], power: 0.8 },
         ]
       : [];
-    if (this.night) buildLighting(this, ROOM_W, ROOM_H, lights);
+    if (this.night) {
+      lights.push({ x: 397, y: 98, r: 14, color: [255, 210, 80], power: isMusicOn() ? 0.6 : 0 });
+      lights.push({ x: 372, y: 116, r: 12, color: [120, 190, 255], power: 0.45 });
+      buildLighting(this, ROOM_W, ROOM_H, lights);
+    } else {
+      buildDaylight(this, [
+        { x: 40, w: 32 },
+        { x: 286, w: 32 },
+      ]);
+    }
 
     this.marker = this.add.sprite(0, 0, "marker").play("marker-bob").setDepth(20000).setVisible(false);
 
     const kb = this.input.keyboard!;
     kb.disableGlobalCapture();
     this.keys = kb.addKeys("W,A,S,D,UP,DOWN,LEFT,RIGHT,E,SPACE,ENTER", false) as Record<string, Phaser.Input.Keyboard.Key>;
+    // La interacción escucha la ventana directamente: si Phaser se pierde un keyup
+    // mientras la terminal está abierta, la siguiente E no se tragaría.
     const onKey = (ev: KeyboardEvent) => {
-      if (["KeyE", "Space", "Enter"].includes(ev.code)) void this.interact();
+      if (ev.repeat || !["KeyE", "Space", "Enter"].includes(ev.code)) return;
+      const t = ev.target as HTMLElement | null;
+      if (t && (t.closest(".term") || t.tagName === "BUTTON")) return;
+      void this.interact();
     };
-    kb.on("keydown", onKey);
-    this.events.once("shutdown", () => kb.off("keydown", onKey));
+    window.addEventListener("keydown", onKey);
+    this.events.once("shutdown", () => window.removeEventListener("keydown", onKey));
 
     if (this.mode === "title") {
       hudVisible(false);
@@ -229,6 +249,41 @@ export class LabScene extends Phaser.Scene {
     // --- alfombra
     this.img("rug", 176, 140).setDepth(1);
 
+    // --- Byte, la gata, durmiendo en la alfombra
+    this.add.sprite(199, 149, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
+    this.solid(200, 153, 17, 8);
+
+    // --- telescopio de Sam junto a la ventana
+    this.prop("telescope", 38, 38);
+    this.solid(42, 62, 12, 6);
+
+    // --- bebedero
+    this.cooler = this.add.sprite(366, 100, "cooler", 0).setOrigin(0, 0).setDepth(100 + 126);
+    this.solid(366, 118, 12, 8);
+
+    // --- radio sobre los archivadores
+    this.radio = this.add.sprite(389, 93, "radio", 0).setOrigin(0, 0).setDepth(100 + 130);
+    if (isMusicOn()) this.radio.play("radio-play");
+
+    // --- perchero con la bufanda de Sam
+    this.prop("coatrack", 232, 192);
+    this.solid(234, 216, 10, 6);
+
+    // --- cajas de cintas de respaldo
+    this.prop("tapebox", 352, 196);
+    this.prop("tapebox", 368, 198);
+    this.prop("tapebox", 360, 185).setDepth(100 + 212);
+    this.solid(352, 202, 32, 14);
+
+    // --- nota adhesiva en la terminal de Sam
+    this.img("postit", 79, 61).setDepth(100 + 97);
+
+    // --- de noche, la bicicleta con la que volvió Sam
+    if (this.night) {
+      this.prop("bicycle", 128, 200);
+      this.solid(130, 212, 32, 8);
+    }
+
     this.defineInteractables();
   }
 
@@ -240,6 +295,10 @@ export class LabScene extends Phaser.Scene {
       this.npcs.kessler = this.add.sprite(261, 48, "chars", charFrame("kessler", "down")).setOrigin(0.5, 1);
       this.solid(231, 94, 14, 8);
       this.solid(254, 40, 14, 10);
+      // respiración: un píxel arriba y abajo, cada uno a su ritmo
+      [this.npcs.ruth, this.npcs.kessler].forEach((n, i) =>
+        this.tweens.add({ targets: n, y: n!.y - 1, duration: 700 + i * 260, yoyo: true, repeat: -1, ease: "Stepped", delay: i * 300 }),
+      );
       // Ruth mira alrededor de vez en cuando
       this.time.addEvent({
         delay: 3200,
@@ -377,6 +436,83 @@ export class LabScene extends Phaser.Scene {
         use: () => say([{ who: "narrador", text: "Agosto de 1986. Alguien rodeó en rojo el día de cierre de cuentas." }]),
       },
       {
+        id: "cat",
+        x: 208, y: 168, r: 18,
+        label: () => "Acariciar a Byte",
+        use: () => {
+          sfx("meow");
+          const day = [
+            "Byte, la gata del laboratorio. Llegó sola en 1984 y nadie se atrevió a echarla.",
+            "Byte ronronea. Ruth dice que es la única que entiende la VAX.",
+            "Byte estira una pata y vuelve a dormirse. Envidiable.",
+          ];
+          const night = [
+            "Byte abre un ojo. Ella también lo oyó.",
+            "Byte no se ha movido de la alfombra. Es la única que no está nerviosa.",
+          ];
+          const pool = this.night ? night : day;
+          return say([{ who: "narrador", text: pool[this.catTalks++ % pool.length] }]);
+        },
+      },
+      {
+        id: "telescope",
+        x: 48, y: 74, r: 14,
+        label: () => "Mirar por el telescopio",
+        use: () =>
+          say(
+            this.night
+              ? [
+                  { who: "sam", text: "Saturno, bajito sobre las colinas. Los anillos caben en la punta de un dedo." },
+                  { who: "sam", text: "Su luz tarda ochenta minutos en llegar. La de hunter, menos de un segundo." },
+                ]
+              : [{ who: "sam", text: "Mi telescopio. Lo traje del observatorio cuando se acabó la beca. De día solo apunta al campanario." }],
+          ),
+      },
+      {
+        id: "cooler",
+        x: 372, y: 132, r: 12,
+        label: () => "Beber agua",
+        use: () => {
+          sfx("water");
+          this.cooler.play("cooler-bubble");
+          return say([{ who: "sam", text: "Agua fría. Lo único en este sótano que no cobra por segundo." }]);
+        },
+      },
+      {
+        id: "radio",
+        x: 397, y: 134, r: 12,
+        label: () => (isMusicOn() ? "Apagar la radio" : "Encender la radio"),
+        use: () => {
+          sfx("click");
+          if (isMusicOn()) {
+            stopMusic();
+            this.radio.anims.stop();
+            this.radio.setFrame(0);
+          } else if (!isMuted()) {
+            startMusic();
+            this.radio.play("radio-play");
+          }
+        },
+      },
+      {
+        id: "coatrack",
+        x: 238, y: 214, r: 12,
+        label: () => "Mirar el perchero",
+        use: () => say([{ who: "sam", text: "La bufanda que me tejió mi madre. Roja, de lana. En agosto. En California." }]),
+      },
+      {
+        id: "tapes",
+        x: 368, y: 196, r: 14,
+        label: () => "Revisar las cintas",
+        use: () => say([{ who: "narrador", text: "Cintas de respaldo, una por día. Cada noche la VAX copia todo lo que pasó. Todo." }]),
+      },
+      {
+        id: "bicycle",
+        x: 146, y: 206, r: 16,
+        label: () => (this.night ? "Mirar la bicicleta" : null),
+        use: () => say([{ who: "sam", text: "Doce minutos colina abajo a las dos y media de la madrugada. Nunca había pedaleado tan rápido." }]),
+      },
+      {
         id: "exit",
         x: 208, y: 220, r: 14,
         label: () => (save.done >= 4 || current() ? "Salida" : null),
@@ -390,7 +526,7 @@ export class LabScene extends Phaser.Scene {
   private async startGame(fresh: boolean): Promise<void> {
     await fadeOut();
     if (fresh) {
-      Object.assign(save, { done: 0, briefed: false, drafts: {}, hintsUsed: {}, introSeen: false, actComplete: false });
+      Object.assign(save, { done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actComplete: false });
       writeSave(save);
     }
     this.scene.restart({ mode: "play" });
@@ -407,6 +543,7 @@ export class LabScene extends Phaser.Scene {
       ]);
       save.introSeen = true;
       writeSave(save);
+      showControls();
     } else if (this.night && save.done === 4) {
       await showCard("02:47", "La misma noche");
     }
@@ -491,6 +628,7 @@ export class LabScene extends Phaser.Scene {
     const solved = await openTerminal(m);
     this.lastClose = performance.now();
     this.input.keyboard!.enabled = true;
+    this.input.keyboard!.resetKeys();
     hudVisible(true);
     this.busy = false;
     if (!solved) return;
@@ -525,6 +663,13 @@ export class LabScene extends Phaser.Scene {
     if (performance.now() - this.lastClose < 400) return;
     if (!this.near) return;
     sfx("select");
+    const dx = this.near.x - this.player.x;
+    const dy = this.near.y - this.player.y;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      this.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : dy < 0 ? "up" : "down";
+      this.player.anims.stop();
+      this.player.setFrame(charFrame("sam", this.facing));
+    }
     await this.near.use();
     this.lastClose = performance.now();
     this.refreshObjective();

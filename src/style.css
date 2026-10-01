@@ -159,7 +159,7 @@ html, body {
   width: calc(40 * var(--u));
   height: calc(40 * var(--u));
   background-color: #2b3a63;
-  background-image: url("/assets/vendor/characters.png");
+  background-image: url("/assets/characters.png");
   background-repeat: no-repeat;
   image-rendering: pixelated;
   box-shadow: inset 0 0 0 var(--u) #000, inset 0 0 0 calc(2 * var(--u)) #3e3a5c;
@@ -517,3 +517,22 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+.hud-controls {
+  position: absolute;
+  left: 50%;
+  bottom: calc(26 * var(--u));
+  transform: translateX(-50%);
+  padding: calc(4 * var(--u)) calc(8 * var(--u));
+  font-size: calc(7 * var(--u));
+  pointer-events: none;
+  white-space: nowrap;
+  animation: fadein 0.4s steps(4) both;
+  transition: opacity 0.6s steps(6);
+}
+.hud-controls .key { margin-left: calc(2 * var(--u)); }
+.hud-controls.out { opacity: 0; }
+.endcard table.stats { border-collapse: collapse; font-family: var(--font-crt); font-size: calc(8.5 * var(--u)); color: #c9d3ea; }
+.endcard table.stats td { padding: 0 calc(5 * var(--u)) 0 0; }
+.endcard table.stats td:last-child { color: var(--amber-2); }
+.endcard table.stats td.gold { color: var(--amber); text-shadow: 0 0 calc(3 * var(--u)) rgba(254, 208, 24, 0.6); }

@@ -1,8 +1,12 @@
 // La terminal: misión a la izquierda, editor real de JavaScript a la derecha.
 import { EditorView, basicSetup } from "codemirror";
 import { keymap, Decoration, type DecorationSet } from "@codemirror/view";
-import { StateEffect, StateField } from "@codemirror/state";
-import { javascript } from "@codemirror/lang-javascript";
+import { StateEffect, StateField, Prec } from "@codemirror/state";
+import { acceptCompletion, completionStatus } from "@codemirror/autocomplete";
+import { indentWithTab } from "@codemirror/commands";
+import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
+import { MISSIONS } from "../game/missions";
+import { vocabFor } from "../game/vocab";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import type { Mission } from "../game/missions";
@@ -72,7 +76,7 @@ export function openTerminal(mission: Mission): Promise<boolean> {
     right.innerHTML = `
       <div class="head"><span>SAM@LBL-VAX:~$ editor</span><span class="tag">JAVASCRIPT</span></div>
       <div class="editor-wrap"></div>
-      <div class="actions"><button class="btn primary run-btn">EJECUTAR</button><span class="shortcut">Ctrl + Enter</span></div>
+      <div class="actions"><button class="btn primary run-btn">EJECUTAR</button><span class="shortcut">Tab autocompleta · Ctrl + Enter ejecuta</span></div>
       <div class="console"><span class="muted">Escribe tu código y pulsa EJECUTAR.</span></div>
     `;
     ui.append(root);
@@ -109,6 +113,9 @@ export function openTerminal(mission: Mission): Promise<boolean> {
       extensions: [
         basicSetup,
         javascript(),
+        javascriptLanguage.data.of({ autocomplete: vocabFor(MISSIONS.indexOf(mission)) }),
+        Prec.highest(keymap.of([{ key: "Tab", run: acceptCompletion }])),
+        keymap.of([indentWithTab]),
         syntaxHighlighting(amber),
         errorLineField,
         keymap.of([{ key: "Mod-Enter", run: () => (void run(), true) }]),
@@ -137,6 +144,8 @@ export function openTerminal(mission: Mission): Promise<boolean> {
       running = true;
       runBtn.disabled = true;
       sfx("run");
+      save.attempts[mission.id] = (save.attempts[mission.id] ?? 0) + 1;
+      writeSave(save);
       view.dispatch({ effects: setErrorLine.of(null) });
       consoleBox.innerHTML = `<div class="muted">ejecutando...</div>`;
       const code = view.state.doc.toString();
@@ -207,6 +216,8 @@ export function openTerminal(mission: Mission): Promise<boolean> {
 
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "Escape") {
+        // Con el menú de sugerencias abierto, Escape solo cierra el menú.
+        if (completionStatus(view.state) !== null) return;
         e.preventDefault();
         close(solved);
       }

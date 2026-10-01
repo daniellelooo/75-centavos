@@ -75,3 +75,59 @@ export function buildLighting(scene: Phaser.Scene, w: number, h: number, lights:
     scene.textures.remove("lightmap-glow");
   });
 }
+
+/**
+ * Rayos de sol que entran por las ventanas y caen en diagonal sobre el suelo,
+ * con el mismo tramado que la luz nocturna y motas de polvo flotando.
+ */
+export function buildDaylight(scene: Phaser.Scene, windows: { x: number; w: number }[]): void {
+  const W = 416, H = 232;
+  const tex = scene.textures.createCanvas("daylight", W, H)!;
+  const ctx = tex.getContext();
+  const img = ctx.createImageData(W, H);
+  const top = 30, len = 92, slant = 0.55;
+  for (let y = top; y < top + len; y++) {
+    const t = (y - top) / len;
+    const fall = Math.pow(1 - t, 1.3);
+    for (const win of windows) {
+      const x0 = win.x + (y - top) * slant;
+      for (let x = Math.floor(x0); x < x0 + win.w + t * 10; x++) {
+        if (x < 0 || x >= W) continue;
+        // los parteluces de la ventana dejan sombras en el rayo
+        const rel = x - x0;
+        if (Math.abs(rel - win.w / 2) < 1.2) continue;
+        const v = quant(0.55 * fall, x, y);
+        if (v <= 0) continue;
+        const i = (y * W + x) * 4;
+        img.data[i] = 255;
+        img.data[i + 1] = 236;
+        img.data[i + 2] = 180;
+        img.data[i + 3] = Math.round(70 * v);
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  tex.refresh();
+  scene.add.image(0, 0, "daylight").setOrigin(0, 0).setDepth(9000).setBlendMode(Phaser.BlendModes.ADD);
+
+  // motas de polvo
+  for (const win of windows) {
+    for (let n = 0; n < 7; n++) {
+      const y = top + 6 + Math.random() * (len - 20);
+      const x = win.x + (y - top) * slant + Math.random() * win.w;
+      const mote = scene.add.rectangle(Math.round(x), Math.round(y), 1, 1, 0xfff4c9, 0.8).setDepth(9001);
+      scene.tweens.add({
+        targets: mote,
+        x: mote.x + 6 + Math.random() * 8,
+        y: mote.y + 10 + Math.random() * 14,
+        alpha: { from: 0, to: 0.9 },
+        duration: 3500 + Math.random() * 3000,
+        yoyo: true,
+        repeat: -1,
+        delay: Math.random() * 3000,
+        ease: "Sine.InOut",
+      });
+    }
+  }
+  scene.events.once("shutdown", () => scene.textures.remove("daylight"));
+}

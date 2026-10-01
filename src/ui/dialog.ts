@@ -19,7 +19,7 @@ function portraitStyle(who: Speaker): string | null {
   const s = 2; // escala del retrato en píxeles de arte
   const row = CHAR[who] * 4; // fila "mirando abajo"
   return [
-    `background-size: calc(${64 * s} * var(--u)) calc(${1440 * s} * var(--u))`,
+    `background-size: calc(${64 * s} * var(--u)) calc(${288 * s} * var(--u))`,
     `background-position: calc(${4} * var(--u)) calc(${-(row * 24 * s) + 1} * var(--u))`,
   ].join(";");
 }

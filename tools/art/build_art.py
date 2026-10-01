@@ -511,6 +511,165 @@ def rug():
     return c
 
 
+def cat(frame):
+    """Byte, la gata atigrada del laboratorio, dormida y enroscada."""
+    c = Canvas(18, 12)
+    rows = [
+        "..k...k...........",
+        ".kCk.kCk..kkkkk...",
+        ".kCCkCCk.kCMCCMkk.",
+        "kCCCCCCCkCCCMCCCCk",
+        "kCkkCkkCCCCCCCMCCk",
+        "kCCCRCCCMCCCCCCMCk",
+        ".kcccCCCCCMCCCCCck",
+        "..kcckCCCCCCCMCcck",
+        ".kCMCCMCCCCCCCCcck",
+        "kCCkkkkkCCCCCcccck",
+        ".kk.....kkkkkkkkk.",
+    ]
+    if frame:
+        # respira: el lomo sube un píxel y la cola cambia
+        rows = rows[1:] + ["................"]
+        rows[0] = ".kCk.kCk..kkkkk..."
+        rows = ["..k...k..kkkkk...."] + rows[:-1]
+        rows[8] = "kCCkkkkCCCCCcccck."
+    for y, r in enumerate(rows):
+        for x, ch in enumerate(r[:18]):
+            if ch != ".":
+                c.put(x, y + 1, ch)
+    return c
+
+
+def telescope():
+    c = Canvas(18, 30)
+    # tubo inclinado hacia la ventana (arriba a la izquierda)
+    for t in range(13):
+        x, y = 2 + t, 2 + int(t * 0.75)
+        c.put(x, y, "k")
+        c.put(x, y + 1, "y" if t < 11 else "A")
+        c.put(x, y + 2, "A")
+        c.put(x, y + 3, "k")
+    c.rect(1, 1, 3, 5, "k")
+    c.rect(2, 2, 1, 3, "U")  # lente
+    c.rect(14, 11, 3, 3, "k")
+    c.put(15, 12, "y")
+    # montura y trípode de madera
+    c.rect(8, 9, 3, 3, "k")
+    c.put(9, 10, "G")
+    for t in range(16):
+        c.put(9 - t // 3, 12 + t, "D")
+        c.put(9, 12 + t, "d")
+        c.put(9 + t // 3, 12 + t, "D")
+    c.hline(4, 29, 11, "k")
+    return c
+
+
+def water_cooler(frame):
+    c = Canvas(12, 26)
+    # garrafa azul
+    c.box(2, 0, 8, 10, "U", "k")
+    c.rect(3, 3, 6, 6, "u")
+    c.put(4, 4, "W")
+    if frame:
+        c.put(6, 7, "W")
+        c.put(5, 5, "W")
+    else:
+        c.put(7, 6, "W")
+    c.rect(4, 10, 4, 1, "k")
+    # cuerpo
+    c.box(0, 11, 12, 15, "w", "k")
+    c.hline(1, 12, 10, "W")
+    c.rect(2, 14, 8, 4, "s")
+    c.put(3, 15, "r")
+    c.put(8, 15, "u")
+    c.hline(1, 24, 10, "H")
+    return c
+
+
+def coat_rack():
+    c = Canvas(14, 32)
+    c.vline(6, 3, 27, "D")
+    c.vline(7, 3, 27, "d")
+    c.ascii(2, 0, ["..kkkkk...", ".kDdddDk..", "kDk...kDk."])
+    # bufanda roja de Sam y abrigo
+    c.box(3, 4, 8, 14, "C", "k")
+    c.vline(4, 5, 12, "M")
+    c.rect(5, 6, 4, 3, "r")
+    c.rect(5, 9, 2, 7, "r")
+    c.hline(5, 15, 2, "R")
+    c.hline(2, 30, 10, "k")
+    c.hline(3, 29, 8, "D")
+    return c
+
+
+def bicycle():
+    c = Canvas(34, 20)
+    def wheel(cx, cy):
+        for t in range(0, 360, 8):
+            a = math.radians(t)
+            c.put(round(cx + 6 * math.cos(a)), round(cy + 6 * math.sin(a)), "k")
+            c.put(round(cx + 5 * math.cos(a)), round(cy + 5 * math.sin(a)), "s")
+        c.put(cx, cy, "H")
+        for t in (0, 60, 120):
+            a = math.radians(t)
+            for r in range(1, 5):
+                c.put(round(cx + r * math.cos(a)), round(cy + r * math.sin(a)), "h")
+                c.put(round(cx - r * math.cos(a)), round(cy - r * math.sin(a)), "h")
+    wheel(7, 13)
+    wheel(26, 13)
+    # cuadro rojo
+    for t in range(12):
+        c.put(7 + t, 13 - t // 2, "r")
+        c.put(14 + t, 8, "r") if t < 9 else None
+        c.put(19 + t // 2, 8 + t // 2, "r") if t < 10 else None
+    for t in range(6):
+        c.put(14, 8 + t // 1, "r") if t < 6 else None
+    c.hline(11, 5, 6, "k")  # sillín
+    c.hline(22, 4, 4, "k")  # manillar
+    c.vline(23, 4, 5, "g")
+    return c
+
+
+def radio(frame):
+    c = Canvas(16, 10)
+    c.box(0, 1, 16, 9, "g", "k")
+    c.hline(4, 0, 8, "k")  # asa
+    c.hline(1, 2, 14, "G")
+    for i, cx in enumerate((4, 11)):
+        r = 2 + (1 if frame and i == 0 else 0)
+        c.disc(cx, 5, 2, "k")
+        c.disc(cx, 5, 1, "s" if not frame else "K")
+    c.rect(7, 3, 2, 3, "k")
+    c.put(7, 4, "y" if frame else "m")
+    c.hline(6, 7, 4, "h")
+    return c
+
+
+def tape_box():
+    c = Canvas(16, 14)
+    c.box(0, 2, 16, 12, "O", "k")
+    c.hline(1, 3, 14, "c")
+    c.rect(1, 2, 14, 1, "o")
+    c.vline(8, 3, 10, "o")
+    c.rect(3, 6, 4, 3, "x")
+    c.hline(4, 7, 2, "h")
+    # cintas asomando
+    c.disc(5, 2, 2, "k")
+    c.disc(5, 2, 1, "G")
+    c.disc(11, 2, 2, "k")
+    c.disc(11, 2, 1, "G")
+    return c
+
+
+def postit():
+    c = Canvas(4, 4)
+    c.rect(0, 0, 4, 4, "y")
+    c.hline(0, 3, 4, "A")
+    c.put(1, 1, "m")
+    c.put(2, 1, "m")
+    return c
+
+
 def desk_lamp(on):
     c = Canvas(10, 14)
     c.ascii(0, 0, [
@@ -711,6 +870,14 @@ def main():
     save("mug", mug())
     save("desk", desk())
     save("rug", rug())
+    save("cat", strip([cat(0), cat(1)]))
+    save("telescope", telescope())
+    save("cooler", strip([water_cooler(0), water_cooler(1)]))
+    save("coatrack", coat_rack())
+    save("bicycle", bicycle())
+    save("radio", strip([radio(0), radio(1)]))
+    save("tapebox", tape_box())
+    save("postit", postit())
     save("chair", chair())
     save("table", small_table())
     save("lamp", strip([desk_lamp(False), desk_lamp(True)]))

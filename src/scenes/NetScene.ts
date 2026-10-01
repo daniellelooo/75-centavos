@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { VIEW_H, VIEW_W } from "../config";
 import { save, writeSave } from "../game/state";
+import { MISSIONS } from "../game/missions";
 import { playDialog } from "../ui/dialog";
 import { fadeIn, fadeOut } from "../ui/fade";
 import { el, esc, ui, wait } from "../ui/dom";
@@ -207,6 +208,12 @@ export class NetScene extends Phaser.Scene {
       <h2>ACTO 1 COMPLETADO</h2>
       <p>Empezaste sin saber programar. Ya sabes:</p>
       <ul><li>let</li><li>+ - * /</li><li>textos y \`\${}\`</li><li>if / else</li><li>for</li><li>console.log</li></ul>
+      <table class="stats">${MISSIONS.map((m) => {
+        const a = save.attempts[m.id] ?? 1;
+        const h = save.hintsUsed[m.id] ?? 0;
+        const star = a === 1 && h === 0 ? "PERFECTO" : h === 0 ? "SIN PISTAS" : `${h} PISTA${h > 1 ? "S" : ""}`;
+        return `<tr><td>${esc(m.title)}</td><td>${a} intento${a > 1 ? "s" : ""}</td><td class="${a === 1 && h === 0 ? "gold" : ""}">${star}</td></tr>`;
+      }).join("")}</table>
       <p>Próximamente — Acto 2, "La trampa": arrays, funciones y un archivo falso para que el intruso muerda el anzuelo.</p>
       <div class="row"><button class="btn primary back">VOLVER AL LABORATORIO</button><button class="btn menu">MENU PRINCIPAL</button></div>
     `;

@@ -11,6 +11,8 @@ export interface SaveData {
   drafts: Record<string, string>;
   /** Pistas usadas por misión (para el resumen final). */
   hintsUsed: Record<string, number>;
+  /** Veces que se pulsó EJECUTAR por misión. */
+  attempts: Record<string, number>;
   introSeen: boolean;
   actComplete: boolean;
 }
@@ -18,7 +20,7 @@ export interface SaveData {
 const KEY = "75centavos.save.v1";
 
 export function freshSave(): SaveData {
-  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, introSeen: false, actComplete: false };
+  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actComplete: false };
 }
 
 export function loadSave(): SaveData | null {

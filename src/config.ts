@@ -4,8 +4,8 @@ export const VIEW_W = 480;
 export const VIEW_H = 270;
 export const TILE = 16;
 
-/** Índices de personaje dentro de vendor/characters.png (pack de piano_no_renshu). */
-export const CHAR = { sam: 5, ruth: 8, kessler: 12 } as const;
+/** Índices de personaje dentro de assets/characters.png (tools/art/characters.py). */
+export const CHAR = { sam: 0, ruth: 1, kessler: 2 } as const;
 export type CharName = keyof typeof CHAR;
 
 /** Fila de la hoja de cada dirección. */
