@@ -51,6 +51,10 @@ interface Finale {
   learned: string[];
   teaser: string;
   next?: number;
+  /** Final de la historia: todos los nodos se cierran en verde. */
+  closing?: boolean;
+  /** Epílogo tras el diálogo (líneas de narrador). */
+  epilogue?: Line[];
 }
 
 const ROUTE = (t: string[]): Hop[] => [
@@ -104,7 +108,59 @@ const FINALES: Record<number, Finale> = {
       { who: "sam", text: "No trabaja solo. Vende lo que encuentra. Y alguien paga.", mood: "serio" },
     ],
     learned: ["{ objetos }", ".propiedad", "arrays de objetos", "filter", "map", "=>", "for...of", "+="],
-    teaser: "Próximamente — Acto 4, \"El comprador\": alcance y closures.",
+    teaser: "Acto 4, \"El comprador\": alcance y closures para seguir el dinero.",
+    next: 4,
+  },
+  4: {
+    hops: [...ROUTE(["02:10", "02:11", "02:11", "02:12"]), { ll: [9.2, 52.8], label: "ALEMANIA OCC.", log: "02:30  el intento viene de Alemania", kind: 0, dy: -10 }],
+    inset: {
+      nodes: [
+        { x: 70, y: 46, label: "HANNOVER", kind: 0, log: "02:41  Hannover: intento bloqueado" },
+        { x: 106, y: 26, label: "BERLÍN ESTE", kind: 3, log: "02:44  los pagos salen de Berlín Este" },
+      ],
+    },
+    dialog: [
+      { who: "sam", text: "Hannover roba, Berlín Este paga. Y nuestra VAX era la puerta de entrada.", mood: "serio" },
+      { who: "ruth", text: "Esto ya no es cosa de un laboratorio, Sam." },
+      { who: "sam", text: "Entonces necesitamos que todos trabajen juntos. Y que lo entiendan igual." },
+    ],
+    learned: ["alcance { }", "closures", "funciones que crean funciones", ".includes()", "estado privado"],
+    teaser: "Acto 5, \"La conexión\": clases y this para coordinar la redada.",
+    next: 5,
+  },
+  5: {
+    hops: [...ROUTE(["21:45", "21:46", "21:46", "21:47"]), { ll: [9.2, 52.8], label: "ALEMANIA OCC.", log: "22:00  la línea sigue abierta", kind: 0, dy: -10 }],
+    inset: {
+      nodes: [
+        { x: 30, y: 22, label: "BREMEN", kind: 0, log: "22:04  Bremen: línea estable" },
+        { x: 70, y: 46, label: "HANNOVER", kind: 3, log: "22:09  CORTE EN ORIGEN: REDADA" },
+      ],
+    },
+    dialog: [
+      { who: "kessler", text: "Llamó la policía alemana. Dos detenidos en Hannover. Uno de ellos firmaba como hunter.", mood: "serio" },
+      { who: "ruth", text: "Se acabó.", mood: "alegre" },
+      { who: "sam", text: "No del todo. Sus puertas traseras siguen abiertas en media red.", mood: "serio" },
+    ],
+    learned: ["class", "constructor", "this", "métodos", "extends", "super", ".shift()"],
+    teaser: "Acto 6, \"Tiempo real\": promesas, async y await para cerrar la última puerta.",
+    next: 6,
+  },
+  6: {
+    hops: [...ROUTE(["03:33", "03:33", "03:33", "03:33"]), { ll: [9.2, 52.8], label: "ALEMANIA OCC.", log: "03:33  todas las respuestas a la vez", kind: 0, dy: -10 }],
+    closing: true,
+    dialog: [
+      { who: "ruth", text: "Todas cerradas. Ni una puerta abierta de Hannover a Berkeley.", mood: "alegre" },
+      { who: "kessler", text: "Sam. El decano quiere conocerte. Y quiere saber por qué el café cuesta lo que cuesta." },
+      { who: "sam", text: "Dígale que fueron setenta y cinco centavos muy bien invertidos.", mood: "alegre" },
+    ],
+    epilogue: [
+      { who: "narrador", text: "Años después hubo un juicio en Alemania. La historia real que inspiró este juego es todavía más extraña." },
+      { who: "narrador", text: "Ruth pidió vacaciones por primera vez en seis años. Byte se quedó con su silla." },
+      { who: "narrador", text: "Sam volvió al telescopio. Pero ya no miraba solo las estrellas: ahora también leía los registros." },
+      { who: "narrador", text: "Todo empezó por setenta y cinco centavos. Y por alguien que no quiso olvidarlos." },
+    ],
+    learned: ["setTimeout", "promesas", ".then()", "async / await", "try / catch", "Promise.all"],
+    teaser: "Fin de la historia principal. Inspirada en el caso real que un astrónomo de Berkeley destapó en 1986-87; personajes y nombres ficticios. Próximamente: nuevas historias con el DOM, eventos y módulos.",
   },
 };
 
@@ -258,9 +314,21 @@ export class NetScene extends Phaser.Scene {
     }
 
     if (this.fin.inset) await this.runInset(pts[pts.length - 1]);
+    if (this.fin.closing) {
+      // todas las puertas se cierran, una tras otra, en verde
+      for (let i = pts.length - 1; i >= 0; i--) {
+        const [x, y] = pts[i];
+        const ok = this.add.sprite(x, y, "net_icons", 4).setDepth(12);
+        this.tweens.add({ targets: ok, scale: { from: 2.4, to: 1 }, duration: 240, ease: "Back.Out" });
+        this.print(`03:34  ${HOPS[i].label}: puerta cerrada`, "#9be3a8");
+        sfx("success");
+        await wait(420);
+      }
+    }
 
-    // el intruso recorre la ruta en bucle
+    // el intruso recorre la ruta en bucle (salvo en el final: ya no queda nadie)
     const end = pts[pts.length - 1];
+    if (!this.fin.closing) {
     const dot = this.add.rectangle(end[0], end[1], 3, 3, 0xff2448).setDepth(11);
     const path = [...pts].reverse();
     const loop = async () => {
@@ -273,9 +341,15 @@ export class NetScene extends Phaser.Scene {
     };
     this.time.addEvent({ delay: 3000, loop: true, callback: () => void loop() });
     void loop();
+    }
 
     await wait(900);
     await playDialog(this.fin.dialog);
+    if (this.fin.epilogue) {
+      await fadeOut();
+      await playDialog(this.fin.epilogue);
+      await fadeIn();
+    }
 
     save.actComplete = true;
     writeSave(save);
@@ -328,7 +402,7 @@ export class NetScene extends Phaser.Scene {
     const next = this.fin.next;
     const c = el("div", "endcard pixel-frame");
     c.innerHTML = `
-      <h2>ACTO ${this.act} COMPLETADO</h2>
+      <h2>${this.fin.closing ? "HISTORIA COMPLETADA" : `ACTO ${this.act} COMPLETADO`}</h2>
       <p>${this.act === 1 ? "Empezaste sin saber programar. Ya sabes:" : "Nuevo en tu cuaderno:"}</p>
       <ul>${this.fin.learned.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>
       <table class="stats">${acts.map((m) => {
@@ -337,6 +411,7 @@ export class NetScene extends Phaser.Scene {
         const star = a === 1 && h === 0 ? "PERFECTO" : h === 0 ? "SIN PISTAS" : `${h} PISTA${h > 1 ? "S" : ""}`;
         return `<tr><td>${esc(m.title)}</td><td>${a} intento${a > 1 ? "s" : ""}</td><td class="${a === 1 && h === 0 ? "gold" : ""}">${star}</td></tr>`;
       }).join("")}</table>
+      ${this.fin.closing ? `<p>${MISSIONS.length} misiones resueltas · ${MISSIONS.filter((m) => (save.attempts[m.id] ?? 1) === 1 && !(save.hintsUsed[m.id] ?? 0)).length} perfectas. Todo lo aprendido sigue en tu cuaderno.</p>` : ""}
       <p>${esc(this.fin.teaser)}</p>
       <div class="row"><button class="btn primary back">${next ? `CONTINUAR: ACTO ${next}` : "VOLVER AL LABORATORIO"}</button><button class="btn menu">MENU PRINCIPAL</button></div>
     `;

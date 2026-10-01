@@ -1,5 +1,5 @@
 // Menú de pausa: música, efectos, pantalla completa, controles y salida.
-import { settings, saveSettings } from "../game/settings";
+import { settings, saveSettings, applyCrt } from "../game/settings";
 import { MISSIONS } from "../game/missions";
 import { save } from "../game/state";
 import { TRACKS, isMusicOn, setMusicVolume, setTrack, startMusic, stopMusic } from "../audio/music";
@@ -63,6 +63,7 @@ function render(): void {
     <div class="p-row" data-k="svol"><span>EFECTOS</span>${bar(settings.sfxVol)}</div>
     <div class="p-sep">PANTALLA</div>
     <div class="p-row" data-k="full"><span>PANTALLA COMPLETA</span><span>${document.fullscreenElement ? "SI" : "NO"}</span></div>
+    <div class="p-row" data-k="crt"><span>FILTRO CRT</span><span>${settings.crt ? "SI" : "NO"}</span></div>
     <div class="p-row" data-k="help"><span>CONTROLES</span><span></span></div>
     <div class="p-help hidden">
       <div><span class="key">WASD</span> o flechas: caminar</div>
@@ -125,6 +126,11 @@ function act(k: string, dir: number, click = false): void {
       closePause();
       hooks?.notebook?.();
       return;
+    case "crt":
+      settings.crt = !settings.crt;
+      saveSettings();
+      applyCrt();
+      break;
     case "help":
       root?.querySelector(".p-help")?.classList.toggle("hidden");
       sfx("select");

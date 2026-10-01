@@ -13,6 +13,7 @@ import { fadeOut, fadeIn, showCard } from "../ui/fade";
 import { showControls } from "../ui/hud";
 import { sfx } from "../audio/sfx";
 import { buildLighting, buildDaylight, type Light, type LightRig } from "./lighting";
+import { addSnow, addRain, addLightning, addXmasLights } from "./weather";
 import { startHum, setHum, stopHum } from "../audio/ambient";
 import { startMusic, stopMusic, isMusicOn } from "../audio/music";
 import { setPauseHooks } from "../ui/pause";
@@ -113,6 +114,18 @@ export class LabScene extends Phaser.Scene {
         { x: 40, w: 32 },
         { x: 286, w: 32 },
       ]);
+    }
+
+    // la época del año de cada acto
+    const act = Math.min(actOf(save.done), ACTS.length);
+    const windows = [{ x: 40, y: 3 }, { x: 286, y: 3 }];
+    if (this.mode === "play") {
+      if (act === 3) addXmasLights(this, 8, 408, 2, this.night);
+      if (act === 4) addSnow(this, windows, this.night);
+      if (act === 5) {
+        addRain(this, windows, this.night);
+        if (this.night) addLightning(this, ROOM_W, ROOM_H);
+      }
     }
 
     this.marker = this.add.sprite(0, 0, "marker").play("marker-bob").setDepth(20000).setVisible(false);
@@ -218,8 +231,10 @@ export class LabScene extends Phaser.Scene {
     this.add.rectangle(EXIT.x0, FLOOR_BOTTOM, 32, 8, 0x2e2a48).setOrigin(0, 0).setDepth(1);
 
     // --- en el muro
-    this.img("window", 40, 3, this.night ? 1 : 0).setDepth(3);
-    this.img("window", 286, 3, this.night ? 1 : 0).setDepth(3);
+    const cloudy = this.mode === "play" && [4, 5].includes(Math.min(actOf(save.done), ACTS.length));
+    const winFrame = (this.night ? 1 : 0) + (cloudy ? 2 : 0);
+    this.img("window", 40, 3, winFrame).setDepth(3);
+    this.img("window", 286, 3, winFrame).setDepth(3);
     this.img("poster", 84, 6).setDepth(3);
     this.cork = this.img("corkboard", 112, 5, 0).setDepth(3);
     this.img("clock", 160, 7).setDepth(3);
@@ -443,9 +458,7 @@ export class LabScene extends Phaser.Scene {
           say([
             {
               who: "sam",
-              text: this.night
-                ? "Las luces de Berkeley. En algún lugar, alguien está despierto con la misma pantalla que yo."
-                : "El campus en agosto. Hace dos semanas yo miraba galaxias. Hoy miro facturas.",
+              text: windowLine(Math.min(actOf(save.done), ACTS.length), this.night),
             },
           ]),
       },
@@ -541,7 +554,9 @@ export class LabScene extends Phaser.Scene {
         label: () => "Mirar por el telescopio",
         use: () =>
           say(
-            this.night
+            this.night && [4, 5].includes(Math.min(actOf(save.done), ACTS.length))
+              ? [{ who: "sam", text: "Nublado. Ni Saturno, ni la Luna, ni nada. Hoy solo hay pantallas." }]
+              : this.night
               ? [
                   { who: "sam", text: "Saturno, bajito sobre las colinas. Los anillos caben en la punta de un dedo." },
                   { who: "sam", text: "Su luz tarda ochenta minutos en llegar. La de hunter, menos de un segundo." },
@@ -761,6 +776,14 @@ export class LabScene extends Phaser.Scene {
     this.rig.repaint(this.lightSources);
   }
 
+  /** Polvo que levantan los pasos: dos píxeles que se desvanecen. */
+  private puff(x: number, y: number): void {
+    for (const dx of [-3, 3]) {
+      const p = this.add.rectangle(Math.round(x + dx), Math.round(y - 1), 1, 1, this.night ? 0x5c5c66 : 0xa89a7a, 0.8).setDepth(2);
+      this.tweens.add({ targets: p, y: p.y - 2, x: p.x + Math.sign(dx), alpha: 0, duration: 380, ease: "Stepped", easeParams: [3], onComplete: () => p.destroy() });
+    }
+  }
+
   /** Volutas de vapor que suben y se desvanecen. */
   private steam(x: number, y: number): void {
     this.time.addEvent({
@@ -869,6 +892,7 @@ export class LabScene extends Phaser.Scene {
       if (this.stepTimer > 0.26) {
         this.stepTimer = 0;
         sfx("step");
+        this.puff(this.player.x, this.player.y);
       }
     } else if (this.player.anims.isPlaying) {
       this.player.anims.stop();
@@ -896,29 +920,42 @@ export class LabScene extends Phaser.Scene {
 
 /** Lo que dicen Ruth y Kessler cuando no tienen un encargo para Sam. */
 function chatter(who: "ruth" | "kessler", m: Mission | undefined): Line {
-  const act = m?.act ?? 4;
+  const act = m?.act ?? 7;
   const pick = (opts: string[]) => opts[Math.floor(Math.random() * opts.length)];
-  if (who === "ruth") {
-    if (m && m.giver !== "ruth") return { who, text: m.giver === "kessler" ? "Kessler te estaba buscando. Pon cara de informe." : "La terminal es la de la izquierda. La que zumba." };
-    return {
-      who,
-      text: pick(
-        act === 1
-          ? ["La terminal es la de la izquierda. La que zumba.", "Si la VAX pita tres veces, no toques nada y llámame."]
-          : act === 2
-            ? ["Si tu función falla, no es personal. Casi nunca.", "Le puse nombre a la alarma: Pitufa."]
-            : ["Llevo tres días sin ver la luz del sol. Byte tampoco.", "El hombre del gobierno se bebió mi café. Dos veces."],
-      ),
-    };
-  }
-  return {
-    who,
-    text: pick(
-      act === 1
-        ? ["Sam, ¿verdad? El astrónomo. Que la factura cuadre y no tendremos que hablar mucho.", "Una semana, Sam. Y un informe que yo entienda."]
-        : act === 2
-          ? ["El decano pregunta por qué la factura de café se ha triplicado.", "Haz lo que tengas que hacer. Pero que no salga en el periódico."]
-          : ["Antes me molestaban 75 centavos. Ahora me llama gente que no dice su apellido.", "Sam. Buen trabajo. No se lo digas a nadie."],
-    ),
+  if (who === "ruth" && m && m.giver !== "ruth")
+    return { who, text: m.giver === "kessler" ? "Kessler te estaba buscando. Pon cara de informe." : "La terminal es la de la izquierda. La que zumba." };
+  const RUTH: Record<number, string[]> = {
+    1: ["La terminal es la de la izquierda. La que zumba.", "Si la VAX pita tres veces, no toques nada y llámame."],
+    2: ["Si tu función falla, no es personal. Casi nunca.", "Le puse nombre a la alarma: Pitufa."],
+    3: ["Llevo tres días sin ver la luz del sol. Byte tampoco.", "El hombre del gobierno se bebió mi café. Dos veces."],
+    4: ["¿Has visto la nieve? Yo tampoco: estoy aquí abajo contigo.", "Berlín Este. Nunca pensé que diría eso en un sótano de California."],
+    5: ["Aprendí tres palabras en alemán: danke, bitte y Datenleitung.", "Si la redada sale bien, me voy de vacaciones. Si sale mal, también."],
+    6: ["Todo lo que llega tarde llega igual. Menos el café: ese llega frío.", "Cuando esto acabe, quiero un trabajo aburrido. Muy aburrido."],
+    7: ["Duerme algo, Sam. Te lo has ganado."],
   };
+  const KESSLER: Record<number, string[]> = {
+    1: ["Sam, ¿verdad? El astrónomo. Que la factura cuadre y no tendremos que hablar mucho.", "Una semana, Sam. Y un informe que yo entienda."],
+    2: ["El decano pregunta por qué la factura de café se ha triplicado.", "Haz lo que tengas que hacer. Pero que no salga en el periódico."],
+    3: ["Antes me molestaban 75 centavos. Ahora me llama gente que no dice su apellido.", "Sam. Buen trabajo. No se lo digas a nadie."],
+    4: ["El gobierno quiere informes semanales. Yo quiero dormir semanalmente.", "Si alguien pregunta, aquí solo hacemos astronomía."],
+    5: ["Coordinar cuatro países por télex. Esto es peor que el comité de presupuestos.", "Mañana, a esta hora, o somos héroes o somos noticia."],
+    6: ["Me han pedido una charla sobre seguridad informática. A mí.", "Gracias, Sam. Lo digo una vez y no lo repito."],
+    7: ["La puerta de mi despacho está abierta. Literalmente: se rompió el pestillo."],
+  };
+  const pool = (who === "ruth" ? RUTH : KESSLER)[Math.min(act, 7)];
+  return { who, text: pick(pool) };
+}
+
+/** Lo que ve Sam por la ventana según el mes del acto. */
+function windowLine(act: number, night: boolean): string {
+  const lines: Record<number, [string, string]> = {
+    1: ["El campus en agosto. Hace dos semanas yo miraba galaxias. Hoy miro facturas.", "Las luces de Berkeley. En algún lugar, alguien está despierto con la misma pantalla que yo."],
+    2: ["Septiembre. Los estudiantes vuelven y no saben que su universidad es la puerta de un espía.", "Medianoche. La bahía está en calma. Nuestro intruso, no."],
+    3: ["Diciembre. Alguien colgó luces en la residencia de enfrente. Aquí, Ruth colgó las suyas.", "Luces de Navidad en las colinas. En Alemania ya es por la mañana."],
+    4: ["Está nevando en Berkeley. Los becarios salieron a hacer fotos. Nadie se lo cree.", "La nieve no hace ruido. La VAX, sí."],
+    5: ["Llueve desde hace tres días. Kessler dice que es buena señal. No sabe de qué.", "Lluvia y relámpagos. En Hannover está amaneciendo."],
+    6: ["Junio. El campus huele a hierba cortada y a final de curso.", "Una noche de verano con la ventana abierta. Casi parece una noche normal."],
+  };
+  const pair = lines[act] ?? lines[1];
+  return night ? pair[1] : pair[0];
 }

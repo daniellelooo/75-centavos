@@ -689,3 +689,15 @@ html, body {
 .nb-book { position: relative; }
 .nb-close { position: absolute; right: calc(10 * var(--u)); bottom: calc(-12 * var(--u)); background: #fffbe8; }
 .nb-empty { font-size: calc(8 * var(--u)); color: #6f7896; padding-top: calc(30 * var(--u)); text-align: center; }
+
+/* ------------------------------------------------------------ filtro CRT (opcional) */
+#game.crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0 calc(var(--u) * 0.34), transparent calc(var(--u) * 0.34) var(--u)),
+    radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.5) 100%);
+}
+#game.crt canvas { filter: saturate(1.08) contrast(1.04); }

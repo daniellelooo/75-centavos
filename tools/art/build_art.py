@@ -158,12 +158,29 @@ def wall_cap_h():
 
 # ---------------------------------------------------------------- ventana
 
-def window(night):
+def window(night, cloudy=False):
     c = Canvas(32, 26)
     c.box(0, 0, 32, 26, "l", "k")
     c.rect(1, 1, 30, 24, "B")
     c.rect(3, 3, 26, 19, "z" if night else "U")
-    if night:
+    if cloudy:
+        # cielo cubierto: sin estrellas, nubes en capas
+        for j in range(3, 22):
+            if night:
+                col = "Z" if j < 8 else ("v" if j < 14 else "s")
+            else:
+                col = "H" if j < 8 else ("h" if j < 14 else "G")
+            c.hline(3, j, 26, col)
+        for x, y, w in [(4, 5, 9), (16, 7, 11), (8, 11, 8)]:
+            c.hline(x, y, w, "v" if night else "w")
+        for i in range(3, 29):
+            top = 16 + int(2.2 * math.sin(i / 3.2)) + (1 if i % 5 == 0 else 0)
+            for j in range(top, 22):
+                c.put(i, j, "k" if night else "e")
+        if night:
+            for x, y in [(5, 19), (12, 18), (19, 19), (26, 18)]:
+                c.put(x, y, "A")
+    elif night:
         # degradado nocturno
         for j in range(3, 22):
             col = "z" if j < 9 else ("Z" if j < 15 else "v")
@@ -182,7 +199,7 @@ def window(night):
                 c.put(i, j, "k")
         for x, y in [(5, 19), (8, 20), (12, 18), (16, 20), (19, 19), (24, 20), (26, 18), (14, 21)]:
             c.put(x, y, "y")
-    else:
+    if not night and not cloudy:
         for j in range(3, 22):
             c.hline(3, j, 26, "U" if j < 12 else "u")
         for i in range(3, 29):
@@ -949,16 +966,22 @@ def dialog_frame():
 def network_icons():
     """Iconos del mapa de red: nodo, nodo alerta, nodo del intruso."""
     frames = []
-    for kind in ("node", "lab", "alert", "intruder"):
+    for kind in ("node", "lab", "alert", "intruder", "ok"):
         c = Canvas(11, 11)
-        col = {"node": "U", "lab": "y", "alert": "r", "intruder": "R"}[kind]
-        dark = {"node": "u", "lab": "A", "alert": "m", "intruder": "r"}[kind]
+        col = {"node": "U", "lab": "y", "alert": "r", "intruder": "R", "ok": "N"}[kind]
+        dark = {"node": "u", "lab": "A", "alert": "m", "intruder": "r", "ok": "n"}[kind]
         c.disc(5, 5, 4, "k")
         c.disc(5, 5, 3, dark)
         c.disc(5, 5, 2, col)
         c.put(4, 4, "W")
         if kind == "intruder":
             c.rect(3, 5, 5, 1, "k")
+        if kind == "ok":
+            c.put(3, 5, "k")
+            c.put(4, 6, "k")
+            c.put(5, 5, "k")
+            c.put(6, 4, "k")
+            c.put(7, 3, "k")
         frames.append(c)
     return strip(frames)
 
@@ -970,7 +993,7 @@ def main():
     save("wall", wall_tile())
     save("wall_cap_v", wall_cap_v())
     save("wall_cap_h", wall_cap_h())
-    save("window", strip([window(False), window(True)]))
+    save("window", strip([window(False), window(True), window(False, True), window(True, True)]))
     save("terminal", strip([terminal(0), terminal(1), terminal(0, off=True), terminal_alert(0), terminal_alert(1)]))
     save("vax_tape", strip([vax_tape(i) for i in range(6)]))
     save("vax_panel", strip([vax_panel(i) for i in range(4)]))

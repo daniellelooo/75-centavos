@@ -1,6 +1,9 @@
 import type { RunOutput } from "./sandbox";
+import { MISSIONS } from "./missions";
 
 const TIMEOUT_MS = 1500;
+/** El código asíncrono espera temporizadores y promesas: necesita más margen. */
+const ASYNC_TIMEOUT_MS = 6000;
 
 export type RunResult = { kind: "done"; outs: RunOutput[] } | { kind: "timeout" };
 
@@ -11,7 +14,7 @@ export function runMission(missionId: string, code: string): Promise<RunResult> 
     const timer = setTimeout(() => {
       worker.terminate();
       resolve({ kind: "timeout" });
-    }, TIMEOUT_MS);
+    }, MISSIONS.find((m) => m.id === missionId)?.async ? ASYNC_TIMEOUT_MS : TIMEOUT_MS);
     worker.onmessage = (ev: MessageEvent<RunOutput[]>) => {
       clearTimeout(timer);
       worker.terminate();

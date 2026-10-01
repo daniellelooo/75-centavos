@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MISSIONS } from "../src/game/missions";
-import { runSandboxed } from "../src/game/sandbox";
+import { runSandboxed, runSandboxedAsync } from "../src/game/sandbox";
 import { translateError } from "../src/game/errors";
 
 function play(id: string, code: string) {
@@ -9,14 +9,73 @@ function play(id: string, code: string) {
   return m.check(outs, m.cases);
 }
 
+async function playAny(id: string, code: string) {
+  const m = MISSIONS.find((x) => x.id === id)!;
+  if (!m.async) return play(id, code);
+  const outs = [];
+  for (const c of m.cases) outs.push(await runSandboxedAsync({ code, globals: c.globals(), capture: m.capture, probe: m.probe }));
+  return m.check(outs, m.cases);
+}
+
 describe("cada misión acepta su solución de referencia (última pista)", () => {
   for (const m of MISSIONS) {
-    it(m.id, () => {
-      const r = play(m.id, m.hints[m.hints.length - 1]);
+    it(m.id, async () => {
+      const r = await playAny(m.id, m.hints[m.hints.length - 1]);
       expect(r.feedback).toBeTruthy();
-      expect(r.pass).toBe(true);
+      expect(r.pass, r.feedback).toBe(true);
     });
   }
+});
+
+describe("actos 4 a 6: errores típicos", () => {
+  it("m16: el código original de Ruth falla con un error legible", () => {
+    const o = runSandboxed({ code: MISSIONS.find((m) => m.id === "m16")!.starter, globals: { llamadas: [1, 2] }, capture: ["total"] });
+    expect(o.ok).toBe(false);
+  });
+  it("m16: total dentro del bucle", async () => {
+    const r = await playAny("m16", "let total;\nfor (let i = 0; i < llamadas.length; i++) { total = 0; total += llamadas[i]; }\nconsole.log(total);");
+    expect(r.feedback).toMatch(/última llamada/);
+  });
+  it("m17: cuenta compartida entre contadores", async () => {
+    const r = await playAny("m17", "let cuenta = 0;\nfunction crearContador() { return function () { cuenta++; return cuenta; }; }");
+    expect(r.feedback).toMatch(/comparten/);
+  });
+  it("m17: cuenta dentro de la función devuelta", async () => {
+    const r = await playAny("m17", "function crearContador() { return function () { let cuenta = 0; cuenta++; return cuenta; }; }");
+    expect(r.feedback).toMatch(/Siempre devuelve 1/);
+  });
+  it("m20: no se bloquea", async () => {
+    const r = await playAny("m20", "function crearBoveda(clave) { return { abrir(i) { return i === clave; } }; }");
+    expect(r.feedback).toMatch(/bloqueada/);
+  });
+  it("m22: olvidar this", async () => {
+    const r = await playAny("m22", "class Nodo { constructor(nombre, ciudad) { this.nombre = nombre; this.ciudad = ciudad; } describir() { return `${typeof nombre === 'undefined' ? undefined : nombre} (x)`; } }");
+    expect(r.feedback).toMatch(/this/);
+  });
+  it("m24: sin super", async () => {
+    const r = await playAny("m24", "class Usuario { constructor(n) { this.nombre = n; } }\nclass Intruso extends Usuario { constructor(n, a) { this.alias = a; } ficha() { return ''; } }");
+    expect(r.feedback).toMatch(/super/);
+  });
+  it("m26: orden al revés", async () => {
+    const r = await playAny("m26", 'setTimeout(() => console.log("conectando"), 300);\nconsole.log("listo");');
+    expect(r.feedback).toMatch(/al revés/);
+  });
+  it("m27: mostrar la promesa", async () => {
+    const r = await playAny("m27", 'console.log(preguntarNodo("Bremen"));');
+    expect(r.feedback).toMatch(/promesa/);
+  });
+  it("m28: olvidar await", async () => {
+    const r = await playAny("m28", "async function revisar(nombres) { const a = []; for (const n of nombres) { const r = preguntarNodo(n); if (r.activo) a.push(n); } return a; }");
+    expect(r.feedback).toMatch(/await/);
+  });
+  it("m29: sin try/catch", async () => {
+    const r = await playAny("m29", "async function estado(n) { const r = await preguntarNodo(n); return r.activo; }");
+    expect(r.feedback).toMatch(/try/);
+  });
+  it("m30: de uno en uno es demasiado lento", async () => {
+    const r = await playAny("m30", "let abiertos = 0;\nfor (const n of nodos) { const r = await preguntarNodo(n); if (r.activo) abiertos++; }\nconsole.log(abiertos);");
+    expect(r.feedback).toMatch(/uno en uno/);
+  });
 });
 
 describe("errores típicos de principiante dan una pista útil", () => {

@@ -16,6 +16,8 @@ export interface RunOutput {
   logs: string[];
   values: Record<string, unknown>;
   calls: Record<string, number>;
+  /** Milisegundos que tardó el código principal (solo en modo asíncrono). */
+  elapsed?: number;
   error?: { name: string; message: string; line?: number };
 }
 
@@ -91,4 +93,85 @@ export function runSandboxed(input: RunInput): RunOutput {
       error: { name: e.name, message: e.message, line: lineFromStack(err, offset) },
     };
   }
+}
+
+/**
+ * Variante asíncrona (acto 6): el código del jugador corre dentro de una función
+ * async, así que puede usar await. setTimeout está vigilado: antes de dar el
+ * resultado se esperan los temporizadores pendientes (con un tope).
+ */
+export async function runSandboxedAsync(input: RunInput): Promise<RunOutput> {
+  const logs: string[] = [];
+  const calls: Record<string, number> = {};
+  const fakeConsole = {
+    log: (...args: unknown[]) => {
+      if (logs.length < 500) logs.push(args.map(format).join(" "));
+    },
+  };
+  let pending = 0;
+  let lateError: unknown = null;
+  // Mientras corre el código, todos los setTimeout del hilo (también los de las
+  // funciones prestadas, como preguntarNodo) se cuentan para poder esperarlos.
+  const realSetTimeout = globalThis.setTimeout;
+  const counting = (fn: (...a: unknown[]) => unknown, ms = 0, ...rest: unknown[]) => {
+    pending++;
+    return realSetTimeout(() => {
+      pending--;
+      try {
+        fn(...rest);
+      } catch (e) {
+        lateError = e;
+      }
+    }, Math.min(Number(ms) || 0, 1500));
+  };
+  const timeout = (fn: (...a: unknown[]) => unknown, ms = 0, ...rest: unknown[]) => {
+    calls.setTimeout = (calls.setTimeout ?? 0) + 1;
+    return counting(fn, ms, ...rest);
+  };
+  (globalThis as { setTimeout: unknown }).setTimeout = counting;
+
+  const names: string[] = ["setTimeout"];
+  const values: unknown[] = [timeout];
+  for (const [k, v] of Object.entries(input.globals)) {
+    if (!IDENT.test(k) || k === "setTimeout") continue;
+    names.push(k);
+    if (typeof v === "function") {
+      values.push((...a: unknown[]) => {
+        calls[k] = (calls[k] ?? 0) + 1;
+        return (v as (...x: unknown[]) => unknown)(...a);
+      });
+    } else {
+      values.push(structuredClone(v));
+    }
+  }
+
+  const capture = input.capture.filter((c) => IDENT.test(c));
+  const parts = capture.map((c) => `${JSON.stringify(c)}: (typeof ${c} === "undefined" ? undefined : ${c})`);
+  if (input.probe)
+    parts.push(`__probe: await (async () => { try { return await (${input.probe}); } catch (e) { return { __err: String((e && e.message) || e) }; } })()`);
+  parts.push("__t: performance.now() - __t0");
+  const body = `"use strict";\nconst __t0 = performance.now();\nreturn (async () => {\n${input.code}\n;return { ${parts.join(", ")} }; })();`;
+  // cabecera de new Function (2) + "use strict" + __t0 + la línea del async
+  const offset = 5;
+
+  const fail = (err: unknown): RunOutput => {
+    const e = err instanceof Error ? err : new Error(String(err));
+    return { ok: false, logs, values: {}, calls, error: { name: e.name, message: e.message, line: lineFromStack(err, offset) } };
+  };
+
+  let captured: Record<string, unknown>;
+  try {
+    const fn = new Function("console", ...names, body);
+    captured = (await fn(fakeConsole, ...values)) as Record<string, unknown>;
+    // esperar a que terminen los setTimeout pendientes (máx. 2 s)
+    const start = performance.now();
+    while (pending > 0 && performance.now() - start < 2000) await new Promise((r) => realSetTimeout(r, 10));
+  } catch (err) {
+    return fail(err);
+  } finally {
+    (globalThis as { setTimeout: unknown }).setTimeout = realSetTimeout;
+  }
+  if (lateError) return fail(lateError);
+  const { __t, ...rest } = captured ?? {};
+  return { ok: true, logs, values: rest, calls, elapsed: Number(__t) };
 }

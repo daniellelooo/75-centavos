@@ -5,6 +5,7 @@ import { BootScene } from "./scenes/BootScene";
 import { LabScene } from "./scenes/LabScene";
 import { NetScene } from "./scenes/NetScene";
 import { mountHud } from "./ui/hud";
+import { applyCrt } from "./game/settings";
 
 /**
  * Escala del juego. Busca la mayor escala en la que cada píxel de arte ocupe un
@@ -22,6 +23,7 @@ function fitZoom(): number {
 let zoom = fitZoom();
 document.documentElement.style.setProperty("--z", String(zoom));
 mountHud();
+applyCrt();
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,

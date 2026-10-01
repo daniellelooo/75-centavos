@@ -77,6 +77,8 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
       const m = MISSIONS[selected];
       const q = QUIZ[m.id];
       const r = save.review[m.id];
+      // las opciones se barajan para que la correcta no esté siempre en el mismo sitio
+      const order = q.options.map((_, i) => i).sort(() => Math.random() - 0.5);
       right.innerHTML = `
         <div class="nb-tag">ACTO ${m.act} · MISION "${esc(m.title)}"</div>
         <h3>${esc(m.lesson.title)}</h3>
@@ -85,7 +87,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
         <div class="nb-quiz">
           <div class="nb-q">PREGUNTA RAPIDA · ¿Qué imprime?</div>
           <pre class="nb-code small">${esc(q.code)}</pre>
-          <div class="nb-opts">${q.options.map((o, i) => `<button class="nb-opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
+          <div class="nb-opts">${order.map((i) => `<button class="nb-opt" data-i="${i}">${esc(q.options[i])}</button>`).join("")}</div>
           <div class="nb-why"></div>
         </div>
         <div class="nb-actions">
@@ -96,7 +98,8 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
         b.onclick = () => {
           const i = Number(b.dataset.i);
           const ok = i === q.answer;
-          right.querySelectorAll<HTMLButtonElement>(".nb-opt").forEach((x, j) => {
+          right.querySelectorAll<HTMLButtonElement>(".nb-opt").forEach((x) => {
+            const j = Number(x.dataset.i);
             x.disabled = true;
             if (j === q.answer) x.classList.add("right");
             else if (j === i) x.classList.add("wrong");

@@ -37,6 +37,8 @@ export interface Mission {
   clock: string;
   /** Expresión que se evalúa tras el código del jugador (para probar funciones). */
   probe?: string;
+  /** Se ejecuta en modo asíncrono (await, setTimeout, promesas). */
+  async?: boolean;
   briefing: Line[];
   lesson: { title: string; body: string; example: string };
   task: string;

@@ -6,10 +6,12 @@ export interface Settings {
   musicVol: number;
   sfxVol: number;
   track: number;
+  /** Filtro de monitor antiguo (líneas de barrido y viñeta). */
+  crt: boolean;
 }
 
 const KEY = "75centavos.settings.v1";
-const DEFAULTS: Settings = { music: false, musicVol: 0.6, sfxVol: 0.8, track: 0 };
+const DEFAULTS: Settings = { music: false, musicVol: 0.6, sfxVol: 0.8, track: 0, crt: false };
 
 function load(): Settings {
   try {
@@ -21,6 +23,10 @@ function load(): Settings {
 }
 
 export const settings: Settings = load();
+
+export function applyCrt(): void {
+  document.getElementById("game")?.classList.toggle("crt", settings.crt);
+}
 
 export function saveSettings(): void {
   try {
