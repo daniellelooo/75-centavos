@@ -12,7 +12,8 @@ import { showTitle } from "../ui/title";
 import { fadeOut, fadeIn, showCard } from "../ui/fade";
 import { showControls } from "../ui/hud";
 import { sfx } from "../audio/sfx";
-import { buildLighting, buildDaylight, type Light } from "./lighting";
+import { buildLighting, buildDaylight, type Light, type LightRig } from "./lighting";
+import { startHum, setHum, stopHum } from "../audio/ambient";
 import { startMusic, stopMusic, isMusicOn } from "../audio/music";
 import { setPauseHooks } from "../ui/pause";
 import { settings } from "../game/settings";
@@ -53,6 +54,11 @@ export class LabScene extends Phaser.Scene {
   private radio!: Phaser.GameObjects.Sprite;
   private cooler!: Phaser.GameObjects.Sprite;
   private catTalks = 0;
+  private lightSources: Light[] = [];
+  private rig: LightRig | null = null;
+  private lampOn = true;
+  private lamp!: Phaser.GameObjects.Image;
+  private termSprite!: Phaser.GameObjects.Sprite;
   private playerShadow!: Phaser.GameObjects.Image;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private busy = false;
@@ -85,7 +91,8 @@ export class LabScene extends Phaser.Scene {
     this.buildRoom();
     this.buildPeople();
 
-    const lights: Light[] = this.night
+    this.lampOn = this.night;
+    this.lightSources = this.night
       ? [
           { x: 73, y: 64, r: 58, color: [254, 170, 40], power: 1 },
           { x: 193, y: 64, r: 34, color: [254, 150, 40], power: 0.55 },
@@ -95,12 +102,12 @@ export class LabScene extends Phaser.Scene {
           { x: 19, y: 190, r: 22, color: [255, 60, 70], power: 0.6 },
           { x: 208, y: 232, r: 44, color: [255, 220, 150], power: 0.55 },
           { x: 104, y: 66, r: 34, color: [255, 230, 160], power: 0.8 },
+          { x: 397, y: 98, r: 20, color: [255, 210, 80], power: isMusicOn() ? 0.65 : 0 },
+          { x: 372, y: 116, r: 12, color: [120, 190, 255], power: 0.45 },
         ]
       : [];
     if (this.night) {
-      lights.push({ x: 397, y: 98, r: 14, color: [255, 210, 80], power: isMusicOn() ? 0.6 : 0 });
-      lights.push({ x: 372, y: 116, r: 12, color: [120, 190, 255], power: 0.45 });
-      buildLighting(this, ROOM_W, ROOM_H, lights);
+      this.rig = buildLighting(this, ROOM_W, ROOM_H, this.lightSources);
     } else {
       buildDaylight(this, [
         { x: 40, w: 32 },
@@ -141,10 +148,16 @@ export class LabScene extends Phaser.Scene {
             this.radio.anims.stop();
             this.radio.setFrame(0);
           }
+          this.relight();
         },
       },
       () => this.busy || this.mode === "title",
     );
+
+    if (this.mode === "play") {
+      startHum();
+      this.events.once("shutdown", () => stopHum());
+    }
 
     if (this.mode === "title") {
       hudVisible(false);
@@ -210,6 +223,7 @@ export class LabScene extends Phaser.Scene {
     this.img("poster", 84, 6).setDepth(3);
     this.cork = this.img("corkboard", 112, 5, 0).setDepth(3);
     this.img("clock", 160, 7).setDepth(3);
+    this.drawClockHands(166, 13);
     this.img("chalkboard", 180, 4).setDepth(3);
     this.img("calendar", 232, 8).setDepth(3);
     this.img("door", 252, -2, 1).setDepth(3);
@@ -235,11 +249,13 @@ export class LabScene extends Phaser.Scene {
     // --- escritorio de Sam
     this.prop("desk", 56, 70);
     this.solid(56, 76, 48, 18);
-    const term = this.add.sprite(64, 60, "terminal").setOrigin(0, 0).setDepth(100 + 96);
-    term.play("term-on");
+    this.termSprite = this.add.sprite(64, 60, "terminal").setOrigin(0, 0).setDepth(100 + 96);
+    this.termSprite.play("term-on");
     this.prop("papers", 86, 72).setDepth(100 + 95);
     this.prop("mug", 92, 64).setDepth(100 + 95);
-    this.prop("lamp", 96, 58, this.night ? 1 : 0).setDepth(100 + 95);
+    this.lamp = this.prop("lamp", 96, 58, this.night ? 1 : 0).setDepth(100 + 95);
+    // vapor del café de Sam
+    this.steam(95, 63);
     this.prop("chair", 72, 92);
     this.solid(74, 100, 12, 8);
     this.prop("trash", 110, 96);
@@ -259,7 +275,19 @@ export class LabScene extends Phaser.Scene {
     this.prop("table", 296, 54);
     this.solid(296, 58, 26, 14);
     const pr = this.add.sprite(299, 42, "printer").setOrigin(0, 0).setDepth(100 + 72);
-    if (!this.night) pr.play("printer-run");
+    if (!this.night) {
+      // la impresora trabaja a ratos
+      const burst = () => {
+        pr.play("printer-run");
+        sfx("printer");
+        this.time.delayedCall(2600, () => {
+          pr.anims.stop();
+          pr.setFrame(0);
+        });
+        this.time.delayedCall(14000 + Math.random() * 12000, burst);
+      };
+      this.time.delayedCall(4000 + Math.random() * 5000, burst);
+    }
 
     // --- rincón del café
     this.prop("kenney", 8, 194, kenney(0, 12));
@@ -269,6 +297,7 @@ export class LabScene extends Phaser.Scene {
     this.prop("fridge", 73, 182);
     this.solid(8, 196, 84, 28);
     this.coffee = this.add.sprite(10, 180, "coffee", 1).setOrigin(0, 0).setDepth(100 + 212);
+    this.steam(16, 181);
     this.prop("mug", 28, 190).setDepth(100 + 212);
 
     // --- archivadores
@@ -326,6 +355,16 @@ export class LabScene extends Phaser.Scene {
       this.npcs.kessler = this.add.sprite(261, 48, "chars", charFrame("kessler", "down")).setOrigin(0.5, 1);
       this.solid(231, 94, 14, 8);
       this.solid(254, 40, 14, 10);
+      // Kessler mira a un lado y a otro, impaciente
+      this.time.addEvent({
+        delay: 4300,
+        loop: true,
+        callback: () => {
+          const k = this.npcs.kessler;
+          if (!k || this.busy) return;
+          k.setFrame(charFrame("kessler", Phaser.Utils.Array.GetRandom(["down", "down", "left", "right"] as Dir[])));
+        },
+      });
       // respiración: un píxel arriba y abajo, cada uno a su ritmo
       [this.npcs.ruth, this.npcs.kessler].forEach((n, i) =>
         this.tweens.add({ targets: n, y: n!.y - 1, duration: 700 + i * 260, yoyo: true, repeat: -1, ease: "Stepped", delay: i * 300 }),
@@ -467,6 +506,17 @@ export class LabScene extends Phaser.Scene {
         use: () => say([{ who: "narrador", text: "Agosto de 1986. Alguien rodeó en rojo el día de cierre de cuentas." }]),
       },
       {
+        id: "lamp",
+        x: 101, y: 100, r: 9,
+        label: () => (this.lampOn ? "Apagar la lámpara" : "Encender la lámpara"),
+        use: () => {
+          this.lampOn = !this.lampOn;
+          sfx("lamp");
+          this.lamp.setFrame(this.lampOn ? 1 : 0);
+          this.relight();
+        },
+      },
+      {
         id: "cat",
         x: 208, y: 168, r: 18,
         label: () => "Acariciar a Byte",
@@ -523,6 +573,7 @@ export class LabScene extends Phaser.Scene {
             startMusic();
             this.radio.play("radio-play");
           }
+          this.relight();
         },
       },
       {
@@ -599,6 +650,8 @@ export class LabScene extends Phaser.Scene {
       this.pointAt(null);
       return;
     }
+    // la terminal de Sam avisa cuando la noche trae una conexión
+    this.termSprite.play(this.night && m.giver === "terminal" ? "term-alert" : "term-on", true);
     if (!save.briefed && m.giver !== "terminal") {
       setObjective(m.title.toUpperCase(), m.giver === "ruth" ? "Habla con Ruth." : "Habla con Kessler.");
       this.pointAt(m.giver);
@@ -698,6 +751,51 @@ export class LabScene extends Phaser.Scene {
     this.refreshObjective();
   }
 
+  /** Recalcula la luz nocturna según lámpara y radio. */
+  private relight(): void {
+    if (!this.rig) return;
+    const lamp = this.lightSources.find((l) => l.x === 104 && l.y === 66);
+    const radio = this.lightSources.find((l) => l.x === 397);
+    if (lamp) lamp.power = this.lampOn ? 0.8 : 0;
+    if (radio) radio.power = isMusicOn() ? 0.65 : 0;
+    this.rig.repaint(this.lightSources);
+  }
+
+  /** Volutas de vapor que suben y se desvanecen. */
+  private steam(x: number, y: number): void {
+    this.time.addEvent({
+      delay: 520,
+      loop: true,
+      callback: () => {
+        const p = this.add.rectangle(x + Math.round(Math.random() * 2 - 1), y, 1, 1, 0xf7f7f2, 0.7).setDepth(9500);
+        this.tweens.add({
+          targets: p,
+          y: y - 9 - Math.random() * 4,
+          x: p.x + (Math.random() < 0.5 ? -1 : 1),
+          alpha: 0,
+          duration: 1500,
+          ease: "Stepped",
+          easeParams: [6],
+          onComplete: () => p.destroy(),
+        });
+      },
+    });
+  }
+
+  /** Manecillas del reloj de pared según la hora de la misión. */
+  private drawClockHands(cx: number, cy: number): void {
+    const [h, m] = (this.mission?.clock ?? "03:59").split(":").map(Number);
+    const g = this.add.graphics().setDepth(4);
+    const hand = (angle: number, len: number, color: number) => {
+      for (let r = 1; r <= len; r++) {
+        g.fillStyle(color, 1).fillRect(cx + Math.round(Math.sin(angle) * r), cy - Math.round(Math.cos(angle) * r), 1, 1);
+      }
+    };
+    hand(((h % 12) + m / 60) * (Math.PI / 6), 2, 0x1c1830);
+    hand(m * (Math.PI / 30), 3, 0xe8344e);
+    g.fillStyle(0x1c1830, 1).fillRect(cx, cy, 1, 1);
+  }
+
   /** Abre el cuaderno; desde él se puede practicar en la terminal sin tocar el progreso. */
   private async openCuaderno(): Promise<void> {
     if (this.busy || isDialogOpen() || isNotebookOpen() || this.mode !== "play" || document.querySelector(".pause, .board")) return;
@@ -777,6 +875,8 @@ export class LabScene extends Phaser.Scene {
       this.player.setFrame(charFrame("sam", this.facing));
     }
     this.player.setDepth(100 + this.player.y);
+    const dVax = Math.hypot(this.player.x - 370, this.player.y - 46);
+    setHum(Math.max(0, 1 - dVax / 260), this.night);
     this.playerShadow.setPosition(Math.round(this.player.x), Math.round(this.player.y) - 1).setVisible(this.player.visible);
 
     // objeto interactuable más cercano

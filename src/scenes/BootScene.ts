@@ -55,6 +55,7 @@ export class BootScene extends Phaser.Scene {
     this.anims.create({ key: "vax-tape", frames: this.anims.generateFrameNumbers("vax_tape", {}), frameRate: 6, repeat: -1 });
     this.anims.create({ key: "vax-panel", frames: this.anims.generateFrameNumbers("vax_panel", {}), frameRate: 3, repeat: -1 });
     this.anims.create({ key: "term-on", frames: this.anims.generateFrameNumbers("terminal", { frames: [0, 1] }), frameRate: 2, repeat: -1 });
+    this.anims.create({ key: "term-alert", frames: this.anims.generateFrameNumbers("terminal", { frames: [3, 4] }), frameRate: 3, repeat: -1 });
     this.anims.create({ key: "printer-run", frames: this.anims.generateFrameNumbers("printer", {}), frameRate: 4, repeat: -1 });
     this.anims.create({ key: "marker-bob", frames: this.anims.generateFrameNumbers("marker", {}), frameRate: 3, repeat: -1 });
     this.anims.create({ key: "cat-sleep", frames: this.anims.generateFrameNumbers("cat", {}), frameRate: 1.2, repeat: -1 });

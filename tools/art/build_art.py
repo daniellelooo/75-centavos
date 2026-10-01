@@ -210,6 +210,21 @@ TERM_TEXT = [
 ]
 
 
+def terminal_alert(frame):
+    """Pantalla de alerta: aviso de conexión parpadeando."""
+    c = terminal(0)
+    c.rect(5, 3, 8, 6, "m")
+    if frame == 0:
+        c.rect(8, 3, 2, 4, "y")
+        c.rect(8, 8, 2, 1, "y")
+        c.hline(5, 3, 2, "A")
+        c.hline(11, 8, 2, "A")
+    else:
+        c.rect(8, 3, 2, 4, "A")
+        c.rect(8, 8, 2, 1, "A")
+    return c
+
+
 def terminal(frame, off=False):
     c = Canvas(18, 20)
     # carcasa del monitor
@@ -398,6 +413,7 @@ def chalkboard():
 # ---------------------------------------------------------------- pequeños objetos
 
 def clock():
+    """Esfera del reloj; las manecillas las dibuja el juego según la hora."""
     c = Canvas(12, 12)
     c.disc(6, 6, 5, "k")
     c.disc(6, 6, 4, "W")
@@ -405,9 +421,7 @@ def clock():
     c.put(10, 6, "k")
     c.put(6, 10, "k")
     c.put(2, 6, "k")
-    c.vline(6, 3, 4, "k")  # 2:47 aprox.
-    c.hline(6, 6, 3, "r")
-    c.put(6, 6, "k")
+    c.put(5, 5, "w")
     return c
 
 
@@ -957,7 +971,7 @@ def main():
     save("wall_cap_v", wall_cap_v())
     save("wall_cap_h", wall_cap_h())
     save("window", strip([window(False), window(True)]))
-    save("terminal", strip([terminal(0), terminal(1), terminal(0, off=True)]))
+    save("terminal", strip([terminal(0), terminal(1), terminal(0, off=True), terminal_alert(0), terminal_alert(1)]))
     save("vax_tape", strip([vax_tape(i) for i in range(6)]))
     save("vax_panel", strip([vax_panel(i) for i in range(4)]))
     save("printer", strip([printer(0), printer(1)]))
