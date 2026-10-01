@@ -106,6 +106,7 @@ export class LabScene extends Phaser.Scene {
     this.kesslerOut = false;
     this.npcBusy = {};
     this.breaths = new Map();
+    this.barks = [];
   }
 
   create(): void {
@@ -208,6 +209,7 @@ export class LabScene extends Phaser.Scene {
       document.removeEventListener("fullscreenchange", unstick);
     });
 
+    this.events.once("shutdown", () => document.querySelectorAll(".bark").forEach((b) => b.remove()));
     if (this.mode === "play") {
       startHum();
       this.events.once("shutdown", () => stopHum());
@@ -510,13 +512,7 @@ export class LabScene extends Phaser.Scene {
         id: "window",
         x: 56, y: 42, r: 16,
         label: () => "Mirar por la ventana",
-        use: () =>
-          say([
-            {
-              who: "sam",
-              text: windowLine(Math.min(actOf(save.done), ACTS.length), this.night),
-            },
-          ]),
+        use: () => this.openView(),
       },
       {
         id: "chalk",
@@ -902,6 +898,43 @@ export class LabScene extends Phaser.Scene {
     this.breathe(k, true);
   }
 
+  /** Mirar por la ventana: el paisaje a pantalla completa, con el comentario de Sam. */
+  private async openView(): Promise<void> {
+    this.busy = true;
+    setPrompt(null);
+    hudVisible(false);
+    const act = Math.min(actOf(save.done), ACTS.length);
+    this.scene.launch("view", { act, night: this.night });
+    this.scene.bringToTop("view");
+    await new Promise((r) => setTimeout(r, 350));
+    this.scene.pause();
+    const cap = document.createElement("div");
+    cap.className = "view-cap pixel-frame";
+    cap.innerHTML = `<span>${windowLine(act, this.night)}</span><span class="key">E</span>`;
+    document.getElementById("ui")!.append(cap);
+    await new Promise<void>((resolve) => {
+      const done = (e?: Event) => {
+        if (e instanceof KeyboardEvent && !["KeyE", "Space", "Enter", "Escape"].includes(e.code)) return;
+        e?.preventDefault();
+        e?.stopPropagation();
+        window.removeEventListener("keydown", done, true);
+        cap.removeEventListener("click", done);
+        resolve();
+      };
+      setTimeout(() => {
+        window.addEventListener("keydown", done, true);
+        cap.addEventListener("click", done);
+      }, 250);
+    });
+    cap.remove();
+    this.scene.stop("view");
+    this.scene.resume();
+    this.input.keyboard?.resetKeys();
+    hudVisible(true);
+    this.lastClose = performance.now();
+    this.busy = false;
+  }
+
   /** Respiración: un píxel arriba y abajo. Se apaga mientras caminan. */
   private breathe(n: Phaser.GameObjects.Sprite | undefined, on: boolean): void {
     if (!n) return;
@@ -910,52 +943,114 @@ export class LabScene extends Phaser.Scene {
     if (on) this.breaths.set(n, this.tweens.add({ targets: n, y: n.y - 1, duration: 760 + Math.random() * 300, yoyo: true, repeat: -1, ease: "Stepped" }));
   }
 
+  /** Frase corta en un globo sobre un personaje (no detiene el juego). */
+  private barks: { el: HTMLDivElement; who: Phaser.GameObjects.Sprite }[] = [];
+  private bark(who: Phaser.GameObjects.Sprite | undefined, text: string, ms = 2600): void {
+    if (!who || this.busy) return;
+    const el = document.createElement("div");
+    el.className = "bark";
+    el.textContent = text;
+    document.getElementById("ui")!.append(el);
+    const b = { el, who };
+    this.barks.push(b);
+    this.placeBark(b);
+    this.time.delayedCall(ms, () => {
+      el.remove();
+      this.barks = this.barks.filter((x) => x !== b);
+    });
+  }
+
+  private placeBark(b: { el: HTMLDivElement; who: Phaser.GameObjects.Sprite }): void {
+    const cam = this.cameras.main;
+    const x = (b.who.x - cam.worldView.x) * cam.zoom;
+    const y = (b.who.y - 26 - cam.worldView.y) * cam.zoom;
+    b.el.style.left = `calc(${x} * var(--u))`;
+    b.el.style.top = `calc(${y} * var(--u))`;
+    b.el.style.visibility = this.busy ? "hidden" : "";
+  }
+
   /**
-   * Rutinas de Ruth y Kessler: cada cierto tiempo van a hacer algo por el
-   * laboratorio y vuelven a su sitio. Caminan por el pasillo central (y = 130)
-   * para no atravesar muebles, y se paran si Sam está ocupado.
+   * Rutinas de Ruth y Kessler: van a hacer cosas por el laboratorio y vuelven a
+   * su sitio. Cada uno baraja su lista de actividades y no repite ninguna hasta
+   * haberlas hecho todas. Caminan por el pasillo central (y = 130) para no
+   * atravesar muebles, comentan lo que hacen y se paran si Sam está ocupado.
    */
   private startRoutines(): void {
-    type Act = { path: [number, number][]; face: Dir; ms: number; doing?: () => void };
-    const ruthHome: [number, number] = this.night ? [132, 106] : [238, 100];
-    const kessHome: [number, number] = [261, 48];
-    const typing = (n: Phaser.GameObjects.Sprite) => () => {
-      this.emote(n, 2, 3200);
+    type Name = "ruth" | "kessler";
+    type Act = { path: [number, number][]; face: Dir; ms: number; say?: string[]; doing?: () => void; needs?: Name };
+    const pick = (l: string[]) => l[Math.floor(Math.random() * l.length)];
+    const R = () => this.npcs.ruth;
+    const K = () => this.npcs.kessler;
+    const typing = () => {
+      if (R()) this.emote(R()!, 2, 3200);
       for (let i = 0; i < 6; i++) this.time.delayedCall(i * 480, () => sfx("key"));
     };
+    const print = () => {
+      this.printerSprite.play("printer-run");
+      printerChatter(800);
+      this.time.delayedCall(1800, () => {
+        this.printerSprite.anims.stop();
+        this.printerSprite.setFrame(0);
+      });
+    };
     const ruthDay: Act[] = [
-      { path: [[214, 104]], face: "up", ms: 4200, doing: () => this.npcs.ruth && typing(this.npcs.ruth)() },
+      { path: [[214, 104]], face: "up", ms: 4200, doing: typing, say: ["Otra copia de seguridad...", "¿Quién borró mi macro?", "Compilando. Paciencia."] },
+      { path: [[238, 130], [309, 130], [309, 78]], face: "up", ms: 2600, doing: print, say: ["Papel atascado. Clásico.", "Doce páginas de nada.", "¿Esto es tuyo, Sam?"] },
+      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => R() && this.emote(R()!, 3, 1800), say: ["Café número cuatro.", "Este café tiene historia.", "Alguien se acabó el azúcar."] },
+      { path: [[238, 130], [396, 136]], face: "up", ms: 2600, say: ["Agosto, septiembre...", "¿Dónde archivé eso?"] },
+      { path: [[238, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600), say: ["Hola, Byte.", "Tú sí que vives bien."] },
+      { path: [[238, 130], [48, 130], [48, 78]], face: "up", ms: 3200, say: ["¿Esto se ve de día?", "Solo veo el campanario."] },
+      { path: [[238, 130], [28, 130], [28, 56]], face: "up", ms: 3600, doing: () => R() && this.emote(R()!, 2, 2600), say: ["Manual de la VAX, tomo 3.", "Este libro lo escribió un sádico."] },
+      { path: [[238, 130], [372, 132]], face: "up", ms: 2400, doing: () => sfx("water"), say: ["Agua. Hidratación.", "Gluglú."] },
+      { path: [[238, 130], [390, 130], [390, 200]], face: "right", ms: 2400, doing: () => R() && this.emote(R()!, 4, 1400), say: ["Riego la planta.", "Sobrevive. Como todos aquí."] },
+      { path: [[238, 130], [130, 130], [130, 46]], face: "up", ms: 3200, say: ["Hilo rojo... muy de película.", "Esta pista me gusta."] },
       {
-        path: [[238, 130], [309, 130], [309, 78]],
+        path: [[238, 130], [261, 130], [261, 64]],
         face: "up",
-        ms: 2600,
-        doing: () => {
-          this.printerSprite.play("printer-run");
-          printerChatter(800);
-          this.time.delayedCall(1800, () => {
-            this.printerSprite.anims.stop();
-            this.printerSprite.setFrame(0);
-          });
-        },
+        ms: 3200,
+        needs: "kessler",
+        say: ["¿Firmas esto?", "Kessler, la factura del café."],
+        doing: () => this.time.delayedCall(1300, () => this.bark(K(), pick(["Más tarde.", "¿Otra vez?", "Déjalo en la mesa."]), 2000)),
       },
-      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => this.npcs.ruth && this.emote(this.npcs.ruth, 3, 1800) },
-      { path: [[238, 130], [396, 136]], face: "up", ms: 2600, doing: () => this.npcs.ruth && this.emote(this.npcs.ruth, 2, 2000) },
-      { path: [[238, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600) },
-      { path: [[238, 130], [48, 130], [48, 78]], face: "up", ms: 3200, doing: () => this.npcs.ruth && this.emote(this.npcs.ruth, 2, 2400) },
     ];
     const ruthNight: Act[] = [
-      { path: [[132, 130], [26, 130], [26, 190]], face: "up", ms: 3000 },
-      { path: [[132, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600) },
+      { path: [[132, 130], [26, 130], [26, 190]], face: "up", ms: 3000, say: ["Más café.", "Este turno no termina."] },
+      { path: [[132, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600), say: ["Tú tampoco duermes, ¿eh?"] },
+      { path: [[132, 130], [372, 132]], face: "up", ms: 2200, doing: () => sfx("water"), say: ["Agua fría. Despierta."] },
+      { path: [[132, 130], [48, 130], [48, 78]], face: "up", ms: 3000, say: ["Ni una nube. Bonita noche.", "Saturno. Creo."] },
     ];
     const kessDay: Act[] = [
-      { path: [[261, 130], [356, 130], [356, 52]], face: "up", ms: 3200, doing: () => this.npcs.kessler && this.emote(this.npcs.kessler, 2, 2400) },
-      { path: [[261, 130], [40, 130], [40, 190]], face: "up", ms: 3000 },
-      { path: [[261, 92]], face: "down", ms: 2200, doing: () => this.npcs.kessler && this.emote(this.npcs.kessler, 1, 1400) },
+      { path: [[261, 130], [356, 130], [356, 52]], face: "up", ms: 3200, doing: () => K() && this.emote(K()!, 2, 2400), say: ["¿Cuánto nos cuesta esto?", "Hace un ruido nuevo."] },
+      { path: [[261, 130], [40, 130], [40, 190]], face: "up", ms: 3000, say: ["¿Quién hizo este café?", "Necesito un café de verdad."] },
+      { path: [[261, 92]], face: "down", ms: 2200, doing: () => K() && this.emote(K()!, 1, 1400), say: ["¿Dónde está mi informe?"] },
+      { path: [[261, 130], [168, 130], [168, 46]], face: "up", ms: 3000, say: ["¿Orión? Parece una cafetera.", "Esto no es de facturación."] },
+      { path: [[261, 130], [250, 130], [250, 52]], face: "up", ms: 2400, say: ["Fin de mes. Otra vez.", "¿Ya es viernes?"] },
+      { path: [[261, 130], [130, 130], [130, 46]], face: "up", ms: 3200, doing: () => K() && this.emote(K()!, 2, 2000), say: ["Hmm.", "Esto parece serio, Sam."] },
+      { path: [[261, 130], [48, 130], [48, 78]], face: "up", ms: 2800, say: ["Así que esto es la astronomía.", "No veo nada."] },
+      {
+        path: [[261, 130], [252, 106]],
+        face: "left",
+        ms: 3400,
+        needs: "ruth",
+        say: ["Ruth, ¿cómo vamos?", "¿Qué haría yo sin ti?"],
+        doing: () => {
+          R()?.setFrame(charFrame("ruth", "right"));
+          this.time.delayedCall(1400, () => this.bark(R(), pick(["Bien. Más o menos.", "Pregúntale a Sam.", "Mejor no preguntes."]), 2000));
+        },
+      },
     ];
 
-    const run = (name: "ruth" | "kessler", acts: Act[], home: [number, number], homeFace: Dir) => {
+    // como mucho una actividad cada 30-60 s por personaje, y desfasados entre sí
+    const run = (name: Name, acts: Act[], home: [number, number], homeFace: Dir, firstDelay: number) => {
+      let bag: Act[] = [];
+      let first = true;
+      const next = (): Act => {
+        if (!bag.length) bag = Phaser.Utils.Array.Shuffle([...acts]);
+        return bag.pop()!;
+      };
       const loop = () => {
-        this.time.delayedCall(6000 + Math.random() * 9000, async () => {
+        this.time.delayedCall(first ? firstDelay : 30000 + Math.random() * 30000, async () => {
+          first = false;
           const n = this.npcs[name];
           const m = this.mission;
           const blocked =
@@ -966,14 +1061,23 @@ export class LabScene extends Phaser.Scene {
             (name === "kessler" && (this.kesslerOut || (m?.giver === "kessler" && !save.briefed)));
           if (blocked) return loop();
           // si Ruth tiene un encargo pendiente, no se aleja de su mesa
-          const pool = name === "ruth" && m?.giver === "ruth" && !save.briefed && !this.night ? acts.slice(0, 1) : acts;
-          const a = pool[Math.floor(Math.random() * pool.length)];
+          let a = name === "ruth" && m?.giver === "ruth" && !save.briefed && !this.night ? acts[0] : next();
+          // las actividades con el otro solo si el otro está libre en su sitio
+          if (a.needs && (this.npcBusy[a.needs] || !this.npcs[a.needs] || (a.needs === "kessler" && this.kesslerOut))) a = next();
+          if (a.needs && (this.npcBusy[a.needs] || !this.npcs[a.needs])) return loop();
           this.npcBusy[name] = true;
+          if (a.needs) this.npcBusy[a.needs] = true;
           this.breathe(n, false);
           await this.walk(n, name, a.path, 38);
           n.setFrame(charFrame(name, a.face));
+          if (a.say && Math.random() < 0.5) this.bark(n, pick(a.say), Math.min(a.ms, 2600));
           a.doing?.();
           await new Promise((r) => this.time.delayedCall(a.ms, r));
+          if (a.needs) {
+            this.npcBusy[a.needs] = false;
+            const other = this.npcs[a.needs];
+            other?.setFrame(charFrame(a.needs, a.needs === "ruth" ? "left" : "down"));
+          }
           const back = [...a.path].reverse().slice(1) as [number, number][];
           await this.walk(n, name, [...back, home], 38);
           n.setFrame(charFrame(name, homeFace));
@@ -985,10 +1089,10 @@ export class LabScene extends Phaser.Scene {
       loop();
     };
     if (this.night) {
-      if (this.npcs.ruth) run("ruth", ruthNight, ruthHome, "left");
+      if (this.npcs.ruth) run("ruth", ruthNight, [132, 106], "left", 20000 + Math.random() * 15000);
     } else {
-      run("ruth", ruthDay, ruthHome, "left");
-      run("kessler", kessDay, kessHome, "down");
+      run("ruth", ruthDay, [238, 100], "left", 12000 + Math.random() * 10000);
+      run("kessler", kessDay, [261, 48], "down", 35000 + Math.random() * 15000);
     }
   }
 
@@ -1269,6 +1373,7 @@ export class LabScene extends Phaser.Scene {
     }
     if (this.carried) this.carried.setPosition(Math.round(this.player.x), Math.round(this.player.y - 31 + Math.sin(this.time.now / 250)));
     for (const [n, sh] of this.shadows) sh.setPosition(Math.round(n.x), Math.round(n.y) - 1);
+    for (const b of this.barks) this.placeBark(b);
     for (const name of ["ruth", "kessler"] as const) {
       const n = this.npcs[name];
       const r = this.npcSolids[name];

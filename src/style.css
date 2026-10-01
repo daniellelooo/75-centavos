@@ -732,3 +732,42 @@ html, body {
 .endcard .levelup small { font-family: var(--font-title); font-size: calc(4.5 * var(--u)); color: var(--amber-2); letter-spacing: 0.1em; }
 .endcard .levelup b { font-family: var(--font-crt); font-weight: normal; font-size: calc(12 * var(--u)); color: var(--amber); text-shadow: 0 0 calc(4 * var(--u)) rgba(254, 208, 24, 0.6); }
 .endcard .levelup span { font-size: calc(6.5 * var(--u)); color: #c9d3ea; }
+
+.view-cap {
+  position: absolute;
+  left: calc(40 * var(--u));
+  right: calc(40 * var(--u));
+  top: calc(20 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(5 * var(--u)) calc(8 * var(--u));
+  font-size: calc(7.5 * var(--u));
+  font-style: italic;
+  color: var(--cream);
+  cursor: pointer;
+  animation: rise 0.3s steps(3) both;
+}
+.view-cap span:first-child { flex: 1; }
+.view-cap .key { font-style: normal; }
+.bark {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--u) calc(3 * var(--u));
+  background: #fffbe8;
+  color: #1c1830;
+  border: var(--u) solid #1c1830;
+  font-size: calc(5.5 * var(--u));
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadein 0.2s steps(2) both;
+}
+.bark::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(-3 * var(--u));
+  width: calc(2 * var(--u));
+  height: calc(2 * var(--u));
+  background: #1c1830;
+}

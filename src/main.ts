@@ -4,6 +4,7 @@ import { VIEW_H, VIEW_W } from "./config";
 import { BootScene } from "./scenes/BootScene";
 import { LabScene } from "./scenes/LabScene";
 import { NetScene } from "./scenes/NetScene";
+import { ViewScene } from "./scenes/ViewScene";
 import { mountHud } from "./ui/hud";
 import { applyCrt } from "./game/settings";
 
@@ -34,7 +35,7 @@ const game = new Phaser.Game({
   roundPixels: true,
   backgroundColor: "#07080f",
   scale: { mode: Phaser.Scale.NONE, zoom },
-  scene: [BootScene, LabScene, NetScene],
+  scene: [BootScene, LabScene, NetScene, ViewScene],
 });
 
 const onResize = () => {
