@@ -26,12 +26,14 @@ export class BootScene extends Phaser.Scene {
     sheet("marker", "marker.png", 7, 8);
     sheet("net_icons", "net_icons.png", 11, 11);
     sheet("lamp", "lamp.png", 10, 14);
-    sheet("cat", "cat.png", 18, 12);
+    sheet("cat", "cat.png", 20, 13);
+    sheet("tapebox", "tapebox.png", 18, 17);
+    sheet("satellite", "satellite.png", 21, 13);
     sheet("cooler", "cooler.png", 12, 26);
     sheet("radio", "radio.png", 16, 10);
     for (const f of [
       "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
-      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "tapebox", "postit",
+      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge",
     ]) {
       this.load.image(f, A + f + ".png");
     }
@@ -58,6 +60,15 @@ export class BootScene extends Phaser.Scene {
     this.anims.create({ key: "cat-sleep", frames: this.anims.generateFrameNumbers("cat", {}), frameRate: 1.2, repeat: -1 });
     this.anims.create({ key: "cooler-bubble", frames: this.anims.generateFrameNumbers("cooler", {}), frameRate: 6, repeat: 3 });
     this.anims.create({ key: "radio-play", frames: this.anims.generateFrameNumbers("radio", {}), frameRate: 3.5, repeat: -1 });
+    this.anims.create({ key: "sat-blink", frames: this.anims.generateFrameNumbers("satellite", {}), frameRate: 2, repeat: -1 });
+    // sombra suave bajo personajes: elipse pixelada
+    const g = this.add.graphics();
+    g.fillStyle(0x1c1830, 0.32);
+    g.fillRect(2, 0, 8, 1);
+    g.fillRect(1, 1, 10, 2);
+    g.fillRect(2, 3, 8, 1);
+    g.generateTexture("shadow", 12, 4);
+    g.destroy();
     this.scene.start("lab", { mode: "title" });
   }
 }

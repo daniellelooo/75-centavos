@@ -1,8 +1,11 @@
 // Efectos de sonido generados por código con ZzFX (MIT, < 1 KB).
 import { zzfx, ZZFX } from "zzfx";
+import { settings } from "../game/settings";
 
-let muted = false;
-ZZFX.volume = 0.25;
+export function applySfxVolume(): void {
+  ZZFX.volume = 0.3 * settings.sfxVol;
+}
+applySfxVolume();
 
 const SOUNDS = {
   blip: [0.4, 0.05, 520, 0, 0.01, 0.02, 1, 1.6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.01],
@@ -25,7 +28,7 @@ const SOUNDS = {
 export type SoundName = keyof typeof SOUNDS;
 
 export function sfx(name: SoundName): void {
-  if (muted) return;
+  if (settings.sfxVol <= 0) return;
   try {
     zzfx(...(SOUNDS[name] as unknown as number[]));
   } catch {
@@ -33,9 +36,4 @@ export function sfx(name: SoundName): void {
   }
 }
 
-export function toggleMute(): boolean {
-  muted = !muted;
-  return muted;
-}
 
-export const isMuted = () => muted;

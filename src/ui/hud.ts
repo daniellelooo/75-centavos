@@ -1,16 +1,13 @@
-import { toggleMute } from "../audio/sfx";
-import { stopMusic } from "../audio/music";
+import { openPause } from "./pause";
 import { el, ui } from "./dom";
 
 const objective = el("div", "hud-objective pixel-frame hidden", `<span class="dot"></span><span class="txt"></span>`);
 const clock = el("div", "hud-clock pixel-frame hidden");
 const prompt = el("div", "hud-prompt pixel-frame hidden");
-const mute = el("button", "hud-mute", "SONIDO: SI");
+const mute = el("button", "hud-mute", "MENU · ESC");
 mute.addEventListener("click", () => {
-  const m = toggleMute();
-  if (m) stopMusic();
-  mute.textContent = m ? "SONIDO: NO" : "SONIDO: SI";
   mute.blur();
+  openPause();
 });
 
 export function mountHud(): void {

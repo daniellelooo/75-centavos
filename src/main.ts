@@ -6,10 +6,17 @@ import { LabScene } from "./scenes/LabScene";
 import { NetScene } from "./scenes/NetScene";
 import { mountHud } from "./ui/hud";
 
-/** Mayor factor entero que cabe en la ventana: píxeles nítidos y del mismo tamaño. */
+/**
+ * Escala del juego. Busca la mayor escala en la que cada píxel de arte ocupe un
+ * número entero de píxeles FÍSICOS (en Retina, x2.5 = 5 píxeles: nítido). Si eso
+ * deja demasiado borde (pantallas sin Retina), acepta una escala fraccionaria.
+ */
 function fitZoom(): number {
-  const z = Math.floor(Math.min(window.innerWidth / VIEW_W, window.innerHeight / VIEW_H));
-  return Math.max(1, z);
+  const fit = Math.min(window.innerWidth / VIEW_W, window.innerHeight / VIEW_H);
+  const dpr = window.devicePixelRatio || 1;
+  const crisp = Math.floor(fit * dpr) / dpr;
+  const z = crisp / fit >= 0.9 ? crisp : fit;
+  return Math.max(0.5, z);
 }
 
 let zoom = fitZoom();
@@ -28,13 +35,16 @@ const game = new Phaser.Game({
   scene: [BootScene, LabScene, NetScene],
 });
 
-window.addEventListener("resize", () => {
+const onResize = () => {
   const z = fitZoom();
-  if (z === zoom) return;
+  if (Math.abs(z - zoom) < 0.001) return;
   zoom = z;
   document.documentElement.style.setProperty("--z", String(zoom));
   game.scale.setZoom(zoom);
-});
+};
+window.addEventListener("resize", onResize);
+// cambiar de pantalla (Retina / externa) cambia la densidad de píxeles
+matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener?.("change", onResize);
 
 // Para pruebas en navegador real (Playwright).
 (window as unknown as { __game: Phaser.Game }).__game = game;

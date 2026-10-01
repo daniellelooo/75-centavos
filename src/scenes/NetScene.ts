@@ -7,6 +7,7 @@ import { fadeIn, fadeOut } from "../ui/fade";
 import { el, esc, ui, wait } from "../ui/dom";
 import { setClock, setObjective, hudVisible } from "../ui/hud";
 import { sfx } from "../audio/sfx";
+import { setPauseHooks } from "../ui/pause";
 
 type LL = [number, number];
 
@@ -45,8 +46,8 @@ const HOPS: { ll: LL; label: string; log: string; kind: number; dy?: number }[] 
   { ll: [-122.3, 37.9], label: "BERKELEY", log: "02:51  CONEXION ENTRANTE  cuenta=hunter", kind: 1, dy: -6 },
   { ll: [-119.5, 36.2], label: "TYMNET OAKLAND", log: "02:52  la llamada entra por Tymnet", kind: 0, dy: 10 },
   { ll: [-77.2, 38.9], label: "COSTA ESTE", log: "02:53  rebota en la costa este", kind: 0 },
-  { ll: [-42, 50], label: "SATELITE", log: "02:53  enlace transatlantico", kind: 2 },
-  { ll: [9.7, 52.4], label: "???", log: "02:54  ORIGEN: FUERA DEL PAIS", kind: 3 },
+  { ll: [-42, 50], label: "SATÉLITE", log: "02:53  enlace transatlántico", kind: 2 },
+  { ll: [9.7, 52.4], label: "???", log: "02:54  ORIGEN: FUERA DEL PAÍS", kind: 3 },
 ];
 
 export class NetScene extends Phaser.Scene {
@@ -58,6 +59,16 @@ export class NetScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor("#070a14");
+    setPauseHooks(
+      {
+        freeze: (v) => (v ? this.scene.pause() : this.scene.resume()),
+        toTitle: async () => {
+          await fadeOut();
+          this.scene.start("lab", { mode: "title" });
+        },
+      },
+      () => false,
+    );
     hudVisible(true);
     setObjective("RASTREO", "Sigue la llamada.");
     setClock("02:51");
@@ -160,7 +171,10 @@ export class NetScene extends Phaser.Scene {
       const h = HOPS[i];
       const [x, y] = pts[i];
       if (i > 0) await this.drawLink(pts[i - 1], pts[i], i === 3 || i === 4 ? 1300 : 800);
-      const icon = this.add.sprite(x, y, "net_icons", h.kind).setDepth(10);
+      const icon = h.kind === 2
+        ? this.add.sprite(x, y, "satellite").setDepth(10).play("sat-blink")
+        : this.add.sprite(x, y, "net_icons", h.kind).setDepth(10);
+      if (h.kind === 2) this.tweens.add({ targets: icon, y: y - 2, duration: 1200, yoyo: true, repeat: -1, ease: "Stepped", delay: 400 });
       this.tweens.add({ targets: icon, scale: { from: 2.2, to: 1 }, duration: 260, ease: "Back.Out" });
       if (h.kind === 3) {
         this.tweens.add({ targets: icon, alpha: 0.35, duration: 300, yoyo: true, repeat: -1, ease: "Stepped" });
@@ -169,7 +183,7 @@ export class NetScene extends Phaser.Scene {
       } else if (h.kind === 1) {
         sfx("alarm");
       }
-      this.label(x, y, h.label, h.kind === 3 ? "#ff8a8a" : h.kind === 1 ? "#fed018" : "#8fd3ff", h.dy);
+      this.label(h.kind === 2 ? x + 5 : x, y, h.label, h.kind === 3 ? "#ff8a8a" : h.kind === 1 ? "#fed018" : "#8fd3ff", h.dy);
       this.print(h.log, h.kind === 3 ? "#ff8a8a" : undefined);
       setClock(h.log.slice(0, 5));
       await wait(650);

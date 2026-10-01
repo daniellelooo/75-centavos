@@ -219,6 +219,7 @@ export function openTerminal(mission: Mission): Promise<boolean> {
         // Con el menú de sugerencias abierto, Escape solo cierra el menú.
         if (completionStatus(view.state) !== null) return;
         e.preventDefault();
+        e.stopPropagation(); // que el Escape no abra además el menú de pausa
         close(solved);
       }
     };

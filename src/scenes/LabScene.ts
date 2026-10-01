@@ -12,7 +12,8 @@ import { showControls } from "../ui/hud";
 import { sfx } from "../audio/sfx";
 import { buildLighting, buildDaylight, type Light } from "./lighting";
 import { startMusic, stopMusic, isMusicOn } from "../audio/music";
-import { isMuted } from "../audio/sfx";
+import { setPauseHooks } from "../ui/pause";
+import { settings } from "../game/settings";
 
 // Medidas de la sala (en píxeles de arte, origen en la esquina superior del muro).
 const ROOM_W = 416;
@@ -49,6 +50,7 @@ export class LabScene extends Phaser.Scene {
   private radio!: Phaser.GameObjects.Sprite;
   private cooler!: Phaser.GameObjects.Sprite;
   private catTalks = 0;
+  private playerShadow!: Phaser.GameObjects.Image;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private busy = false;
   private stepTimer = 0;
@@ -117,9 +119,29 @@ export class LabScene extends Phaser.Scene {
     window.addEventListener("keydown", onKey);
     this.events.once("shutdown", () => window.removeEventListener("keydown", onKey));
 
+    setPauseHooks(
+      {
+        freeze: (v) => (v ? this.scene.pause() : this.scene.resume()),
+        toTitle: async () => {
+          await fadeOut();
+          this.scene.start("lab", { mode: "title" });
+        },
+        onMusic: () => {
+          if (isMusicOn()) this.radio.play("radio-play", true);
+          else {
+            this.radio.anims.stop();
+            this.radio.setFrame(0);
+          }
+        },
+      },
+      () => this.busy || this.mode === "title",
+    );
+
     if (this.mode === "title") {
       hudVisible(false);
-      this.player.setVisible(false);
+      // en la portada, Sam trabaja de madrugada frente a su terminal
+      this.player.setPosition(80, 112).setFrame(charFrame("sam", "up"));
+      this.playerShadow.setPosition(80, 111);
       void fadeIn();
       showTitle({
         canContinue: save.introSeen,
@@ -235,8 +257,7 @@ export class LabScene extends Phaser.Scene {
     this.prop("kenney", 24, 194, kenney(1, 12));
     this.prop("kenney", 40, 194, kenney(8, 12));
     this.prop("kenney", 56, 194, kenney(2, 12));
-    this.prop("kenney", 74, 178, kenney(11, 15));
-    this.prop("kenney", 74, 194, kenney(11, 16));
+    this.prop("fridge", 73, 182);
     this.solid(8, 196, 84, 28);
     this.coffee = this.add.sprite(10, 180, "coffee", 1).setOrigin(0, 0).setDepth(100 + 212);
     this.prop("mug", 28, 190).setDepth(100 + 212);
@@ -250,8 +271,9 @@ export class LabScene extends Phaser.Scene {
     this.img("rug", 176, 140).setDepth(1);
 
     // --- Byte, la gata, durmiendo en la alfombra
-    this.add.sprite(199, 149, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
-    this.solid(200, 153, 17, 8);
+    this.add.image(209, 162, "shadow").setScale(1.5, 1).setDepth(2);
+    this.add.sprite(198, 148, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
+    this.solid(199, 153, 19, 8);
 
     // --- telescopio de Sam junto a la ventana
     this.prop("telescope", 38, 38);
@@ -266,13 +288,13 @@ export class LabScene extends Phaser.Scene {
     if (isMusicOn()) this.radio.play("radio-play");
 
     // --- perchero con la bufanda de Sam
-    this.prop("coatrack", 232, 192);
+    this.prop("coatrack", 230, 190);
     this.solid(234, 216, 10, 6);
 
     // --- cajas de cintas de respaldo
-    this.prop("tapebox", 352, 196);
-    this.prop("tapebox", 368, 198);
-    this.prop("tapebox", 360, 185).setDepth(100 + 212);
+    this.prop("tapebox", 350, 196, 0);
+    this.prop("tapebox", 368, 198, 1);
+    this.prop("tapebox", 359, 184, 1).setDepth(100 + 216);
     this.solid(352, 202, 32, 14);
 
     // --- nota adhesiva en la terminal de Sam
@@ -312,6 +334,9 @@ export class LabScene extends Phaser.Scene {
       });
     }
     for (const s of [this.player, ...Object.values(this.npcs)]) s?.setDepth(100 + s.y);
+    // sombras bajo los personajes
+    this.playerShadow = this.add.image(this.player.x, this.player.y - 1, "shadow").setDepth(2);
+    for (const n of Object.values(this.npcs)) this.add.image(n!.x, n!.y - 1, "shadow").setDepth(2);
   }
 
   private defineInteractables(): void {
@@ -488,7 +513,7 @@ export class LabScene extends Phaser.Scene {
             stopMusic();
             this.radio.anims.stop();
             this.radio.setFrame(0);
-          } else if (!isMuted()) {
+          } else {
             startMusic();
             this.radio.play("radio-play");
           }
@@ -524,6 +549,7 @@ export class LabScene extends Phaser.Scene {
   // ------------------------------------------------------------------ flujo de juego
 
   private async startGame(fresh: boolean): Promise<void> {
+    if (settings.music) startMusic();
     await fadeOut();
     if (fresh) {
       Object.assign(save, { done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actComplete: false });
@@ -717,6 +743,7 @@ export class LabScene extends Phaser.Scene {
       this.player.setFrame(charFrame("sam", this.facing));
     }
     this.player.setDepth(100 + this.player.y);
+    this.playerShadow.setPosition(Math.round(this.player.x), Math.round(this.player.y) - 1).setVisible(this.player.visible);
 
     // objeto interactuable más cercano
     let best: Interactable | null = null;

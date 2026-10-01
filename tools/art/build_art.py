@@ -513,30 +513,93 @@ def rug():
 
 def cat(frame):
     """Byte, la gata atigrada del laboratorio, dormida y enroscada."""
-    c = Canvas(18, 12)
+    c = Canvas(20, 13)
     rows = [
-        "..k...k...........",
-        ".kCk.kCk..kkkkk...",
-        ".kCCkCCk.kCMCCMkk.",
-        "kCCCCCCCkCCCMCCCCk",
-        "kCkkCkkCCCCCCCMCCk",
-        "kCCCRCCCMCCCCCCMCk",
-        ".kcccCCCCCMCCCCCck",
-        "..kcckCCCCCCCMCcck",
-        ".kCMCCMCCCCCCCCcck",
-        "kCCkkkkkCCCCCcccck",
-        ".kk.....kkkkkkkkk.",
+        "..kk...kk...........",
+        ".k14k.k41k..kkkkk...",
+        ".k111k111kkk15511kk.",
+        "k111111111k125115211k"[:20],
+        "k1kk111kk1k11211211k",
+        "k11114 1111211211211k".replace(" ", "1")[:20],
+        ".k3333331k111111111k",
+        "..k33333k1112111211k",
+        ".k333kk111111111111k",
+        ".kkkk1211211211113 3k".replace(" ", "3")[:20],
+        "....kkkkkkkkkkkkkkk.",
     ]
-    if frame:
-        # respira: el lomo sube un píxel y la cola cambia
-        rows = rows[1:] + ["................"]
-        rows[0] = ".kCk.kCk..kkkkk..."
-        rows = ["..k...k..kkkkk...."] + rows[:-1]
-        rows[8] = "kCCkkkkCCCCCcccck."
+    rows[5] = "k111141111211211211k"[:19] + "k"
+    rows[3] = "k111111111k12511521k"
     for y, r in enumerate(rows):
-        for x, ch in enumerate(r[:18]):
+        for x, ch in enumerate(r):
             if ch != ".":
-                c.put(x, y + 1, ch)
+                c.put(x, y + 2, ch)
+    if frame:
+        # respira: el lomo sube un píxel
+        lomo = c.im.crop((10, 2, 20, 12))
+        c.rect(10, 1, 10, 11, ".")
+        c.im.alpha_composite(lomo, (10, 1))
+        c.put(10, 11, "k")
+        c.put(19, 11, "k")
+    return c
+
+
+def tape_box(variant=0):
+    """Caja de cartón con cintas de respaldo y etiqueta."""
+    c = Canvas(18, 17)
+    # cara superior abierta (interior oscuro) con dos cintas
+    c.rect(1, 4, 16, 5, "k")
+    c.rect(2, 5, 14, 3, "o")
+    c.hline(2, 5, 14, "D")
+    for cx in (6, 12):
+        c.disc(cx, 5, 2, "k")
+        c.disc(cx, 5, 1, "h" if variant == 0 else "G")
+        c.put(cx, 5, "k")
+    # solapas abiertas
+    c.ascii(0, 0, [
+        "kk..............kk",
+        "kOk............kOk",
+        "kcOk..........kOck",
+        ".kcOk........kOck.",
+        "..kkk........kkk..",
+    ])
+    # cara frontal
+    c.rect(0, 8, 18, 9, "k")
+    c.rect(1, 9, 16, 7, "O")
+    c.hline(1, 9, 16, "c")
+    c.hline(1, 15, 16, "o")
+    c.vline(16, 9, 7, "o")
+    # cinta adhesiva y etiqueta
+    c.vline(8, 9, 7, "c")
+    c.vline(9, 9, 7, "l")
+    c.rect(2, 11, 5, 3, "x")
+    c.hline(3, 12, 3, "h" if variant == 0 else "r")
+    c.rect(11, 11, 4, 3, "x")
+    c.hline(12, 12, 2, "s")
+    return c
+
+
+def satellite(frame):
+    """Satélite de comunicaciones con paneles solares (mapa de red)."""
+    c = Canvas(21, 13)
+    # paneles
+    for x0 in (0, 13):
+        c.rect(x0, 3, 8, 7, "k")
+        c.rect(x0 + 1, 4, 6, 5, "u")
+        for i in range(x0 + 2, x0 + 7, 2):
+            c.vline(i, 4, 5, "v")
+        c.hline(x0 + 1, 6, 6, "v")
+        c.put(x0 + 1, 4, "U")
+    # brazos
+    c.hline(8, 6, 5, "h")
+    # cuerpo dorado
+    c.rect(8, 2, 5, 9, "k")
+    c.rect(9, 3, 3, 7, "y")
+    c.vline(9, 3, 7, "Y")
+    c.vline(11, 3, 7, "A")
+    # antena parabólica
+    c.ascii(8, 9, ["kWWWk", ".kWk.", "..k.."])
+    c.vline(10, 0, 2, "k")
+    c.put(10, 0, "r" if frame else "R")
     return c
 
 
@@ -587,18 +650,69 @@ def water_cooler(frame):
 
 
 def coat_rack():
-    c = Canvas(14, 32)
-    c.vline(6, 3, 27, "D")
-    c.vline(7, 3, 27, "d")
-    c.ascii(2, 0, ["..kkkkk...", ".kDdddDk..", "kDk...kDk."])
-    # bufanda roja de Sam y abrigo
-    c.box(3, 4, 8, 14, "C", "k")
-    c.vline(4, 5, 12, "M")
-    c.rect(5, 6, 4, 3, "r")
-    c.rect(5, 9, 2, 7, "r")
-    c.hline(5, 15, 2, "R")
-    c.hline(2, 30, 10, "k")
-    c.hline(3, 29, 8, "D")
+    """Perchero de madera con la gabardina de Sam y su bufanda roja."""
+    c = Canvas(16, 34)
+    # poste y base
+    c.rect(7, 2, 2, 30, "k")
+    c.vline(7, 3, 28, "b")
+    c.vline(8, 3, 28, "d")
+    c.ascii(3, 30, ["kkkkkkkkkk", "kDddbbddDk", ".kk....kk."])
+    # remate y ganchos
+    c.ascii(5, 0, ["..kk..", ".kbdk.", "kkbdkk", "k.kk.k"])
+    # gabardina colgada
+    c.ascii(2, 4, [
+        "....kkkkk...",
+        "...kQqqqQk..",
+        "..kQqqqqqQk.",
+        "..kqqQqqqqk.",
+        ".kqqqQqqqqqk",
+        ".kqqqQqqqQqk",
+        ".kqqqQqqqQqk",
+        ".kQqqQqqqQqk",
+        ".kQqqQqqqQQk",
+        ".kQqqQqqqQQk",
+        "..kqqQqqqQk.",
+        "..kQqQqqQQk.",
+        "...kkkkkkk..",
+    ])
+    # bufanda roja con rayas y flecos
+    c.ascii(5, 5, [
+        "kkkkkk",
+        "krRrrk",
+        ".krRrk",
+        ".krrk.",
+        ".krRk.",
+        ".krrk.",
+        ".kRrk.",
+        ".krrk.",
+        ".kkkk.",
+        ".r.r..",
+    ])
+    return c
+
+
+def fridge():
+    """Nevera pequeña color crema de los 80, con imanes."""
+    c = Canvas(16, 30)
+    c.box(0, 0, 16, 29, "P", "k")
+    c.hline(1, 1, 14, "W")
+    c.vline(1, 1, 27, "W")
+    c.vline(14, 1, 27, "q")
+    c.hline(1, 10, 14, "k")  # separación del congelador
+    c.hline(1, 11, 14, "q")
+    c.rect(12, 4, 2, 4, "h")  # tiradores
+    c.rect(12, 14, 2, 6, "h")
+    c.vline(12, 4, 4, "G")
+    c.vline(12, 14, 6, "G")
+    # imanes y una nota
+    c.put(4, 4, "r")
+    c.put(6, 5, "u")
+    c.rect(3, 14, 5, 6, "x")
+    c.hline(4, 16, 3, "h")
+    c.hline(4, 18, 2, "h")
+    c.put(5, 14, "y")
+    c.hline(0, 29, 16, "k")
+    c.hline(1, 28, 14, "Q")
     return c
 
 
@@ -642,22 +756,6 @@ def radio(frame):
     c.rect(7, 3, 2, 3, "k")
     c.put(7, 4, "y" if frame else "m")
     c.hline(6, 7, 4, "h")
-    return c
-
-
-def tape_box():
-    c = Canvas(16, 14)
-    c.box(0, 2, 16, 12, "O", "k")
-    c.hline(1, 3, 14, "c")
-    c.rect(1, 2, 14, 1, "o")
-    c.vline(8, 3, 10, "o")
-    c.rect(3, 6, 4, 3, "x")
-    c.hline(4, 7, 2, "h")
-    # cintas asomando
-    c.disc(5, 2, 2, "k")
-    c.disc(5, 2, 1, "G")
-    c.disc(11, 2, 2, "k")
-    c.disc(11, 2, 1, "G")
     return c
 
 
@@ -874,9 +972,11 @@ def main():
     save("telescope", telescope())
     save("cooler", strip([water_cooler(0), water_cooler(1)]))
     save("coatrack", coat_rack())
+    save("fridge", fridge())
     save("bicycle", bicycle())
     save("radio", strip([radio(0), radio(1)]))
-    save("tapebox", tape_box())
+    save("tapebox", strip([tape_box(0), tape_box(1)]))
+    save("satellite", strip([satellite(0), satellite(1)]))
     save("postit", postit())
     save("chair", chair())
     save("table", small_table())
