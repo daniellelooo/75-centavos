@@ -15,6 +15,8 @@ interface PauseHooks {
   freeze: (v: boolean) => void;
   /** Vuelve a la pantalla de título. */
   toTitle: () => void;
+  /** Abre el cuaderno de repaso (solo dentro del laboratorio). */
+  notebook?: () => void;
   /** Se llama al cambiar la música (la radio del laboratorio se anima). */
   onMusic?: () => void;
 }
@@ -52,6 +54,7 @@ function render(): void {
   root.querySelector(".p-body")!.innerHTML = `
     <div class="p-progress">${m ? `Misión ${save.done + 1} de ${MISSIONS.length}: <b>${m.title}</b>` : "Acto 1 completado"}</div>
     <div class="p-row" data-k="resume"><span>REANUDAR</span><span class="hint">ESC</span></div>
+    ${hooks?.notebook ? `<div class="p-row" data-k="notebook"><span>CUADERNO DE SAM</span><span class="hint">C</span></div>` : ""}
     <div class="p-sep">RADIO</div>
     <div class="p-row" data-k="music"><span>MUSICA</span><span>${isMusicOn() ? "ENCENDIDA" : "APAGADA"}</span></div>
     <div class="p-row" data-k="track"><span>EMISORA</span><span>&lt; ${TRACKS[settings.track % TRACKS.length].name} &gt;</span></div>
@@ -65,7 +68,8 @@ function render(): void {
       <div><span class="key">WASD</span> o flechas: caminar</div>
       <div><span class="key">E</span> o espacio: interactuar / pasar diálogo</div>
       <div><span class="key">Ctrl+Enter</span> ejecutar código · <span class="key">Tab</span> autocompletar</div>
-      <div><span class="key">ESC</span> pausa · tu progreso se guarda solo</div>
+      <div><span class="key">C</span> cuaderno de repaso · <span class="key">ESC</span> pausa</div>
+      <div>Tu progreso se guarda solo.</div>
     </div>
     <div class="p-row danger" data-k="title"><span>MENU PRINCIPAL</span><span class="hint">se guarda</span></div>
   `;
@@ -117,6 +121,10 @@ function act(k: string, dir: number, click = false): void {
       else void document.documentElement.requestFullscreen?.();
       setTimeout(render, 200);
       break;
+    case "notebook":
+      closePause();
+      hooks?.notebook?.();
+      return;
     case "help":
       root?.querySelector(".p-help")?.classList.toggle("hidden");
       sfx("select");

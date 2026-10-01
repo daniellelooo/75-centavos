@@ -4,6 +4,8 @@ import { MISSIONS, ACTS, actOf, lastOfAct, missionsOfAct, type Line, type Missio
 import { save, writeSave, resetSave } from "../game/state";
 import { playDialog, isDialogOpen } from "../ui/dialog";
 import { openTerminal } from "../ui/terminal";
+import { openNotebook, isNotebookOpen } from "../ui/notebook";
+import { setNotebookAction } from "../ui/hud";
 import { setClock, setObjective, setPrompt, hudVisible } from "../ui/hud";
 import { openBoard } from "../ui/board";
 import { showTitle } from "../ui/title";
@@ -114,11 +116,14 @@ export class LabScene extends Phaser.Scene {
     // La interacción escucha la ventana directamente: si Phaser se pierde un keyup
     // mientras la terminal está abierta, la siguiente E no se tragaría.
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.repeat || !["KeyE", "Space", "Enter"].includes(ev.code)) return;
+      if (ev.repeat) return;
       const t = ev.target as HTMLElement | null;
-      if (t && (t.closest(".term") || t.tagName === "BUTTON")) return;
+      if (t && (t.closest(".term") || t.closest(".notebook") || t.tagName === "BUTTON")) return;
+      if (ev.code === "KeyC") return void this.openCuaderno();
+      if (!["KeyE", "Space", "Enter"].includes(ev.code)) return;
       void this.interact();
     };
+    setNotebookAction(this.mode === "play" ? () => void this.openCuaderno() : null);
     window.addEventListener("keydown", onKey);
     this.events.once("shutdown", () => window.removeEventListener("keydown", onKey));
 
@@ -129,6 +134,7 @@ export class LabScene extends Phaser.Scene {
           await fadeOut();
           this.scene.start("lab", { mode: "title" });
         },
+        notebook: () => void this.openCuaderno(),
         onMusic: () => {
           if (isMusicOn()) this.radio.play("radio-play", true);
           else {
@@ -690,6 +696,26 @@ export class LabScene extends Phaser.Scene {
       return;
     }
     this.refreshObjective();
+  }
+
+  /** Abre el cuaderno; desde él se puede practicar en la terminal sin tocar el progreso. */
+  private async openCuaderno(): Promise<void> {
+    if (this.busy || isDialogOpen() || isNotebookOpen() || this.mode !== "play" || document.querySelector(".pause, .board")) return;
+    this.busy = true;
+    this.player.anims.stop();
+    setPrompt(null);
+    await openNotebook({
+      practice: async (m) => {
+        this.input.keyboard!.enabled = false;
+        hudVisible(false);
+        await openTerminal(m, { practice: true });
+        hudVisible(true);
+        this.input.keyboard!.enabled = true;
+        this.input.keyboard!.resetKeys();
+      },
+    });
+    this.lastClose = performance.now();
+    this.busy = false;
   }
 
   private async interact(): Promise<void> {

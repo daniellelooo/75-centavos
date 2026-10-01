@@ -5,7 +5,7 @@ import { MISSIONS, type Line } from "../game/missions";
 import { playDialog } from "../ui/dialog";
 import { fadeIn, fadeOut } from "../ui/fade";
 import { el, esc, ui, wait } from "../ui/dom";
-import { setClock, setObjective, hudVisible } from "../ui/hud";
+import { setClock, setObjective, hudVisible, setNotebookAction } from "../ui/hud";
 import { sfx } from "../audio/sfx";
 import { setPauseHooks } from "../ui/pause";
 
@@ -136,6 +136,7 @@ export class NetScene extends Phaser.Scene {
       () => false,
     );
     hudVisible(true);
+    setNotebookAction(null);
     setObjective("RASTREO", "Sigue la llamada.");
     setClock(this.fin.hops[0].log.slice(0, 5));
 

@@ -13,6 +13,8 @@ export interface SaveData {
   hintsUsed: Record<string, number>;
   /** Veces que se pulsó EJECUTAR por misión. */
   attempts: Record<string, number>;
+  /** Repasos acertados en el cuaderno: cuántos y cuándo fue el último. */
+  review: Record<string, { ok: number; last: number }>;
   introSeen: boolean;
   /** Último acto cuya presentación ya se vio. */
   actIntro: number;
@@ -22,7 +24,7 @@ export interface SaveData {
 const KEY = "75centavos.save.v1";
 
 export function freshSave(): SaveData {
-  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actIntro: 0, actComplete: false };
+  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, review: {}, introSeen: false, actIntro: 0, actComplete: false };
 }
 
 export function loadSave(): SaveData | null {

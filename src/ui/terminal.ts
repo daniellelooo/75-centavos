@@ -44,7 +44,11 @@ const errorLineField = StateField.define<DecorationSet>({
 });
 
 /** Abre la terminal. Resuelve true si el jugador resolvió la misión. */
-export function openTerminal(mission: Mission): Promise<boolean> {
+/** Abre la terminal. Resuelve true si se resolvió. En modo repaso no toca el progreso. */
+export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}): Promise<boolean> {
+  const practice = !!opts.practice;
+  const draftKey = practice ? `p:${mission.id}` : mission.id;
+  let practiceHints = 0;
   return new Promise((resolve) => {
     sfx("open");
     const root = el("div", "term");
@@ -52,9 +56,9 @@ export function openTerminal(mission: Mission): Promise<boolean> {
     const right = el("div", "col");
     root.append(left, right);
 
-    const hintsShown = save.hintsUsed[mission.id] ?? 0;
+    const hintsShown = practice ? 0 : (save.hintsUsed[mission.id] ?? 0);
     left.innerHTML = `
-      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${esc(mission.concept.toUpperCase())}</span></div>
+      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
       <div class="scroll">
         <h3>${esc(mission.lesson.title)}</h3>
         <p>${esc(mission.lesson.body)}</p>
@@ -97,6 +101,12 @@ export function openTerminal(mission: Mission): Promise<boolean> {
     };
     renderHints(hintsShown);
     hintBtn.addEventListener("click", () => {
+      if (practice) {
+        practiceHints = Math.min(practiceHints + 1, mission.hints.length);
+        renderHints(practiceHints);
+        sfx("select");
+        return;
+      }
       const n = (save.hintsUsed[mission.id] ?? 0) + 1;
       save.hintsUsed[mission.id] = Math.min(n, mission.hints.length);
       writeSave(save);
@@ -108,7 +118,7 @@ export function openTerminal(mission: Mission): Promise<boolean> {
 
     let running = false;
     const view = new EditorView({
-      doc: save.drafts[mission.id] ?? mission.starter,
+      doc: save.drafts[draftKey] ?? mission.starter,
       parent: wrap,
       extensions: [
         basicSetup,
@@ -121,7 +131,7 @@ export function openTerminal(mission: Mission): Promise<boolean> {
         keymap.of([{ key: "Mod-Enter", run: () => (void run(), true) }]),
         EditorView.updateListener.of((u) => {
           if (u.docChanged) {
-            save.drafts[mission.id] = u.state.doc.toString();
+            save.drafts[draftKey] = u.state.doc.toString();
             writeSave(save);
             if (Math.random() < 0.6) sfx("key");
           }
@@ -144,7 +154,7 @@ export function openTerminal(mission: Mission): Promise<boolean> {
       running = true;
       runBtn.disabled = true;
       sfx("run");
-      save.attempts[mission.id] = (save.attempts[mission.id] ?? 0) + 1;
+      if (!practice) save.attempts[mission.id] = (save.attempts[mission.id] ?? 0) + 1;
       writeSave(save);
       view.dispatch({ effects: setErrorLine.of(null) });
       consoleBox.innerHTML = `<div class="muted">ejecutando...</div>`;
@@ -192,7 +202,12 @@ export function openTerminal(mission: Mission): Promise<boolean> {
       await wait(200);
       print(`<div class="ok">${esc(verdict.feedback)}</div>`);
       sfx("success");
-      const stamp = el("div", "stamp", "ACEPTADO");
+      if (practice) {
+        const prev = save.review[mission.id];
+        save.review[mission.id] = { ok: (prev?.ok ?? 0) + 1, last: Date.now() };
+        writeSave(save);
+      }
+      const stamp = el("div", "stamp", practice ? "REPASADO" : "ACEPTADO");
       root.append(stamp);
       runBtn.textContent = "CONTINUAR";
       runBtn.disabled = false;
