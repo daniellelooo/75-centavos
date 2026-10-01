@@ -403,8 +403,8 @@ html, body {
 .title .foot {
   position: absolute;
   bottom: calc(6 * var(--u));
-  font-size: calc(5.5 * var(--u));
-  color: #6f7896;
+  font-size: calc(6.5 * var(--u));
+  color: #a9b2cf;
 }
 
 /* ------------------------------------------------------------ fundidos y tarjetas */
@@ -532,7 +532,7 @@ html, body {
 .hud-controls {
   position: absolute;
   left: 50%;
-  bottom: calc(26 * var(--u));
+  top: calc(30 * var(--u));
   transform: translateX(-50%);
   padding: calc(4 * var(--u)) calc(8 * var(--u));
   font-size: calc(7 * var(--u));
@@ -817,3 +817,15 @@ html, body {
 .badge-pop-title { text-align: center; font-family: var(--font-title); font-size: calc(7 * var(--u)); color: var(--amber); text-shadow: 0 0 calc(4 * var(--u)) rgba(254, 208, 24, 0.5); }
 .endcard .newrank { font-family: var(--font-crt); font-size: calc(9 * var(--u)); color: var(--amber); }
 .endcard .newrank small { font-family: var(--font-title); font-size: calc(4.5 * var(--u)); color: var(--amber-2); margin-right: calc(3 * var(--u)); }
+
+/* ejemplos con el resultado tapado: adivinar antes de ver */
+.peek { font: inherit; color: inherit; background: rgba(254, 208, 24, 0.18); border: var(--u) dashed currentColor; padding: 0 calc(2 * var(--u)); cursor: pointer; }
+.peek:hover { background: rgba(254, 208, 24, 0.35); }
+.peek.shown { background: none; border-color: transparent; cursor: default; opacity: 0.85; }
+.peek-tip { font-size: calc(6.5 * var(--u)); opacity: 0.8; margin-top: calc(-2 * var(--u)); }
+.term details.alt { margin-top: calc(3 * var(--u)); color: #c9d3ea; }
+.term details.alt summary { cursor: pointer; color: var(--amber); }
+.term details.alt pre { margin: calc(2 * var(--u)) 0; padding: calc(3 * var(--u)); background: rgba(0, 0, 0, 0.35); color: #fed018; white-space: pre-wrap; font-family: var(--font-crt); }
+.title .btn.danger { background: #a31d33; color: #fffbe8; border-color: #fffbe8; }
+.nb-free { display: block; width: 100%; margin: 0 0 calc(6 * var(--u)); text-align: left; }
+.nb-free span { display: block; font-family: var(--font-ui); font-size: calc(6 * var(--u)); opacity: 0.8; }

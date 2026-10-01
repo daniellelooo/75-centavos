@@ -11,10 +11,11 @@ import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import type { Mission } from "../game/missions";
 import { runMission } from "../game/runner";
-import { translateError, TIMEOUT_ERROR } from "../game/errors";
+import { translateError, typoHint, TIMEOUT_ERROR } from "../game/errors";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
+import { exampleHtml, bindPeeks } from "./example";
 
 const amber = HighlightStyle.define([
   { tag: t.keyword, color: "#fff4c9", fontWeight: "normal" },
@@ -49,6 +50,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
   const training = opts.training;
   // los ejercicios de Margarita se comportan como un repaso: no tocan la historia
   const practice = !!opts.practice || !!training;
+  const free = mission.id === "libre";
   const draftKey = training ? `t:${mission.id}` : practice ? `p:${mission.id}` : mission.id;
   let practiceHints = 0;
   return new Promise((resolve) => {
@@ -58,13 +60,16 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
     const right = el("div", "col");
     root.append(left, right);
 
+    const ex = exampleHtml(mission.lesson.example);
+    bindPeeks(left);
     const hintsShown = practice ? 0 : (save.hintsUsed[mission.id] ?? 0);
     left.innerHTML = `
-      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${training ? "CASA DE MARGARITA · " : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
+      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${free ? "" : training ? "CASA DE MARGARITA · " : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
       <div class="scroll">
         <h3>${esc(mission.lesson.title)}</h3>
         <p>${esc(mission.lesson.body)}</p>
-        <pre class="example">${esc(mission.lesson.example)}</pre>
+        <pre class="example">${ex.html}</pre>
+        ${ex.peeks ? `<p class="peek-tip">Antes de pulsar <b>¿?</b>, piensa qué imprimirá.</p>` : ""}
         <h3>Encargo</h3>
         <div class="task">${esc(mission.task)}</div>
         ${
@@ -94,6 +99,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
 
     const hintsBox = left.querySelector(".hints") as HTMLDivElement;
     const hintBtn = left.querySelector(".hint-btn") as HTMLButtonElement;
+    if (free) hintBtn.style.display = "none";
     const runBtn = right.querySelector(".run-btn") as HTMLButtonElement;
     const consoleBox = right.querySelector(".console") as HTMLDivElement;
     const wrap = right.querySelector(".editor-wrap") as HTMLDivElement;
@@ -130,7 +136,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       extensions: [
         basicSetup,
         javascript(),
-        javascriptLanguage.data.of({ autocomplete: vocabFor(training ? training.vocabAt : MISSIONS.indexOf(mission)) }),
+        javascriptLanguage.data.of({ autocomplete: vocabFor(training ? training.vocabAt : free ? Math.max(0, save.done - 1) : MISSIONS.indexOf(mission)) }),
         Prec.highest(keymap.of([{ key: "Tab", run: acceptCompletion }])),
         keymap.of([indentWithTab]),
         syntaxHighlighting(amber),
@@ -204,7 +210,16 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
         const where = crashed.error.line ? ` (línea ${crashed.error.line})` : "";
         print(`<div class="err">ERROR${where}: ${esc(fe.title)}</div><div>${esc(fe.hint)}</div><div class="muted">${esc(fe.raw)}</div>`);
         if (crashed.error.line) view.dispatch({ effects: setErrorLine.of(crashed.error.line) });
+        typoTip(code);
         fail();
+        return;
+      }
+
+      if (free) {
+        // terminal libre: nada que comprobar, solo ver qué pasa
+        if (!first.logs.length) print(`<div class="muted">Se ejecutó sin imprimir nada. Usa console.log para ver valores.</div>`);
+        runBtn.disabled = false;
+        running = false;
         return;
       }
 
@@ -215,6 +230,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       if (!verdict.pass) {
         print(`<div class="err">NO CUADRA</div><div>${esc(verdict.feedback)}</div>`);
         quoteHint(code);
+        typoTip(code);
         fail();
         return;
       }
@@ -227,6 +243,11 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       }
       await wait(200);
       print(`<div class="ok">${esc(verdict.feedback)}</div>`);
+      // Hay más de una forma de resolverlo: si la del jugador es distinta, se enseña la de referencia.
+      const reference = mission.hints[mission.hints.length - 1] ?? "";
+      if (reference && normalize(reference) !== normalize(code)) {
+        print(`<details class="alt"><summary>Otra forma de hacerlo</summary><pre>${esc(reference)}</pre><div class="muted">La tuya también vale: lo que importa es que haga lo que debe.</div></details>`);
+      }
       sfx("success");
       if (practice && !training) {
         const prev = save.review[mission.id];
@@ -241,6 +262,12 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       runBtn.focus();
       running = false;
       solved = true;
+    }
+
+    /** Erratas típicas (lenght, consol.log...): las señala con la palabra buena. */
+    function typoTip(code: string) {
+      const t = typoHint(code);
+      if (t) print(`<div class="hint">${esc(t)}</div>`);
     }
 
     /** ${} dentro de comillas normales: no se sustituye. Es el error más común con las plantillas. */
@@ -283,4 +310,14 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       resolve(ok);
     }
   });
+}
+
+/** Para comparar planteamientos: no cuentan espacios, comentarios, punto y coma
+ *  ni el valor exacto de números y textos (2387.5 y 2387.50 son la misma idea). */
+function normalize(code: string): string {
+  return code
+    .replace(/\/\/.*$/gm, "")
+    .replace(/(["'`])(?:\\.|(?!\1).)*\1/g, "S")
+    .replace(/\b\d+(\.\d+)?\b/g, "0")
+    .replace(/[\s;]+/g, "");
 }

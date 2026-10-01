@@ -415,7 +415,8 @@ export class LabScene extends Phaser.Scene {
   }
 
   private buildPeople(): void {
-    const start = { x: 208, y: 214 };
+    // lejos de la salida: lo primero que se ve no debe ser "Salida"
+    const start = { x: 208, y: 186 };
     this.player = this.add.sprite(start.x, start.y, "chars", charFrame("sam", "up")).setOrigin(0.5, 1);
     if (!this.night) {
       this.npcs.ruth = this.add.sprite(238, 100, "chars", charFrame("ruth", "left")).setOrigin(0.5, 1);

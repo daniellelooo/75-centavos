@@ -21,7 +21,20 @@ export function showTitle(opts: { canContinue: boolean; onNew: () => void; onCon
     t.remove();
     fn();
   };
-  (t.querySelector(".new") as HTMLButtonElement).onclick = go(opts.onNew);
+  const nb = t.querySelector(".new") as HTMLButtonElement;
+  if (!opts.canContinue) nb.onclick = go(opts.onNew);
+  else {
+    // con una partida guardada, empezar de cero pide confirmación: se pierde el progreso
+    let armed = false;
+    nb.onclick = () => {
+      if (armed) return go(opts.onNew)();
+      armed = true;
+      sfx("select");
+      nb.textContent = "SÍ, BORRAR Y EMPEZAR";
+      nb.classList.add("danger");
+      t.querySelector(".foot")!.textContent = "Tu progreso actual se perderá. Pulsa otra vez para confirmar o elige CONTINUAR.";
+    };
+  }
   const c = t.querySelector(".continue") as HTMLButtonElement | null;
   if (c) c.onclick = go(opts.onContinue);
 }

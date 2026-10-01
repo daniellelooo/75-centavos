@@ -8,6 +8,8 @@ import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui } from "./dom";
 import { badgeHtml, storiesHtml } from "./badge";
+import { exampleHtml, bindPeeks } from "./example";
+import { FREE } from "../game/free";
 
 const DAY = 24 * 60 * 60 * 1000;
 let openNow = false;
@@ -37,6 +39,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
     const left = el("div", "nb-page nb-left");
     const right = el("div", "nb-page nb-right");
     book.append(left, right);
+    bindPeeks(right);
     root.append(book);
     ui.append(root);
 
@@ -50,7 +53,8 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
       const review = MISSIONS.filter((m, i) => learned(i) && needsReview(m)).length;
       let html = `<h2>CUADERNO DE SAM</h2>
         <div class="nb-sub">${learnedCount} de ${MISSIONS.length} conceptos${review ? ` · <b>${review} para repasar</b>` : ""}</div>
-        ${badgeHtml()}`;
+        ${badgeHtml()}
+        ${save.done > 0 ? `<button class="btn nb-free">TERMINAL LIBRE <span>prueba lo que quieras, sin encargo</span></button>` : ""}`;
       for (const act of ACTS) {
         const ms = MISSIONS.map((m, i) => ({ m, i })).filter((x) => x.m.act === act.n);
         html += `<div class="nb-act"><div class="nb-act-title">ACTO ${act.n} · ${esc(act.title)}</div><ol class="nb-line">`;
@@ -72,6 +76,13 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
       }
       html += storiesHtml();
       left.innerHTML = html;
+      const fb = left.querySelector<HTMLButtonElement>(".nb-free");
+      if (fb)
+        fb.onclick = async () => {
+          root.classList.add("hidden");
+          await hooks.practice(FREE);
+          root.classList.remove("hidden");
+        };
       left.querySelectorAll<HTMLLIElement>(".nb-stop").forEach((li) => {
         li.onclick = () => {
           if (li.dataset.set) {
@@ -107,7 +118,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
         <div class="nb-tag">ACTO ${m.act} · MISION "${esc(m.title)}"</div>
         <h3>${esc(m.lesson.title)}</h3>
         <p>${esc(m.lesson.body)}</p>
-        <pre class="nb-code">${esc(m.lesson.example)}</pre>
+        <pre class="nb-code">${exampleHtml(m.lesson.example).html}</pre>
         <div class="nb-quiz">
           <div class="nb-q">PREGUNTA RAPIDA · ¿Qué imprime?</div>
           <pre class="nb-code small">${esc(q.code)}</pre>

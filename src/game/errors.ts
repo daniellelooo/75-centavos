@@ -80,3 +80,26 @@ export const TIMEOUT_ERROR: FriendlyError = {
   hint: "Probablemente un bucle infinito: revisa que la condición del for/while llegue a ser falsa.",
   raw: "Tiempo agotado (1,5 s)",
 };
+
+/** Erratas típicas de principiante: palabra mal escrita -> la buena. */
+const TYPOS: Array<[RegExp, string]> = [
+  [/\.(lenght|lengh|lenth|legth|leght|length\(\))/, "length (sin paréntesis y con la g antes de la t)"],
+  [/\b(consol|cosole|conosle|console\.lgo|console\.og|consloe)\b/, "console.log"],
+  [/\b(fuction|funtion|fucntion|funcion|functon)\b/, "function"],
+  [/\b(retrun|retun|reutrn|return\()\b/, "return"],
+  [/\b(Let|LET|lte)\s/, "let (en minúsculas)"],
+  [/\b(cosnt|cnost|Const)\s/, "const (en minúsculas)"],
+  [/\.(pussh|psuh|puhs|Push)\(/, "push"],
+  [/\.(fliter|filtr|Filter)\(/, "filter"],
+  [/\b(Console)\./, "console (en minúsculas)"],
+  [/\b(True|False|TRUE|FALSE)\b/, "true / false (en minúsculas)"],
+];
+
+/** Si el código tiene una errata conocida, la señala con su corrección. */
+export function typoHint(code: string): string | null {
+  for (const [re, fix] of TYPOS) {
+    const m = code.match(re);
+    if (m) return `¿Quisiste escribir ${fix}? Encontré "${m[0].trim()}".`;
+  }
+  return null;
+}

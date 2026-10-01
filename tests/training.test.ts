@@ -104,3 +104,24 @@ describe("expediente de Sam", () => {
     expect(rankOf(MISSIONS.length)).toBe(RANKS[6]);
   });
 });
+
+describe("terminal libre", () => {
+  it("se encuentra y ejecuta cualquier código sin comprobar nada", () => {
+    const m = findMission("libre")!;
+    expect(m).toBeTruthy();
+    const o = runSandboxed({ code: "console.log(1 + 1);", globals: m.cases[0].globals(), capture: m.capture });
+    expect(o.logs).toEqual(["2"]);
+    expect(m.check([o], m.cases).pass).toBe(true);
+  });
+});
+
+describe("erratas típicas", () => {
+  it("detecta lenght, consol.log y fuction, y deja pasar el código bien escrito", async () => {
+    const { typoHint } = await import("../src/game/errors");
+    expect(typoHint("console.log(x.lenght)")).toMatch(/length/);
+    expect(typoHint("consol.log(1)")).toMatch(/console.log/);
+    expect(typoHint("fuction f() {}")).toMatch(/function/);
+    expect(typoHint("let x = [1, 2];\nconsole.log(x.length);\nfunction f() { return 1; }")).toBeNull();
+    for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) expect(typoHint(m.hints[m.hints.length - 1]), m.id).toBeNull();
+  });
+});
