@@ -7,7 +7,7 @@ self.onmessage = (ev: MessageEvent<{ missionId: string; code: string }>) => {
   const mission = MISSIONS.find((m) => m.id === ev.data.missionId);
   if (!mission) return;
   const outs = mission.cases.map((c) =>
-    runSandboxed({ code: ev.data.code, globals: c.globals(), capture: mission.capture }),
+    runSandboxed({ code: ev.data.code, globals: c.globals(), capture: mission.capture, probe: mission.probe }),
   );
   (self as unknown as Worker).postMessage(outs);
 };

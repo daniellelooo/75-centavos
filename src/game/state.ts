@@ -14,13 +14,15 @@ export interface SaveData {
   /** Veces que se pulsó EJECUTAR por misión. */
   attempts: Record<string, number>;
   introSeen: boolean;
+  /** Último acto cuya presentación ya se vio. */
+  actIntro: number;
   actComplete: boolean;
 }
 
 const KEY = "75centavos.save.v1";
 
 export function freshSave(): SaveData {
-  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actComplete: false };
+  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actIntro: 0, actComplete: false };
 }
 
 export function loadSave(): SaveData | null {
@@ -28,7 +30,11 @@ export function loadSave(): SaveData | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as SaveData;
-    return data.version === 1 ? { ...freshSave(), ...data } : null;
+    if (data.version !== 1) return null;
+    const merged = { ...freshSave(), ...data };
+    // partidas guardadas antes de que existieran varios actos
+    if (merged.introSeen && !merged.actIntro) merged.actIntro = 1;
+    return merged;
   } catch {
     return null;
   }

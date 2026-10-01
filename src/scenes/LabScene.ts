@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { VIEW_H, VIEW_W, charFrame, type CharName, type Dir } from "../config";
-import { MISSIONS, type Line } from "../game/missions";
-import { save, writeSave } from "../game/state";
+import { MISSIONS, ACTS, actOf, lastOfAct, missionsOfAct, type Line, type Mission } from "../game/missions";
+import { save, writeSave, resetSave } from "../game/state";
 import { playDialog, isDialogOpen } from "../ui/dialog";
 import { openTerminal } from "../ui/terminal";
 import { setClock, setObjective, setPrompt, hudVisible } from "../ui/hud";
@@ -39,6 +39,7 @@ type Mode = "title" | "play";
 export class LabScene extends Phaser.Scene {
   private mode: Mode = "play";
   private night = false;
+  private arrive = false;
   private player!: Phaser.GameObjects.Sprite;
   private facing: Dir = "up";
   private npcs: Partial<Record<CharName, Phaser.GameObjects.Sprite>> = {};
@@ -62,9 +63,11 @@ export class LabScene extends Phaser.Scene {
     super("lab");
   }
 
-  init(data: { mode?: Mode }): void {
+  init(data: { mode?: Mode; arrive?: boolean }): void {
     this.mode = data.mode ?? "play";
-    this.night = this.mode === "title" || save.done >= 4;
+    this.arrive = !!data.arrive;
+    const m = MISSIONS[save.done];
+    this.night = this.mode === "title" || !m || m.phase === "noche";
     this.solids = [];
     this.things = [];
     this.npcs = {};
@@ -199,7 +202,7 @@ export class LabScene extends Phaser.Scene {
     this.img("window", 40, 3, this.night ? 1 : 0).setDepth(3);
     this.img("window", 286, 3, this.night ? 1 : 0).setDepth(3);
     this.img("poster", 84, 6).setDepth(3);
-    this.cork = this.img("corkboard", 112, 5, Math.min(save.done, 5)).setDepth(3);
+    this.cork = this.img("corkboard", 112, 5, 0).setDepth(3);
     this.img("clock", 160, 7).setDepth(3);
     this.img("chalkboard", 180, 4).setDepth(3);
     this.img("calendar", 232, 8).setDepth(3);
@@ -340,7 +343,6 @@ export class LabScene extends Phaser.Scene {
   }
 
   private defineInteractables(): void {
-    const current = () => MISSIONS[save.done];
     const say = (lines: Line[]) => this.talk(lines);
 
     this.things.push(
@@ -354,18 +356,13 @@ export class LabScene extends Phaser.Scene {
         id: "ruth",
         x: 238, y: 104, r: 20,
         label: () => (this.night ? null : "Hablar con Ruth"),
-        use: () => this.talkRuth(),
+        use: () => this.talkTo("ruth"),
       },
       {
         id: "kessler",
         x: 261, y: 54, r: 18,
         label: () => (this.night ? null : "Hablar con Kessler"),
-        use: () =>
-          say(
-            save.done < 3
-              ? [{ who: "kessler", text: "Sam, ¿verdad? El astrónomo. Que la factura cuadre y no tendremos que hablar mucho." }]
-              : [{ who: "kessler", text: "Una semana, Sam. Y un informe que yo entienda." }],
-          ),
+        use: () => this.talkTo("kessler"),
       },
       {
         id: "coffee",
@@ -388,7 +385,10 @@ export class LabScene extends Phaser.Scene {
         id: "cork",
         x: 130, y: 42, r: 18,
         label: () => "Mirar el corcho",
-        use: () => openBoard(MISSIONS.slice(0, save.done).map((m) => m.clue), MISSIONS.length),
+        use: () => {
+          const act = Math.min(actOf(save.done), ACTS.length);
+          return openBoard(this.actClues(), missionsOfAct(act).length, `ACTO ${act} · ${ACTS[act - 1].title.toUpperCase()}`);
+        },
       },
       {
         id: "window",
@@ -540,8 +540,8 @@ export class LabScene extends Phaser.Scene {
       {
         id: "exit",
         x: 208, y: 220, r: 14,
-        label: () => (save.done >= 4 || current() ? "Salida" : null),
-        use: () => say([{ who: "sam", text: save.done >= 4 ? "No pienso irme ahora." : "Todavía no. Ruth me necesita." }]),
+        label: () => "Salida",
+        use: () => say([{ who: "sam", text: this.night ? "No pienso irme ahora." : "Todavía no. Hay trabajo." }]),
       },
     );
   }
@@ -551,45 +551,51 @@ export class LabScene extends Phaser.Scene {
   private async startGame(fresh: boolean): Promise<void> {
     if (settings.music) startMusic();
     await fadeOut();
-    if (fresh) {
-      Object.assign(save, { done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, introSeen: false, actComplete: false });
-      writeSave(save);
-    }
+    if (fresh) resetSave();
     this.scene.restart({ mode: "play" });
+  }
+
+  private get mission() {
+    return MISSIONS[save.done];
+  }
+
+  /** Pistas del acto en curso (las del corcho). */
+  private actClues() {
+    const act = actOf(save.done);
+    return MISSIONS.filter((m, i) => m.act === act && i < save.done).map((m) => m.clue);
   }
 
   private async afterLoad(): Promise<void> {
     this.busy = true;
     await fadeIn();
-    if (!save.introSeen) {
-      await showCard("Berkeley, California", "Agosto de 1986");
-      await this.talk([
-        { who: "narrador", text: "Sam es astrónomo. Se acabó la beca y lo mandaron al sótano: a administrar la computadora del laboratorio." },
-        { who: "narrador", text: "No sabe programar. Todavía." },
-      ]);
+    const m = this.mission;
+    if (m && save.actIntro < m.act) {
+      const info = ACTS[m.act - 1];
+      await showCard(`Acto ${info.n} · ${info.title}`, `Berkeley, California · ${info.date}`);
+      await this.talk(info.opening);
+      save.actIntro = m.act;
       save.introSeen = true;
       writeSave(save);
-      showControls();
-    } else if (this.night && save.done === 4) {
-      await showCard("02:47", "La misma noche");
+      if (m.act === 1) showControls();
+    } else if (this.arrive && m) {
+      await showCard(m.clock, "Esa misma noche");
     }
     this.busy = false;
     this.refreshObjective();
   }
 
   private refreshObjective(): void {
-    const m = MISSIONS[save.done];
-    this.cork.setFrame(Math.min(save.done, 5));
-    setClock(this.night ? "02:47" : "09:15");
+    const m = this.mission;
+    this.cork.setFrame(Math.min(this.actClues().length, 5));
+    setClock(m ? m.clock : "03:59");
     if (!m) {
-      setObjective("ACTO 1 COMPLETADO", "Revisa el corcho o vuelve a la terminal.");
+      setObjective("CONTINUARÁ", "Los actos 1 a 3 están completos. Repasa en tu cuaderno [C].");
       this.pointAt(null);
       return;
     }
-    const needsBrief = !save.briefed && m.phase === "dia";
-    if (needsBrief) {
-      setObjective(m.title.toUpperCase(), "Habla con Ruth.");
-      this.pointAt("ruth");
+    if (!save.briefed && m.giver !== "terminal") {
+      setObjective(m.title.toUpperCase(), m.giver === "ruth" ? "Habla con Ruth." : "Habla con Kessler.");
+      this.pointAt(m.giver);
     } else {
       setObjective(m.title.toUpperCase(), "Ve a tu terminal.");
       this.pointAt("terminal");
@@ -599,7 +605,8 @@ export class LabScene extends Phaser.Scene {
   private pointAt(id: string | null): void {
     if (!id) return void this.marker.setVisible(false);
     const pos: Record<string, [number, number]> = {
-      ruth: [238, 72],
+      ruth: [238, 70],
+      kessler: [261, 18],
       terminal: [73, 50],
     };
     const [x, y] = pos[id];
@@ -615,36 +622,35 @@ export class LabScene extends Phaser.Scene {
     this.busy = false;
   }
 
-  private async talkRuth(): Promise<void> {
-    const m = MISSIONS[save.done];
-    const ruth = this.npcs.ruth;
-    ruth?.setFrame(charFrame("ruth", this.player.x < (ruth?.x ?? 0) ? "left" : "right"));
-    if (m && !save.briefed && m.phase === "dia") {
+  private async talkTo(who: "ruth" | "kessler"): Promise<void> {
+    const m = this.mission;
+    const npc = this.npcs[who];
+    if (who === "ruth") npc?.setFrame(charFrame("ruth", this.player.x < (npc?.x ?? 0) ? "left" : "right"));
+    if (m && !save.briefed && m.giver === who) {
       await this.talk(m.briefing);
       save.briefed = true;
       writeSave(save);
       sfx("select");
       this.refreshObjective();
-    } else if (m) {
-      await this.talk([{ who: "ruth", text: "La terminal es la de la izquierda. La que zumba." }]);
-    } else {
-      await this.talk([{ who: "ruth", text: "Duerme algo, Sam." }]);
+      return;
     }
+    await this.talk([chatter(who, m)]);
   }
 
   private async useTerminal(): Promise<void> {
-    const m = MISSIONS[save.done];
+    const m = this.mission;
     if (!m) {
-      await this.talk([{ who: "sistema", text: "SESION CERRADA. FIN DEL ACTO 1." }]);
+      await this.talk([{ who: "sistema", text: "SESION CERRADA. CONTINUARA." }]);
       return;
     }
     if (!save.briefed) {
-      if (m.phase === "noche") {
+      if (m.giver === "terminal") {
         await this.talk(m.briefing);
         save.briefed = true;
         writeSave(save);
       } else {
-        await this.talk([{ who: "sam", text: "Primero debería hablar con Ruth. Ella sabe qué hay que hacer." }]);
+        const name = m.giver === "ruth" ? "Ruth" : "Kessler";
+        await this.talk([{ who: "sam", text: `Primero debería hablar con ${name}. Sabe qué hay que hacer.` }]);
         return;
       }
     }
@@ -660,25 +666,27 @@ export class LabScene extends Phaser.Scene {
     if (!solved) return;
 
     await this.talk(m.debrief);
+    const finished = save.done;
     save.done += 1;
     save.briefed = false;
     writeSave(save);
-    this.cork.setFrame(Math.min(save.done, 5));
+    this.cork.setFrame(Math.min(this.actClues().length, 5));
     sfx("select");
 
-    if (save.done === 4) {
-      this.busy = true;
-      await fadeOut();
-      this.scene.restart({ mode: "play" });
-      return;
-    }
-    if (save.done === 5) {
+    if (lastOfAct(finished)) {
       this.busy = true;
       sfx("alarm");
       this.cameras.main.shake(300, 0.004);
       await fadeOut();
       hudVisible(false);
-      this.scene.start("net");
+      this.scene.start("net", { act: m.act });
+      return;
+    }
+    const next = this.mission;
+    if (next && next.phase !== m.phase) {
+      this.busy = true;
+      await fadeOut();
+      this.scene.restart({ mode: "play", arrive: true });
       return;
     }
     this.refreshObjective();
@@ -758,4 +766,33 @@ export class LabScene extends Phaser.Scene {
     this.near = best;
     if (!this.busy && !isDialogOpen()) setPrompt(best ? best.label() : null);
   }
+}
+
+/** Lo que dicen Ruth y Kessler cuando no tienen un encargo para Sam. */
+function chatter(who: "ruth" | "kessler", m: Mission | undefined): Line {
+  const act = m?.act ?? 4;
+  const pick = (opts: string[]) => opts[Math.floor(Math.random() * opts.length)];
+  if (who === "ruth") {
+    if (m && m.giver !== "ruth") return { who, text: m.giver === "kessler" ? "Kessler te estaba buscando. Pon cara de informe." : "La terminal es la de la izquierda. La que zumba." };
+    return {
+      who,
+      text: pick(
+        act === 1
+          ? ["La terminal es la de la izquierda. La que zumba.", "Si la VAX pita tres veces, no toques nada y llámame."]
+          : act === 2
+            ? ["Si tu función falla, no es personal. Casi nunca.", "Le puse nombre a la alarma: Pitufa."]
+            : ["Llevo tres días sin ver la luz del sol. Byte tampoco.", "El hombre del gobierno se bebió mi café. Dos veces."],
+      ),
+    };
+  }
+  return {
+    who,
+    text: pick(
+      act === 1
+        ? ["Sam, ¿verdad? El astrónomo. Que la factura cuadre y no tendremos que hablar mucho.", "Una semana, Sam. Y un informe que yo entienda."]
+        : act === 2
+          ? ["El decano pregunta por qué la factura de café se ha triplicado.", "Haz lo que tengas que hacer. Pero que no salga en el periódico."]
+          : ["Antes me molestaban 75 centavos. Ahora me llama gente que no dice su apellido.", "Sam. Buen trabajo. No se lo digas a nadie."],
+    ),
+  };
 }

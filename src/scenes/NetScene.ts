@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { VIEW_H, VIEW_W } from "../config";
 import { save, writeSave } from "../game/state";
-import { MISSIONS } from "../game/missions";
+import { MISSIONS, type Line } from "../game/missions";
 import { playDialog } from "../ui/dialog";
 import { fadeIn, fadeOut } from "../ui/fade";
 import { el, esc, ui, wait } from "../ui/dom";
@@ -42,16 +42,82 @@ function inside(p: LL, poly: LL[]): boolean {
   return c;
 }
 
-const HOPS: { ll: LL; label: string; log: string; kind: number; dy?: number }[] = [
-  { ll: [-122.3, 37.9], label: "BERKELEY", log: "02:51  CONEXION ENTRANTE  cuenta=hunter", kind: 1, dy: -6 },
-  { ll: [-119.5, 36.2], label: "TYMNET OAKLAND", log: "02:52  la llamada entra por Tymnet", kind: 0, dy: 10 },
-  { ll: [-77.2, 38.9], label: "COSTA ESTE", log: "02:53  rebota en la costa este", kind: 0 },
-  { ll: [-42, 50], label: "SATÉLITE", log: "02:53  enlace transatlántico", kind: 2 },
-  { ll: [9.7, 52.4], label: "???", log: "02:54  ORIGEN: FUERA DEL PAÍS", kind: 3 },
+interface Hop { ll: LL; label: string; log: string; kind: number; dy?: number }
+interface Finale {
+  hops: Hop[];
+  /** Ampliación de Alemania Occidental: los nodos están demasiado juntos para el mapa grande. */
+  inset?: { nodes: { x: number; y: number; label: string; kind: number; log: string }[] };
+  dialog: Line[];
+  learned: string[];
+  teaser: string;
+  next?: number;
+}
+
+const ROUTE = (t: string[]): Hop[] => [
+  { ll: [-122.3, 37.9], label: "BERKELEY", log: `${t[0]}  CONEXION ENTRANTE  cuenta=hunter`, kind: 1, dy: -6 },
+  { ll: [-119.5, 36.2], label: "TYMNET OAKLAND", log: `${t[1]}  la llamada entra por Tymnet`, kind: 0, dy: 10 },
+  { ll: [-77.2, 38.9], label: "COSTA ESTE", log: `${t[2]}  rebota en la costa este`, kind: 0 },
+  { ll: [-42, 50], label: "SATÉLITE", log: `${t[3]}  enlace transatlántico`, kind: 2 },
 ];
+
+const FINALES: Record<number, Finale> = {
+  1: {
+    hops: [...ROUTE(["02:51", "02:52", "02:53", "02:53"]), { ll: [9.7, 52.4], label: "???", log: "02:54  ORIGEN: FUERA DEL PAÍS", kind: 3 }],
+    dialog: [
+      { who: "sam", text: "No es un estudiante aburrido. La llamada cruza un océano." },
+      { who: "sam", text: "Setenta y cinco centavos. Alguien al otro lado del mundo está usando nuestra máquina para llegar a otra parte." },
+      { who: "sam", text: "Si la cierro, desaparece. Si lo observo... quizá me lleve hasta él." },
+    ],
+    learned: ["let", "+ - * /", "textos y `${}`", "if / else", "for", "console.log"],
+    teaser: "Acto 2, \"La trampa\": arrays, funciones y un anzuelo para que el intruso se quede en línea.",
+    next: 2,
+  },
+  2: {
+    hops: [...ROUTE(["03:12", "03:12", "03:13", "03:13"]), { ll: [9.2, 52.8], label: "ALEMANIA OCC.", log: "03:41  la línea cruza a la red alemana", kind: 0, dy: -10 }],
+    inset: {
+      nodes: [
+        { x: 30, y: 22, label: "BREMEN", kind: 0, log: "04:20  Universidad de Bremen: otra puerta" },
+        { x: 70, y: 46, label: "???", kind: 3, log: "04:22  la línea sigue... y se pierde" },
+      ],
+    },
+    dialog: [
+      { who: "ruth", text: "Setenta minutos leyendo documentos que no existen. La telefónica lo siguió hasta Alemania." },
+      { who: "sam", text: "Una universidad en Bremen. Pero la universidad no es él: es otra puerta." },
+      { who: "sam", text: "Detrás hay alguien más. Y ahora sabemos que le interesan los secretos militares." },
+    ],
+    learned: ["[ ] arrays", ".length", ".push()", "function", "return", "parámetros", "||"],
+    teaser: "Acto 3, \"El rastro\": objetos, filter y map para leer sus pasos y terminar el rastreo.",
+    next: 3,
+  },
+  3: {
+    hops: [...ROUTE(["02:20", "02:21", "02:21", "02:22"]), { ll: [9.2, 52.8], label: "ALEMANIA OCC.", log: "02:58  la línea cruza a la red alemana", kind: 0, dy: -10 }],
+    inset: {
+      nodes: [
+        { x: 30, y: 22, label: "BREMEN", kind: 0, log: "03:30  Universidad de Bremen" },
+        { x: 70, y: 46, label: "HANNOVER", kind: 3, log: "03:57  ORIGEN: UN APARTAMENTO EN HANNOVER" },
+      ],
+    },
+    dialog: [
+      { who: "ruth", text: "Hannover. Un apartamento. Hay un nombre en el contrato del teléfono." },
+      { who: "sam", text: "Todo empezó con setenta y cinco centavos." },
+      { who: "narrador", text: "Pero en la última sesión de hunter aparece algo que nadie esperaba: una lista de compradores." },
+      { who: "sam", text: "No trabaja solo. Vende lo que encuentra. Y alguien paga." },
+    ],
+    learned: ["{ objetos }", ".propiedad", "arrays de objetos", "filter", "map", "=>", "for...of", "+="],
+    teaser: "Próximamente — Acto 4, \"El comprador\": alcance y closures.",
+  },
+};
 
 export class NetScene extends Phaser.Scene {
   private layer: HTMLDivElement | null = null;
+  private act = 1;
+  private fin: Finale = FINALES[1];
+
+  init(data: { act?: number }): void {
+    this.act = data.act ?? 1;
+    this.fin = FINALES[this.act] ?? FINALES[1];
+    this.log = undefined as unknown as HTMLDivElement;
+  }
 
   constructor() {
     super("net");
@@ -71,7 +137,7 @@ export class NetScene extends Phaser.Scene {
     );
     hudVisible(true);
     setObjective("RASTREO", "Sigue la llamada.");
-    setClock("02:51");
+    setClock(this.fin.hops[0].log.slice(0, 5));
 
     const g = this.add.graphics();
     // rejilla de fondo
@@ -165,6 +231,7 @@ export class NetScene extends Phaser.Scene {
   private async run(): Promise<void> {
     await fadeIn();
     await wait(1100);
+    const HOPS = this.fin.hops;
     const pts = HOPS.map((h) => project(h.ll).map(Math.round) as [number, number]);
 
     for (let i = 0; i < HOPS.length; i++) {
@@ -189,8 +256,11 @@ export class NetScene extends Phaser.Scene {
       await wait(650);
     }
 
+    if (this.fin.inset) await this.runInset(pts[pts.length - 1]);
+
     // el intruso recorre la ruta en bucle
-    const dot = this.add.rectangle(pts[4][0], pts[4][1], 3, 3, 0xff2448).setDepth(11);
+    const end = pts[pts.length - 1];
+    const dot = this.add.rectangle(end[0], end[1], 3, 3, 0xff2448).setDepth(11);
     const path = [...pts].reverse();
     const loop = async () => {
       for (let i = 1; i < path.length; i++) {
@@ -204,35 +274,74 @@ export class NetScene extends Phaser.Scene {
     void loop();
 
     await wait(900);
-    await playDialog([
-      { who: "sam", text: "No es un estudiante aburrido. La llamada cruza un océano." },
-      { who: "sam", text: "Setenta y cinco centavos. Alguien al otro lado del mundo está usando nuestra máquina para llegar a otra parte." },
-      { who: "sam", text: "Si la cierro, desaparece. Si lo observo... quizá me lleve hasta él." },
-    ]);
+    await playDialog(this.fin.dialog);
 
     save.actComplete = true;
     writeSave(save);
     this.endCard();
   }
 
+  /** Ampliación de Alemania Occidental con los últimos saltos. */
+  private async runInset(from: [number, number]): Promise<void> {
+    const box = { x: 296, y: 128, w: 120, h: 70 };
+    const g = this.add.graphics().setDepth(20);
+    g.fillStyle(0x070a14, 0.95).fillRect(box.x, box.y, box.w, box.h);
+    g.lineStyle(1, 0x8fd3ff, 1).strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+    // línea punteada desde Europa hasta la ampliación
+    const lens = this.add.graphics().setDepth(19);
+    const n = 40;
+    for (let i = 0; i < n; i += 2) {
+      const t = i / n;
+      lens.fillStyle(0x8fd3ff, 0.7).fillRect(Math.round(from[0] + (box.x + box.w - from[0]) * t), Math.round(from[1] + (box.y - from[1]) * t), 1, 1);
+    }
+    // contorno muy simplificado de Alemania Occidental, en puntos
+    const shape = [[18, 12], [44, 8], [62, 14], [84, 20], [96, 34], [92, 56], [70, 62], [44, 60], [24, 48], [14, 30]];
+    const poly = shape.map(([x, y]) => [x, y] as LL);
+    for (let y = 6; y < 66; y += 3)
+      for (let x = 8; x < 112; x += 3)
+        if (inside([x, y], poly)) g.fillStyle((x + y) % 7 === 0 ? 0x3d5e8c : 0x2b3a63, 1).fillRect(box.x + x, box.y + y, 2, 2);
+    this.label(box.x - 6, box.y - 4, "ALEMANIA OCCIDENTAL", "#8fd3ff", -4);
+    let prev: [number, number] | null = null;
+    for (const nd of this.fin.inset!.nodes) {
+      const p: [number, number] = [box.x + nd.x, box.y + nd.y];
+      if (prev) await this.drawLink(prev, p, 900);
+      const icon = this.add.sprite(p[0], p[1], "net_icons", nd.kind).setDepth(21);
+      this.tweens.add({ targets: icon, scale: { from: 2.2, to: 1 }, duration: 260, ease: "Back.Out" });
+      if (nd.kind === 3) {
+        this.tweens.add({ targets: icon, alpha: 0.35, duration: 300, yoyo: true, repeat: -1, ease: "Stepped" });
+        sfx("alarm");
+        this.cameras.main.shake(260, 0.006);
+      }
+      const lbl = this.label(p[0], p[1], nd.label, nd.kind === 3 ? "#ff8a8a" : "#8fd3ff");
+      lbl.style.zIndex = "2";
+      this.print(nd.log, nd.kind === 3 ? "#ff8a8a" : undefined);
+      setClock(nd.log.slice(0, 5));
+      prev = p;
+      await wait(700);
+    }
+  }
+
   private endCard(): void {
     setObjective(null);
+    const acts = MISSIONS.filter((m) => m.act === this.act);
+    const next = this.fin.next;
     const c = el("div", "endcard pixel-frame");
     c.innerHTML = `
-      <h2>ACTO 1 COMPLETADO</h2>
-      <p>Empezaste sin saber programar. Ya sabes:</p>
-      <ul><li>let</li><li>+ - * /</li><li>textos y \`\${}\`</li><li>if / else</li><li>for</li><li>console.log</li></ul>
-      <table class="stats">${MISSIONS.map((m) => {
+      <h2>ACTO ${this.act} COMPLETADO</h2>
+      <p>${this.act === 1 ? "Empezaste sin saber programar. Ya sabes:" : "Nuevo en tu cuaderno:"}</p>
+      <ul>${this.fin.learned.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>
+      <table class="stats">${acts.map((m) => {
         const a = save.attempts[m.id] ?? 1;
         const h = save.hintsUsed[m.id] ?? 0;
         const star = a === 1 && h === 0 ? "PERFECTO" : h === 0 ? "SIN PISTAS" : `${h} PISTA${h > 1 ? "S" : ""}`;
         return `<tr><td>${esc(m.title)}</td><td>${a} intento${a > 1 ? "s" : ""}</td><td class="${a === 1 && h === 0 ? "gold" : ""}">${star}</td></tr>`;
       }).join("")}</table>
-      <p>Próximamente — Acto 2, "La trampa": arrays, funciones y un archivo falso para que el intruso muerda el anzuelo.</p>
-      <div class="row"><button class="btn primary back">VOLVER AL LABORATORIO</button><button class="btn menu">MENU PRINCIPAL</button></div>
+      <p>${esc(this.fin.teaser)}</p>
+      <div class="row"><button class="btn primary back">${next ? `CONTINUAR: ACTO ${next}` : "VOLVER AL LABORATORIO"}</button><button class="btn menu">MENU PRINCIPAL</button></div>
     `;
     this.layer!.append(c);
     c.style.pointerEvents = "auto";
+    c.style.zIndex = "10";
     sfx("success");
     (c.querySelector(".back") as HTMLButtonElement).onclick = async () => {
       await fadeOut();

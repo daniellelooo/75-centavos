@@ -7,6 +7,8 @@ export interface RunInput {
   globals: Record<string, unknown>;
   /** Nombres de variables del jugador que la misión quiere leer al final. */
   capture: string[];
+  /** Expresión opcional evaluada al final (p. ej. para llamar a sus funciones). */
+  probe?: string;
 }
 
 export interface RunOutput {
@@ -67,8 +69,11 @@ export function runSandboxed(input: RunInput): RunOutput {
     .map((c) => `${JSON.stringify(c)}: (typeof ${c} === "undefined" ? undefined : ${c})`)
     .join(", ");
 
+  const parts = grab ? [grab] : [];
+  if (input.probe)
+    parts.push(`__probe: (() => { try { return (${input.probe}); } catch (e) { return { __err: String((e && e.message) || e) }; } })()`);
   // "use strict" evita que una asignación sin `let` cree una global escondida.
-  const body = `"use strict";\n${input.code}\n;return { ${grab} };`;
+  const body = `"use strict";\n${input.code}\n;return { ${parts.join(", ")} };`;
   // new Function añade 2 líneas de cabecera + 1 de "use strict".
   const offset = 3;
 

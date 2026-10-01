@@ -5,7 +5,7 @@ import { isDialogOpen } from "./dialog";
 let openNow = false;
 
 /** Vista del corcho con las pistas reunidas. */
-export function openBoard(clues: { title: string; text: string }[], total: number): Promise<void> {
+export function openBoard(clues: { title: string; text: string }[], total: number, heading = "EL CASO DE LOS 75 CENTAVOS"): Promise<void> {
   if (openNow || isDialogOpen()) return Promise.resolve();
   openNow = true;
   return new Promise((resolve) => {
@@ -17,7 +17,7 @@ export function openBoard(clues: { title: string; text: string }[], total: numbe
         ? `<div class="note"><b>${esc(c.title)}</b>${esc(c.text)}</div>`
         : `<div class="note empty">pista sin descubrir</div>`;
     }).join("");
-    b.innerHTML = `<h2>EL CASO DE LOS 75 CENTAVOS</h2>${notes}<button class="btn close">CERRAR [ESC]</button>`;
+    b.innerHTML = `<h2>${esc(heading)}</h2>${notes}<button class="btn close">CERRAR [ESC]</button>`;
     ui.append(b);
     const close = () => {
       window.removeEventListener("keydown", onKey, true);

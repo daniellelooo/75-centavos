@@ -5,7 +5,7 @@ import { translateError } from "../src/game/errors";
 
 function play(id: string, code: string) {
   const m = MISSIONS.find((x) => x.id === id)!;
-  const outs = m.cases.map((c) => runSandboxed({ code, globals: c.globals(), capture: m.capture }));
+  const outs = m.cases.map((c) => runSandboxed({ code, globals: c.globals(), capture: m.capture, probe: m.probe }));
   return m.check(outs, m.cases);
 }
 
@@ -48,6 +48,43 @@ describe("errores típicos de principiante dan una pista útil", () => {
       "let noches = 0; for (let d = 0; d <= 30; d++) { if (huboConexion(d)) noches++; } console.log(noches);",
     );
     expect(r.feedback).toMatch(/31 días/);
+  });
+});
+
+describe("actos 2 y 3: errores típicos", () => {
+  it("m6: orden equivocado", () => {
+    expect(play("m6", 'let sospechosas = ["nadir", "quasar", "hunter"]; console.log(sospechosas.length);').feedback).toMatch(/orden/);
+  });
+  it("m7: guardar todas las horas", () => {
+    const code = "let madrugada = []; for (let i = 0; i < horas.length; i++) { madrugada.push(horas[i]); } console.log(madrugada);";
+    expect(play("m7", code).feedback).toMatch(/if/);
+  });
+  it("m8: olvidar el return", () => {
+    const code = 'function esSospechosa(cuenta) { cuenta === "hunter" || cuenta === "quasar" || cuenta === "nadir"; }';
+    expect(play("m8", code).feedback).toMatch(/return/);
+  });
+  it("m8: sin función", () => {
+    expect(play("m8", "let x = 1;").feedback).toMatch(/No encuentro/);
+  });
+  it("m9: sumar minutos sin convertir", () => {
+    const code = "function duracion(h1, m1, h2, m2) { return (h2 - h1) * 60 + (m2 + m1); } console.log(duracion(2, 51, 3, 40));";
+    expect(play("m9", code).pass).toBe(false);
+  });
+  it("m10: nombre de archivo sin .txt", () => {
+    const code = "function archivoFalso(t) { return `SDINET-${t}`; } let archivos = []; for (const t of temas) archivos.push(archivoFalso(t)); console.log(archivos.length);";
+    expect(play("m10", code).feedback).toMatch(/SDINET-radares\.txt/);
+  });
+  it("m11: número entre comillas", () => {
+    expect(play("m11", 'let conexion = { cuenta: "hunter", hora: "3", minutos: 47 }; console.log(conexion.cuenta);').feedback).toMatch(/comillas/);
+  });
+  it("m12: contar todo", () => {
+    expect(play("m12", "let veces = 0; for (const r of registros) veces++; console.log(veces);").feedback).toMatch(/todos/);
+  });
+  it("m14: olvidar el filter", () => {
+    expect(play("m14", "const busquedas = registros.map((r) => r.comando); console.log(busquedas);").feedback).toMatch(/Filtra/);
+  });
+  it("m15: sumar objetos en vez de minutos", () => {
+    expect(play("m15", "let total = 0; for (const s of sesiones) { total += s; } console.log(total);").feedback).toMatch(/texto/);
   });
 });
 
