@@ -45,9 +45,11 @@ const errorLineField = StateField.define<DecorationSet>({
 
 /** Abre la terminal. Resuelve true si el jugador resolvió la misión. */
 /** Abre la terminal. Resuelve true si se resolvió. En modo repaso no toca el progreso. */
-export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}): Promise<boolean> {
-  const practice = !!opts.practice;
-  const draftKey = practice ? `p:${mission.id}` : mission.id;
+export function openTerminal(mission: Mission, opts: { practice?: boolean; training?: { vocabAt: number } } = {}): Promise<boolean> {
+  const training = opts.training;
+  // los ejercicios de Margarita se comportan como un repaso: no tocan la historia
+  const practice = !!opts.practice || !!training;
+  const draftKey = training ? `t:${mission.id}` : practice ? `p:${mission.id}` : mission.id;
   let practiceHints = 0;
   return new Promise((resolve) => {
     sfx("open");
@@ -58,7 +60,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
 
     const hintsShown = practice ? 0 : (save.hintsUsed[mission.id] ?? 0);
     left.innerHTML = `
-      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
+      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${training ? "CASA DE MARGARITA · " : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
       <div class="scroll">
         <h3>${esc(mission.lesson.title)}</h3>
         <p>${esc(mission.lesson.body)}</p>
@@ -128,7 +130,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
       extensions: [
         basicSetup,
         javascript(),
-        javascriptLanguage.data.of({ autocomplete: vocabFor(MISSIONS.indexOf(mission)) }),
+        javascriptLanguage.data.of({ autocomplete: vocabFor(training ? training.vocabAt : MISSIONS.indexOf(mission)) }),
         Prec.highest(keymap.of([{ key: "Tab", run: acceptCompletion }])),
         keymap.of([indentWithTab]),
         syntaxHighlighting(amber),
@@ -226,12 +228,12 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
       await wait(200);
       print(`<div class="ok">${esc(verdict.feedback)}</div>`);
       sfx("success");
-      if (practice) {
+      if (practice && !training) {
         const prev = save.review[mission.id];
         save.review[mission.id] = { ok: (prev?.ok ?? 0) + 1, last: Date.now() };
         writeSave(save);
       }
-      const stamp = el("div", "stamp", practice ? "REPASADO" : "ACEPTADO");
+      const stamp = el("div", "stamp", training ? "APROBADO" : practice ? "REPASADO" : "ACEPTADO");
       root.append(stamp);
       runBtn.textContent = "CONTINUAR";
       runBtn.disabled = false;

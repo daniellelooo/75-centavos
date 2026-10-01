@@ -440,7 +440,7 @@ def build_portraits():
 # izquierda (por eso al principio Sam "caminaba al revés").
 
 PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source", "piano_characters.png")
-PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 13}
+PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 6}
 PACK_ROWS = [0, 3, 2, 1]  # abajo, izquierda, arriba, derecha
 
 PACK_SRC = {
@@ -455,6 +455,10 @@ def pack_color(name, ch, y):
     skin, skin_s, skin_l = "#f6d0a8", "#dca27e", "#fbe2c4"
     if ch == "k":
         return "#1c1830"
+    if name == "margarita":
+        # base de pelo largo: canas plateadas, cara clara, rebeca morada y falda lavanda
+        return {"s": "#d6d6de", "p": "#a9a9b8", "S": skin, "o": "#7a4a9a" if not head else "#8a8a9a",
+                "B": "#9a6ac0", "y": "#8a5cb0", "M": "#b4504a", "W": "#fffbe8"}[ch]
     if ch == "W" and not (name == "sam" and not head):
         return "#fffbe8"
     if ch == "s":
@@ -468,11 +472,6 @@ def pack_color(name, ch, y):
         if ch == "W":
             return "#f4ecd8"
         return {"b": "#5c402c", "B": "#8a6446", "p": skin_s, "r": "#8e2a2a", "o": "#3a281c", "y": "#fed018"}[ch]
-    if name == "margarita":
-        # pelo plateado, rebeca morada y blusa crema
-        if ch == "H":
-            return "#c2c2c8" if y % 3 else "#dfdfe2"
-        return {"r": "#7a4a9a", "p": "#b4504a" if y == 11 else "#a57cc4", "y": "#fed018", "b": "#3e3a5c", "B": "#8fd3ff", "o": "#4a3426"}[ch]
     # ruth
     if head:
         return {"r": "#cc4a2e", "p": "#f08a5a" if y <= 6 else ("#b4504a" if y == 11 else "#f0a39a"), "B": "#bfe6ff", "b": "#3e3a5c", "o": "#fed018", "y": "#fed018"}[ch]
@@ -491,7 +490,7 @@ def pack_frame(name, row, col, edits=()):
             line.append("." if c[3] == 0 else PACK_SRC["#%02x%02x%02x" % c[:3]])
         grid.append(line)
     if name == "ruth":
-        # el uniforme marino del pack pasa a vestido turquesa (solo el interior, no el contorno)
+        # el uniforme marino del pack pasa a vestido (solo el interior, no el contorno)
         def edge_r(x, y):
             return any(not (0 <= x + dx < 16 and 0 <= y + dy < 24) or grid[y + dy][x + dx] == "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
         for y in range(13, 19):
@@ -499,14 +498,11 @@ def pack_frame(name, row, col, edits=()):
                 if grid[y][x] == "k" and not edge_r(x, y):
                     grid[y][x] = "D" if (x + y) % 5 else "E"
     if name == "margarita":
-        # el pelo negro del pack pasa a plateado: los píxeles oscuros interiores
-        # (no los del contorno) se vuelven pelo
-        def edge(x, y):
-            return any(not (0 <= x + dx < 16 and 0 <= y + dy < 24) or grid[y + dy][x + dx] == "." for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
-        for y in range(24):
-            for x in range(16):
-                if grid[y][x] == "k" and not edge(x, y) and (y <= 15 or row in (1, 2, 3)):
-                    grid[y][x] = "H"
+        # la boca: los píxeles rosados rodeados de cara
+        for y in (11, 12):
+            for x in range(1, 15):
+                if grid[y][x] == "p" and "S" in (grid[y][x - 1], grid[y][x + 1]):
+                    grid[y][x] = "M"
     for y, x, ch in edits:
         grid[y][x] = ch
     for y in range(24):
@@ -521,9 +517,9 @@ def pack_frame(name, row, col, edits=()):
 
 PACK_MOODS = {
     "margarita": {
-        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830")],
-        "serio": [(11, 7, "#dca27e"), (11, 8, "#dca27e")],
-        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a")],
+        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830"), (7, 5, "#6a6a7a"), (7, 10, "#6a6a7a")],
+        "serio": [(11, 6, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830"), (11, 9, "#1c1830"), (8, 6, "#6a6a7a"), (8, 9, "#6a6a7a")],
+        "alegre": [(11, 6, "#b4504a"), (11, 7, "#fffbe8"), (11, 8, "#fffbe8"), (11, 9, "#b4504a"), (12, 6, "#f0a39a"), (12, 9, "#f0a39a")],
     },
     "sam": {
         "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830"), (7, 4, "#1c1830"), (7, 11, "#1c1830"), (10, 13, "#8fd3ff")],
@@ -567,6 +563,106 @@ def build():
     print("ok", sheet.size)
 
 
+def build_bike():
+    """Sam en bici visto de lado (hacia la derecha), 4 cuadros de pedaleo.
+    Mismo estilo que el resto: colores planos de la paleta y contorno de tinta."""
+    import math
+    W, H, N = 40, 34, 4
+    FH, OY = 38, 4  # alto final y desplazamiento de la bici hacia abajo
+    INK = hex2rgba("#1c1830")
+    sheet = Image.new("RGBA", (W * N, FH), (0, 0, 0, 0))
+    torso = pack_frame("sam", PACK_ROWS[3], 0).crop((0, 0, 16, 19))
+    rear, front, crank = (9, 26), (31, 26), (19, 26)
+
+    def line(px, a, b, color, thick=1):
+        (x0, y0), (x1, y1) = a, b
+        n = max(abs(x1 - x0), abs(y1 - y0), 1)
+        for i in range(n + 1):
+            x = round(x0 + (x1 - x0) * i / n)
+            y = round(y0 + (y1 - y0) * i / n)
+            for dx in range(thick):
+                for dy in range(thick):
+                    if 0 <= x + dx < W and 0 <= y + dy < H:
+                        px[x + dx, y + dy] = hex2rgba(color)
+
+    def outline(im):
+        src = im.copy()
+        a, b = src.load(), im.load()
+        for y in range(H):
+            for x in range(W):
+                if a[x, y][3]:
+                    continue
+                if any(0 <= x + dx < W and 0 <= y + dy < H and a[x + dx, y + dy][3] and a[x + dx, y + dy] != INK
+                       for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                    b[x, y] = INK
+
+    for f in range(N):
+        im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        px = im.load()
+        ang = f * math.pi / 2
+        # pierna de atrás (más oscura), por detrás del cuadro
+        hip = (16, 17)
+        pb = (round(crank[0] - 3 * math.cos(ang)), round(crank[1] - 3 * math.sin(ang)))
+        kb = (round((hip[0] + pb[0]) / 2 + 3), round((hip[1] + pb[1]) / 2 - 2))
+        line(px, hip, kb, "#3a281c", 2)
+        line(px, kb, pb, "#3a281c", 2)
+        px[pb[0] + 1, pb[1]] = INK
+        # ruedas: neumático de tinta, llanta gris y radios que giran
+        for cx, cy in (rear, front):
+            for t in range(72):
+                a = t * math.pi / 36
+                px[round(cx + 6.5 * math.cos(a)), round(cy + 6.5 * math.sin(a))] = INK
+                px[round(cx + 5.4 * math.cos(a)), round(cy + 5.4 * math.sin(a))] = hex2rgba("#8a8a9a")
+            for k in range(2):
+                a = ang / 2 + k * math.pi / 2
+                for r in range(1, 5):
+                    px[round(cx + r * math.cos(a)), round(cy + r * math.sin(a))] = hex2rgba("#c2c2c8")
+                    px[round(cx - r * math.cos(a)), round(cy - r * math.sin(a))] = hex2rgba("#c2c2c8")
+            px[cx, cy] = INK
+        # cuadro rojo, sillín y manillar
+        red = "#c83a3a"
+        line(px, rear, crank, red, 1)
+        line(px, rear, (15, 17), red, 1)
+        line(px, (15, 17), crank, red, 2)
+        line(px, (15, 17), (28, 17), red, 2)
+        line(px, crank, (28, 17), red, 2)
+        line(px, (28, 15), front, "#8a8a9a", 1)
+        line(px, (12, 15), (17, 15), "#3a281c", 2)
+        line(px, (28, 12), (30, 12), "#3a281c", 1)
+        line(px, (28, 12), (28, 16), "#8a8a9a", 1)
+        # biela y pedal delantero
+        pf = (round(crank[0] + 3 * math.cos(ang)), round(crank[1] + 3 * math.sin(ang)))
+        line(px, crank, pf, "#8a8a9a", 1)
+        outline(im)
+        bike = im
+        im = Image.new("RGBA", (W, FH), (0, 0, 0, 0))
+        im.alpha_composite(bike, (0, OY))
+        # Sam: el torso del sprite de siempre (hasta la cintura), sentado en el sillín
+        im.alpha_composite(torso, (8, OY + 17 - 19 + (1 if f % 2 else 0)))
+        # pierna de delante, encima de todo
+        kf = (round((hip[0] + pf[0]) / 2 + 3), round((hip[1] + pf[1]) / 2 - 2))
+        leg = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        lp = leg.load()
+        line(lp, hip, kf, "#5c402c", 2)
+        line(lp, kf, pf, "#5c402c", 2)
+        lp[pf[0], pf[1] + 1] = hex2rgba("#3a281c")
+        lp[pf[0] + 1, pf[1] + 1] = hex2rgba("#3a281c")
+        outline(leg)
+        im.alpha_composite(leg, (0, OY))
+        # brazo hacia el manillar
+        arm = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ap = arm.load()
+        line(ap, (18, 13), (27, 12), "#f4ecd8", 1)
+        ap[28, 12] = hex2rgba("#f6d0a8")
+        outline(arm)
+        im.alpha_composite(arm, (0, OY + (1 if f % 2 else 0)))
+        sheet.alpha_composite(im, (f * W, 0))
+    sheet.save(os.path.join(OUT, "sam_bike.png"))
+    sheet.resize((sheet.width * 8, sheet.height * 8), Image.NEAREST).save(os.path.join(PREV, "sam_bike.png"))
+    print("bike", sheet.size)
+
+
 if __name__ == "__main__":
     build()
     build_portraits()
+    build_bike()

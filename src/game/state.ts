@@ -21,12 +21,15 @@ export interface SaveData {
   /** Último acto cuya presentación ya se vio. */
   actIntro: number;
   actComplete: boolean;
+  /** Sesiones con Margarita: ejercicios aprobados por sesión. Sin clave, aún no la mandaron;
+   *  igual a los ejercicios, terminada; uno más, ya se contó en el laboratorio. */
+  training: Record<string, number>;
 }
 
 const KEY = "75centavos.save.v1";
 
 export function freshSave(): SaveData {
-  return { version: 1, done: 0, briefed: false, picked: false, drafts: {}, hintsUsed: {}, attempts: {}, review: {}, introSeen: false, actIntro: 0, actComplete: false };
+  return { version: 1, done: 0, briefed: false, picked: false, drafts: {}, hintsUsed: {}, attempts: {}, review: {}, introSeen: false, actIntro: 0, actComplete: false, training: {} };
 }
 
 export function loadSave(): SaveData | null {

@@ -5,6 +5,8 @@ import { BootScene } from "./scenes/BootScene";
 import { LabScene } from "./scenes/LabScene";
 import { NetScene } from "./scenes/NetScene";
 import { ViewScene } from "./scenes/ViewScene";
+import { TravelScene } from "./scenes/TravelScene";
+import { HouseScene } from "./scenes/HouseScene";
 import { mountHud } from "./ui/hud";
 import { applyCrt } from "./game/settings";
 
@@ -35,7 +37,7 @@ const game = new Phaser.Game({
   roundPixels: true,
   backgroundColor: "#07080f",
   scale: { mode: Phaser.Scale.NONE, zoom },
-  scene: [BootScene, LabScene, NetScene, ViewScene],
+  scene: [BootScene, LabScene, NetScene, ViewScene, TravelScene, HouseScene],
 });
 // solo en desarrollo: acceso al juego desde la consola para las pruebas
 if (import.meta.env.DEV) (window as unknown as { __game: Phaser.Game }).__game = game;

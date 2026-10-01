@@ -19,6 +19,7 @@ import { startMusic, stopMusic, isMusicOn } from "../audio/music";
 import { setPauseHooks } from "../ui/pause";
 import { stageOf } from "../game/stage";
 import { settings } from "../game/settings";
+import { trainingBefore } from "../game/training";
 
 // Medidas de la sala (en píxeles de arte, origen en la esquina superior del muro).
 const ROOM_W = 416;
@@ -45,6 +46,8 @@ export class LabScene extends Phaser.Scene {
   private mode: Mode = "play";
   private night = false;
   private arrive = false;
+  /** Sesión de Margarita de la que vuelve Sam (entra por la puerta). */
+  private back = "";
   private player!: Phaser.GameObjects.Sprite;
   private facing: Dir = "up";
   private npcs: Partial<Record<CharName, Phaser.GameObjects.Sprite>> = {};
@@ -85,9 +88,10 @@ export class LabScene extends Phaser.Scene {
     super("lab");
   }
 
-  init(data: { mode?: Mode; arrive?: boolean }): void {
+  init(data: { mode?: Mode; arrive?: boolean; back?: string }): void {
     this.mode = data.mode ?? "play";
     this.arrive = !!data.arrive;
+    this.back = data.back ?? "";
     const m = MISSIONS[save.done];
     this.night = this.mode === "title" || !m || m.phase === "noche";
     this.solids = [];
@@ -679,8 +683,11 @@ export class LabScene extends Phaser.Scene {
       {
         id: "exit",
         x: 208, y: 220, r: 14,
-        label: () => "Salida",
-        use: () => say([{ who: "sam", text: this.night ? "No pienso irme ahora." : "Todavía no. Hay trabajo." }]),
+        label: () => (this.training()?.state === "away" ? "Ir a casa de Margarita" : "Salida"),
+        use: async () => {
+          if (this.training()?.state === "away") return this.goToMargarita();
+          await say([{ who: "sam", text: this.night ? "No pienso irme ahora." : "Todavía no. Hay trabajo." }]);
+        },
       },
     );
   }
@@ -716,6 +723,12 @@ export class LabScene extends Phaser.Scene {
       save.introSeen = true;
       writeSave(save);
       if (m.act === 1) showControls();
+    } else if (this.back) {
+      // vuelve de casa de Margarita
+      this.player.setPosition(208, 240);
+      await this.walk(this.player, "sam", [[208, 200]], 50);
+      this.facing = "up";
+      this.player.setFrame(charFrame("sam", "up"));
     } else if (this.arrive && m) {
       await showCard(m.clock, "Esa misma noche");
       // Sam entra por la puerta del sótano
@@ -741,6 +754,11 @@ export class LabScene extends Phaser.Scene {
     }
     // la terminal de Sam avisa cuando la noche trae una conexión
     this.termSprite.play(this.night && m.giver === "terminal" ? "term-alert" : "term-on", true);
+    if (this.training()?.state === "away") {
+      setObjective("CASA DE MARGARITA", "Ve a casa de Margarita. Sal por la puerta.");
+      this.pointAt("exit");
+      return;
+    }
     if (!save.briefed && m.giver !== "terminal") {
       setObjective(m.title.toUpperCase(), m.giver === "ruth" ? "Habla con Ruth." : "Habla con Kessler.");
       this.pointAt(null);
@@ -758,6 +776,17 @@ export class LabScene extends Phaser.Scene {
     }
     setObjective(m.title.toUpperCase(), "Ve a tu terminal.");
     this.pointAt("terminal");
+  }
+
+  /** Sesión de Margarita pendiente antes de la misión actual y en qué punto está. */
+  private training() {
+    const m = this.mission;
+    const t = save.briefed ? undefined : trainingBefore(m?.id);
+    if (!t) return null;
+    const n = save.training[t.id];
+    const total = t.exercises.length;
+    const state = n === undefined ? "unsent" : n < total ? "away" : n === total ? "back" : "done";
+    return state === "done" ? null : { set: t, state };
   }
 
   /** Lo que hay que recoger antes de la terminal (si la misión lo pide y aún no se hizo). */
@@ -1131,9 +1160,22 @@ export class LabScene extends Phaser.Scene {
       printer: [309, 34],
       filing: [396, 84],
       phone: [210, 60],
+      exit: [208, 206],
     };
     const [x, y] = pos[id];
     this.marker.setPosition(x, y).setVisible(true);
+  }
+
+  /** En bici hasta Elmwood. */
+  private async goToMargarita(): Promise<void> {
+    const tr = this.training();
+    if (!tr) return;
+    this.busy = true;
+    setPrompt(null);
+    await this.walk(this.player, "sam", [[208, 240]], 50);
+    await fadeOut();
+    hudVisible(false);
+    this.scene.start("travel", { to: "house", set: tr.set.id });
   }
 
   private async talk(lines: Line[]): Promise<void> {
@@ -1149,6 +1191,26 @@ export class LabScene extends Phaser.Scene {
     const m = this.mission;
     const npc = this.npcs[who];
     if (who === "ruth") npc?.setFrame(charFrame("ruth", this.player.x < (npc?.x ?? 0) ? "left" : "right"));
+    const tr = this.training();
+    if (m && tr && m.giver === who) {
+      this.setEmote(null, 0);
+      if (tr.state === "unsent") {
+        await this.talk(tr.set.sendoff);
+        save.training[tr.set.id] = 0;
+        writeSave(save);
+        sfx("select");
+        this.refreshObjective();
+        if (who === "kessler") void this.kesslerGoesBack();
+        return;
+      }
+      if (tr.state === "away") {
+        await this.talk([{ who, text: "Margarita te está esperando. La puerta está abajo." }]);
+        return;
+      }
+      await this.talk(tr.set.back);
+      save.training[tr.set.id] = tr.set.exercises.length + 1;
+      writeSave(save);
+    }
     if (m && !save.briefed && m.giver === who) {
       this.setEmote(null, 0);
       await this.talk(m.briefing);
@@ -1188,6 +1250,9 @@ export class LabScene extends Phaser.Scene {
           this.refreshObjective();
           return;
         }
+      } else if (this.training()?.state === "away") {
+        await this.talk([{ who: "sam", text: "Primero, la casa de Margarita. Ella me pondrá a practicar." }]);
+        return;
       } else {
         const name = m.giver === "ruth" ? "Ruth" : "Kessler";
         await this.talk([{ who: "sam", text: `Primero debería hablar con ${name}. Sabe qué hay que hacer.` }]);

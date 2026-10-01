@@ -749,6 +749,7 @@ html, body {
   animation: rise 0.3s steps(3) both;
 }
 .view-cap span:first-child { flex: 1; }
+.travel-cap { left: calc(140 * var(--u)); right: calc(140 * var(--u)); font-style: normal; color: var(--amber, #fed018); pointer-events: none; }
 .view-cap .key { font-style: normal; }
 .bark {
   position: absolute;

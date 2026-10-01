@@ -6,6 +6,7 @@ import { ACT3 } from "./acts/act3";
 import { ACT4 } from "./acts/act4";
 import { ACT5 } from "./acts/act5";
 import { ACT6 } from "./acts/act6";
+import { TRAINING_EXERCISES } from "./training";
 
 export type { Line, Mission, Speaker, TestCase, CheckResult } from "./types";
 
@@ -78,6 +79,9 @@ export const ACTS: ActInfo[] = [
 
 /** Futuros actos, visibles bloqueados en el cuaderno. */
 export const FUTURE_ACTS = [{ n: 7, title: "Nuevas historias", topics: "el DOM, eventos y módulos" }];
+
+/** Busca una misión de la historia o un ejercicio de Margarita. */
+export const findMission = (id: string) => MISSIONS.find((m) => m.id === id) ?? TRAINING_EXERCISES.find((m) => m.id === id);
 
 export const missionsOfAct = (n: number) => MISSIONS.filter((m) => m.act === n);
 export const actOf = (missionIndex: number) => MISSIONS[missionIndex]?.act ?? ACTS.length + 1;
