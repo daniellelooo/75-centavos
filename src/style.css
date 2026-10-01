@@ -701,3 +701,20 @@ html, body {
     radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.5) 100%);
 }
 #game.crt canvas { filter: saturate(1.08) contrast(1.04); }
+
+/* ------------------------------------------------------------ barra de teclas difíciles */
+.term .keybar { display: flex; align-items: center; gap: calc(2 * var(--u)); font-size: calc(7 * var(--u)); color: #a25a20; }
+.term .keybar button {
+  font-family: var(--font-crt);
+  font-size: calc(9 * var(--u));
+  line-height: 1;
+  min-width: calc(14 * var(--u));
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+  background: rgba(254, 208, 24, 0.08);
+  border: var(--u) solid var(--amber-dim);
+  color: var(--amber);
+  cursor: pointer;
+  text-shadow: inherit;
+}
+.term .keybar button:hover { background: var(--amber); color: #120806; text-shadow: none; }
+.term .keybar .kb-tip { margin-left: auto; }

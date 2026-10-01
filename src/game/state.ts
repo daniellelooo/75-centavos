@@ -7,6 +7,8 @@ export interface SaveData {
   done: number;
   /** El jugador ya escuchó el encargo de la misión actual. */
   briefed: boolean;
+  /** Ya recogió lo que la misión pide antes de la terminal (papel, expediente, llamada). */
+  picked: boolean;
   /** Borradores de código por misión. */
   drafts: Record<string, string>;
   /** Pistas usadas por misión (para el resumen final). */
@@ -24,7 +26,7 @@ export interface SaveData {
 const KEY = "75centavos.save.v1";
 
 export function freshSave(): SaveData {
-  return { version: 1, done: 0, briefed: false, drafts: {}, hintsUsed: {}, attempts: {}, review: {}, introSeen: false, actIntro: 0, actComplete: false };
+  return { version: 1, done: 0, briefed: false, picked: false, drafts: {}, hintsUsed: {}, attempts: {}, review: {}, introSeen: false, actIntro: 0, actComplete: false };
 }
 
 export function loadSave(): SaveData | null {

@@ -17,6 +17,7 @@ import { addSnow, addRain, addLightning, addXmasLights } from "./weather";
 import { startHum, setHum, stopHum } from "../audio/ambient";
 import { startMusic, stopMusic, isMusicOn } from "../audio/music";
 import { setPauseHooks } from "../ui/pause";
+import { stageOf } from "../game/stage";
 import { settings } from "../game/settings";
 
 // Medidas de la sala (en píxeles de arte, origen en la esquina superior del muro).
@@ -60,6 +61,16 @@ export class LabScene extends Phaser.Scene {
   private lampOn = true;
   private lamp!: Phaser.GameObjects.Image;
   private termSprite!: Phaser.GameObjects.Sprite;
+  private printerSprite!: Phaser.GameObjects.Sprite;
+  private phoneSprite!: Phaser.GameObjects.Image;
+  private shadows = new Map<Phaser.GameObjects.Sprite, Phaser.GameObjects.Image>();
+  private npcSolids: Partial<Record<CharName, Rect>> = {};
+  private emoteSprite: Phaser.GameObjects.Sprite | null = null;
+  private emoteTarget: Phaser.GameObjects.Sprite | null = null;
+  private carried: Phaser.GameObjects.Image | null = null;
+  private ringTimer: Phaser.Time.TimerEvent | null = null;
+  private kesslerOut = false;
+  private catSprite!: Phaser.GameObjects.Sprite;
   private playerShadow!: Phaser.GameObjects.Image;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private busy = false;
@@ -81,6 +92,13 @@ export class LabScene extends Phaser.Scene {
     this.things = [];
     this.npcs = {};
     this.busy = false;
+    this.shadows = new Map();
+    this.npcSolids = {};
+    this.emoteSprite = null;
+    this.emoteTarget = null;
+    this.carried = null;
+    this.ringTimer = null;
+    this.kesslerOut = false;
   }
 
   create(): void {
@@ -202,8 +220,10 @@ export class LabScene extends Phaser.Scene {
     return o;
   }
 
-  private solid(x: number, y: number, w: number, h: number) {
-    this.solids.push({ x, y, w, h });
+  private solid(x: number, y: number, w: number, h: number): Rect {
+    const r = { x, y, w, h };
+    this.solids.push(r);
+    return r;
   }
 
   private buildRoom(): void {
@@ -281,7 +301,7 @@ export class LabScene extends Phaser.Scene {
     this.solid(176, 76, 48, 18);
     const t2 = this.add.sprite(184, 60, "terminal", this.night ? 2 : 0).setOrigin(0, 0).setDepth(100 + 96);
     if (!this.night) t2.play({ key: "term-on", startFrame: 1 });
-    this.prop("phone", 206, 72).setDepth(100 + 95);
+    this.phoneSprite = this.prop("phone", 206, 72).setDepth(100 + 95);
     this.prop("papers", 210, 62).setDepth(100 + 94);
     this.prop("chair", 192, 92);
     this.solid(194, 100, 12, 8);
@@ -290,6 +310,7 @@ export class LabScene extends Phaser.Scene {
     this.prop("table", 296, 54);
     this.solid(296, 58, 26, 14);
     const pr = this.add.sprite(299, 42, "printer").setOrigin(0, 0).setDepth(100 + 72);
+    this.printerSprite = pr;
     if (!this.night) {
       // la impresora trabaja a ratos
       const burst = () => {
@@ -325,7 +346,7 @@ export class LabScene extends Phaser.Scene {
 
     // --- Byte, la gata, durmiendo en la alfombra
     this.add.image(209, 162, "shadow").setScale(1.5, 1).setDepth(2);
-    this.add.sprite(198, 148, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
+    this.catSprite = this.add.sprite(198, 148, "cat").setOrigin(0, 0).setDepth(100 + 162).play("cat-sleep");
     this.solid(199, 153, 19, 8);
 
     // --- telescopio de Sam junto a la ventana
@@ -368,8 +389,8 @@ export class LabScene extends Phaser.Scene {
     if (!this.night) {
       this.npcs.ruth = this.add.sprite(238, 100, "chars", charFrame("ruth", "left")).setOrigin(0.5, 1);
       this.npcs.kessler = this.add.sprite(261, 48, "chars", charFrame("kessler", "down")).setOrigin(0.5, 1);
-      this.solid(231, 94, 14, 8);
-      this.solid(254, 40, 14, 10);
+      this.npcSolids.ruth = this.solid(231, 94, 14, 8);
+      this.npcSolids.kessler = this.solid(254, 40, 14, 10);
       // Kessler mira a un lado y a otro, impaciente
       this.time.addEvent({
         delay: 4300,
@@ -396,10 +417,16 @@ export class LabScene extends Phaser.Scene {
         },
       });
     }
+    // algunas noches Ruth se queda acompañando a Sam junto a su escritorio
+    if (this.night && this.mode === "play" && stageOf(MISSIONS[save.done]?.id).ruthAtNight) {
+      this.npcs.ruth = this.add.sprite(132, 106, "chars", charFrame("ruth", "left")).setOrigin(0.5, 1);
+      this.npcSolids.ruth = this.solid(125, 100, 14, 8);
+      this.tweens.add({ targets: this.npcs.ruth, y: 105, duration: 760, yoyo: true, repeat: -1, ease: "Stepped" });
+    }
     for (const s of [this.player, ...Object.values(this.npcs)]) s?.setDepth(100 + s.y);
-    // sombras bajo los personajes
+    // sombras bajo los personajes (siguen a cada uno si camina)
     this.playerShadow = this.add.image(this.player.x, this.player.y - 1, "shadow").setDepth(2);
-    for (const n of Object.values(this.npcs)) this.add.image(n!.x, n!.y - 1, "shadow").setDepth(2);
+    for (const n of Object.values(this.npcs)) this.shadows.set(n!, this.add.image(n!.x, n!.y - 1, "shadow").setDepth(2));
   }
 
   private defineInteractables(): void {
@@ -414,15 +441,21 @@ export class LabScene extends Phaser.Scene {
       },
       {
         id: "ruth",
-        x: 238, y: 104, r: 20,
-        label: () => (this.night ? null : "Hablar con Ruth"),
+        x: this.npcs.ruth ? this.npcs.ruth.x : 238, y: this.npcs.ruth ? this.npcs.ruth.y + 4 : 104, r: 20,
+        label: () => (this.npcs.ruth ? "Hablar con Ruth" : null),
         use: () => this.talkTo("ruth"),
       },
       {
         id: "kessler",
         x: 261, y: 54, r: 18,
-        label: () => (this.night ? null : "Hablar con Kessler"),
+        label: () => (this.npcs.kessler ? "Hablar con Kessler" : null),
         use: () => this.talkTo("kessler"),
+      },
+      {
+        id: "phone",
+        x: 214, y: 100, r: 10,
+        label: () => (this.pendingPickup()?.at === "phone" ? "Contestar el teléfono" : null),
+        use: () => this.doPickup(),
       },
       {
         id: "coffee",
@@ -495,9 +528,11 @@ export class LabScene extends Phaser.Scene {
       {
         id: "printer",
         x: 309, y: 80, r: 16,
-        label: () => "Revisar la impresora",
+        label: () => (this.pendingPickup()?.at === "printer" ? this.pendingPickup()!.label : "Revisar la impresora"),
         use: () =>
-          say([
+          this.pendingPickup()?.at === "printer"
+            ? this.doPickup()
+            : say([
             {
               who: "narrador",
               text: this.night
@@ -510,7 +545,17 @@ export class LabScene extends Phaser.Scene {
         id: "ruth-terminal",
         x: 200, y: 114, r: 14,
         label: () => "Terminal de Ruth",
-        use: () => say([{ who: "sam", text: this.night ? "Apagada. Ruth se fue a las seis, como siempre." : "Mejor no tocar la terminal de Ruth mientras está mirando." }]),
+        use: () =>
+          say([
+            {
+              who: "sam",
+              text: this.night
+                ? this.npcs.ruth
+                  ? "Apagada. Esta noche Ruth prefiere mirar la mía."
+                  : "Apagada. Ruth se fue a las seis, como siempre."
+                : "Mejor no tocar la terminal de Ruth mientras está mirando.",
+            },
+          ]),
       },
       {
         id: "calendar",
@@ -535,6 +580,7 @@ export class LabScene extends Phaser.Scene {
         label: () => "Acariciar a Byte",
         use: () => {
           sfx("meow");
+          this.emote(this.catSprite, 4, 1400);
           const day = [
             "Byte, la gata del laboratorio. Llegó sola en 1984 y nadie se atrevió a echarla.",
             "Byte ronronea. Ruth dice que es la única que entiende la VAX.",
@@ -577,8 +623,10 @@ export class LabScene extends Phaser.Scene {
       {
         id: "radio",
         x: 397, y: 134, r: 12,
-        label: () => (isMusicOn() ? "Apagar la radio" : "Encender la radio"),
+        label: () =>
+          this.pendingPickup()?.at === "filing" ? this.pendingPickup()!.label : isMusicOn() ? "Apagar la radio" : "Encender la radio",
         use: () => {
+          if (this.pendingPickup()?.at === "filing") return this.doPickup();
           sfx("click");
           if (isMusicOn()) {
             stopMusic();
@@ -651,6 +699,11 @@ export class LabScene extends Phaser.Scene {
       if (m.act === 1) showControls();
     } else if (this.arrive && m) {
       await showCard(m.clock, "Esa misma noche");
+      // Sam entra por la puerta del sótano
+      this.player.setPosition(208, 240);
+      await this.walk(this.player, "sam", [[208, 200]], 50);
+      this.facing = "up";
+      this.player.setFrame(charFrame("sam", "up"));
     }
     this.busy = false;
     this.refreshObjective();
@@ -660,6 +713,8 @@ export class LabScene extends Phaser.Scene {
     const m = this.mission;
     this.cork.setFrame(Math.min(this.actClues().length, 5));
     setClock(m ? m.clock : "03:59");
+    this.setEmote(null, 0);
+    this.stopRinging();
     if (!m) {
       setObjective("CONTINUARÁ", "Los actos 1 a 3 están completos. Repasa en tu cuaderno [C].");
       this.pointAt(null);
@@ -669,11 +724,176 @@ export class LabScene extends Phaser.Scene {
     this.termSprite.play(this.night && m.giver === "terminal" ? "term-alert" : "term-on", true);
     if (!save.briefed && m.giver !== "terminal") {
       setObjective(m.title.toUpperCase(), m.giver === "ruth" ? "Habla con Ruth." : "Habla con Kessler.");
-      this.pointAt(m.giver);
-    } else {
-      setObjective(m.title.toUpperCase(), "Ve a tu terminal.");
-      this.pointAt("terminal");
+      this.pointAt(null);
+      if (m.giver === "kessler") void this.kesslerComesOut();
+      const npc = this.npcs[m.giver];
+      if (npc) this.setEmote(npc, 0);
+      return;
     }
+    const pk = this.pendingPickup();
+    if (pk) {
+      setObjective(m.title.toUpperCase(), `${pk.label}.`);
+      this.pointAt(pk.at);
+      if (pk.at === "phone") this.startRinging();
+      return;
+    }
+    setObjective(m.title.toUpperCase(), "Ve a tu terminal.");
+    this.pointAt("terminal");
+  }
+
+  /** Lo que hay que recoger antes de la terminal (si la misión lo pide y aún no se hizo). */
+  private pendingPickup() {
+    const m = this.mission;
+    if (!m || !save.briefed || save.picked) return null;
+    return stageOf(m.id).pickup ?? null;
+  }
+
+  /** Recoger el objeto: la impresora imprime, el archivador se abre o se contesta el teléfono. */
+  private async doPickup(): Promise<void> {
+    const pk = this.pendingPickup();
+    if (!pk) return;
+    this.busy = true;
+    this.player.anims.stop();
+    setPrompt(null);
+    this.pointAt(null);
+    if (pk.at === "phone") {
+      this.stopRinging();
+      sfx("click");
+      await this.talk(pk.lines);
+    } else {
+      let from: [number, number];
+      if (pk.at === "printer") {
+        this.printerSprite.play("printer-run");
+        sfx("printer");
+        await new Promise((r) => this.time.delayedCall(1400, r));
+        this.printerSprite.anims.stop();
+        this.printerSprite.setFrame(0);
+        from = [309, 44];
+      } else {
+        sfx("open");
+        from = [396, 108];
+      }
+      const item = this.add.image(from[0], from[1], pk.at === "printer" ? "paper_item" : "folder_item").setDepth(20001);
+      await new Promise<void>((r) =>
+        this.tweens.add({ targets: item, x: this.player.x, y: this.player.y - 30, duration: 520, ease: "Quad.Out", onComplete: () => r() }),
+      );
+      sfx("select");
+      this.carried = item;
+      await this.talk(pk.lines);
+    }
+    save.picked = true;
+    writeSave(save);
+    this.busy = false;
+    this.refreshObjective();
+  }
+
+  private startRinging(): void {
+    if (this.ringTimer) return;
+    const ring = () => {
+      sfx("ring");
+      this.tweens.add({ targets: this.phoneSprite, x: { from: 205, to: 207 }, duration: 50, yoyo: true, repeat: 5, onComplete: () => this.phoneSprite.setX(206) });
+    };
+    ring();
+    this.ringTimer = this.time.addEvent({ delay: 1500, loop: true, callback: ring });
+    this.setEmote(this.phoneSprite as unknown as Phaser.GameObjects.Sprite, 0, 0, -6);
+  }
+
+  private stopRinging(): void {
+    this.ringTimer?.remove();
+    this.ringTimer = null;
+  }
+
+  /** Burbuja de emoción sobre un personaje u objeto. ms = 0: se queda hasta que se quite. */
+  private emoteOffset = 0;
+  private setEmote(target: Phaser.GameObjects.Sprite | null, frame: number, ms = 0, extraY = 0): void {
+    this.emoteSprite?.destroy();
+    this.emoteSprite = null;
+    this.emoteTarget = target;
+    if (!target) return;
+    this.emoteOffset = extraY;
+    this.emoteSprite = this.add.sprite(target.x, target.y, "emotes", frame).setDepth(20002);
+    this.tweens.add({ targets: this.emoteSprite, scale: { from: 0.4, to: 1 }, duration: 160, ease: "Back.Out" });
+    if (ms) this.time.delayedCall(ms, () => this.setEmote(null, 0));
+  }
+
+  /** Burbuja breve que no reemplaza a la principal. */
+  private emote(target: Phaser.GameObjects.GameObject & { x: number; y: number; height?: number }, frame: number, ms: number): void {
+    const top = (target as Phaser.GameObjects.Sprite).getTopCenter?.() ?? { x: target.x, y: target.y - 24 };
+    const e = this.add.sprite(top.x!, top.y! - 7, "emotes", frame).setDepth(20003);
+    this.tweens.add({ targets: e, y: e.y - 3, duration: 200, ease: "Back.Out" });
+    this.time.delayedCall(ms, () => e.destroy());
+  }
+
+  /** Camina un personaje por una ruta de puntos (en L) con su animación. */
+  private walk(sprite: Phaser.GameObjects.Sprite, name: CharName, points: [number, number][], speed = 46): Promise<void> {
+    return new Promise((resolve) => {
+      const step = (i: number) => {
+        if (i >= points.length) {
+          sprite.anims.stop();
+          resolve();
+          return;
+        }
+        const [tx, ty] = points[i];
+        const dx = tx - sprite.x;
+        const dy = ty - sprite.y;
+        const dir: Dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : dy < 0 ? "up" : "down";
+        sprite.play(`${name}-walk-${dir}`, true);
+        const dist = Math.hypot(dx, dy);
+        this.tweens.add({
+          targets: sprite,
+          x: tx,
+          y: ty,
+          duration: (dist / speed) * 1000,
+          onUpdate: () => sprite.setDepth(100 + sprite.y),
+          onComplete: () => {
+            sprite.setFrame(charFrame(name, dir));
+            step(i + 1);
+          },
+        });
+      };
+      step(0);
+    });
+  }
+
+  /** Kessler sale de su oficina a buscar a Sam cuando tiene un encargo. */
+  private async kesslerComesOut(): Promise<void> {
+    const k = this.npcs.kessler;
+    if (!k || this.kesslerOut) return;
+    this.kesslerOut = true;
+    this.tweens.killTweensOf(k);
+    if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: -99, y: -99 });
+    await this.walk(k, "kessler", [[261, 70], [250, 128]], 40);
+    if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: 243, y: 120, w: 14, h: 8 });
+    k.setFrame(charFrame("kessler", "down"));
+  }
+
+  private async kesslerGoesBack(): Promise<void> {
+    const k = this.npcs.kessler;
+    if (!k || !this.kesslerOut) return;
+    this.kesslerOut = false;
+    if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: -99, y: -99 });
+    await this.walk(k, "kessler", [[261, 128], [261, 48]], 44);
+    if (this.npcSolids.kessler) Object.assign(this.npcSolids.kessler, { x: 254, y: 40, w: 14, h: 10 });
+    k.setFrame(charFrame("kessler", "down"));
+    this.tweens.add({ targets: k, y: k.y - 1, duration: 960, yoyo: true, repeat: -1, ease: "Stepped" });
+  }
+
+  /** La cámara se acerca al corcho y se ve clavar la pista nueva. */
+  private async pinClue(): Promise<void> {
+    const cam = this.cameras.main;
+    const home = { x: cam.midPoint.x, y: cam.midPoint.y };
+    hudVisible(false);
+    cam.pan(130, 58, 500, Phaser.Math.Easing.Sine.InOut);
+    cam.zoomTo(2, 500, Phaser.Math.Easing.Sine.InOut);
+    await new Promise((r) => this.time.delayedCall(620, r));
+    this.cork.setFrame(Math.min(this.actClues().length, 5));
+    sfx("pin");
+    cam.shake(120, 0.003);
+    await new Promise((r) => this.time.delayedCall(1100, r));
+    cam.pan(home.x, home.y, 450, Phaser.Math.Easing.Sine.InOut);
+    cam.zoomTo(1, 450, Phaser.Math.Easing.Sine.InOut);
+    await new Promise((r) => this.time.delayedCall(500, r));
+    hudVisible(true);
   }
 
   private pointAt(id: string | null): void {
@@ -682,6 +902,9 @@ export class LabScene extends Phaser.Scene {
       ruth: [238, 70],
       kessler: [261, 18],
       terminal: [73, 50],
+      printer: [309, 34],
+      filing: [396, 84],
+      phone: [210, 60],
     };
     const [x, y] = pos[id];
     this.marker.setPosition(x, y).setVisible(true);
@@ -701,11 +924,23 @@ export class LabScene extends Phaser.Scene {
     const npc = this.npcs[who];
     if (who === "ruth") npc?.setFrame(charFrame("ruth", this.player.x < (npc?.x ?? 0) ? "left" : "right"));
     if (m && !save.briefed && m.giver === who) {
+      this.setEmote(null, 0);
       await this.talk(m.briefing);
       save.briefed = true;
+      save.picked = false;
       writeSave(save);
       sfx("select");
       this.refreshObjective();
+      if (who === "kessler") void this.kesslerGoesBack();
+      return;
+    }
+    if (this.night && who === "ruth") {
+      const night = [
+        "Tú teclea. Yo vigilo la puerta y el café.",
+        "Si esta noche sale bien, mañana no vengo hasta las once.",
+        "No mires el reloj. Mira la pantalla.",
+      ];
+      await this.talk([{ who: "ruth", text: night[Math.floor(Math.random() * night.length)] }]);
       return;
     }
     await this.talk([chatter(who, m)]);
@@ -721,13 +956,26 @@ export class LabScene extends Phaser.Scene {
       if (m.giver === "terminal") {
         await this.talk(m.briefing);
         save.briefed = true;
+        save.picked = false;
         writeSave(save);
+        if (this.pendingPickup()) {
+          this.refreshObjective();
+          return;
+        }
       } else {
         const name = m.giver === "ruth" ? "Ruth" : "Kessler";
         await this.talk([{ who: "sam", text: `Primero debería hablar con ${name}. Sabe qué hay que hacer.` }]);
         return;
       }
     }
+    const pk = this.pendingPickup();
+    if (pk) {
+      this.emote(this.player, 1, 1200);
+      await this.talk([{ who: "sam", text: `Me faltan los datos. ${pk.label}.` }]);
+      return;
+    }
+    this.carried?.destroy();
+    this.carried = null;
     this.busy = true;
     this.input.keyboard!.enabled = false;
     hudVisible(false);
@@ -743,9 +991,11 @@ export class LabScene extends Phaser.Scene {
     const finished = save.done;
     save.done += 1;
     save.briefed = false;
+    save.picked = false;
     writeSave(save);
-    this.cork.setFrame(Math.min(this.actClues().length, 5));
-    sfx("select");
+    this.busy = true;
+    await this.pinClue();
+    this.busy = false;
 
     if (lastOfAct(finished)) {
       this.busy = true;
@@ -899,6 +1149,16 @@ export class LabScene extends Phaser.Scene {
       this.player.setFrame(charFrame("sam", this.facing));
     }
     this.player.setDepth(100 + this.player.y);
+    if (this.emoteSprite && this.emoteTarget) {
+      const t = this.emoteTarget.getTopCenter();
+      this.emoteSprite.setPosition(Math.round(t.x!), Math.round(t.y! - 7 + this.emoteOffset));
+    }
+    if (this.carried) this.carried.setPosition(Math.round(this.player.x), Math.round(this.player.y - 31 + Math.sin(this.time.now / 250)));
+    for (const [n, sh] of this.shadows) sh.setPosition(Math.round(n.x), Math.round(n.y) - 1);
+    for (const t of this.things) {
+      if (t.id === "ruth" && this.npcs.ruth) [t.x, t.y] = [this.npcs.ruth.x, this.npcs.ruth.y + 4];
+      if (t.id === "kessler" && this.npcs.kessler) [t.x, t.y] = [this.npcs.kessler.x, this.npcs.kessler.y + 6];
+    }
     const dVax = Math.hypot(this.player.x - 370, this.player.y - 46);
     setHum(Math.max(0, 1 - dVax / 260), this.night);
     this.playerShadow.setPosition(Math.round(this.player.x), Math.round(this.player.y) - 1).setVisible(this.player.visible);

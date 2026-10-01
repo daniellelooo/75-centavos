@@ -799,6 +799,64 @@ def postit():
     return c
 
 
+def emotes():
+    """Burbujas de emoción sobre los personajes: ! ? ... y nota musical."""
+    frames = []
+    icons = {
+        "exclaim": ["..y..", "..y..", "..y..", ".....", "..y.."],
+        "question": [".yyy.", "...y.", "..yy.", ".....", "..y.."],
+        "dots": [".....", ".....", "y.y.y", ".....", "....."],
+        "note": ["..yy.", "..y.y", "..y..", "yyy..", "yy..."],
+        "heart": [".r.r.", "rrrrr", "rrrrr", ".rrr.", "..r.."],
+    }
+    for name, icon in icons.items():
+        c = Canvas(11, 11)
+        c.rect(1, 0, 9, 9, "k")
+        c.rect(0, 1, 11, 7, "k")
+        c.rect(1, 1, 9, 7, "W")
+        c.ascii(3, 2, [row.replace("y", "k") if name != "heart" else row for row in icon][:5])
+        # piquito
+        c.rect(4, 9, 3, 1, "k")
+        c.put(5, 10, "k")
+        c.put(5, 9, "W")
+        frames.append(c)
+    return strip(frames)
+
+
+def paper_item():
+    """Hoja de papel continuo doblada: lo que Sam recoge de la impresora."""
+    c = Canvas(10, 9)
+    c.ascii(0, 0, [
+        "kkkkkkkkk.",
+        "kxhxxxxhxk",
+        "kxxhhhxxxk",
+        "kxhxxxxhxk",
+        "kxxhhxxxxk",
+        "kxhxxxxhxk",
+        "kxxxhhhxxk",
+        "kkkkkkkkkk",
+        ".QQQQQQQQ.",
+    ])
+    return c
+
+
+def folder_item():
+    """Carpeta de expediente del archivador."""
+    c = Canvas(10, 9)
+    c.ascii(0, 0, [
+        ".kkkk.....",
+        "kOOOOkkkkk",
+        "kOOOOOOOOk",
+        "kOxxxxxxOk",
+        "kOOOOOOOOk",
+        "kOrrOOOOOk",
+        "kOOOOOOOOk",
+        "kkkkkkkkkk",
+        ".QQQQQQQQ.",
+    ])
+    return c
+
+
 def desk_lamp(on):
     c = Canvas(10, 14)
     c.ascii(0, 0, [
@@ -1015,6 +1073,9 @@ def main():
     save("tapebox", strip([tape_box(0), tape_box(1)]))
     save("satellite", strip([satellite(0), satellite(1)]))
     save("postit", postit())
+    save("emotes", emotes())
+    save("paper_item", paper_item())
+    save("folder_item", folder_item())
     save("chair", chair())
     save("table", small_table())
     save("lamp", strip([desk_lamp(False), desk_lamp(True)]))

@@ -79,6 +79,11 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
 
     right.innerHTML = `
       <div class="head"><span>SAM@LBL-VAX:~$ editor</span><span class="tag">JAVASCRIPT</span></div>
+      <div class="keybar" title="Teclas difíciles de escribir en algunos teclados">
+        <span>INSERTAR</span>
+        <button data-k="\`">\`</button><button data-k="\${}">\${ }</button><button data-k="{}">{ }</button><button data-k="[]">[ ]</button><button data-k="=>">=&gt;</button><button data-k=";">;</button>
+        <span class="kb-tip">Ctrl + ' escribe \`</span>
+      </div>
       <div class="editor-wrap"></div>
       <div class="actions"><button class="btn primary run-btn">EJECUTAR</button><span class="shortcut">Tab autocompleta · Ctrl + Enter ejecuta</span></div>
       <div class="console"><span class="muted">Escribe tu código y pulsa EJECUTAR.</span></div>
@@ -128,7 +133,11 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
         keymap.of([indentWithTab]),
         syntaxHighlighting(amber),
         errorLineField,
-        keymap.of([{ key: "Mod-Enter", run: () => (void run(), true) }]),
+        keymap.of([
+          { key: "Mod-Enter", run: () => (void run(), true) },
+          // la comilla invertida no existe en todos los teclados
+          { key: "Ctrl-'", run: (v) => (v.dispatch(v.state.replaceSelection("`")), true) },
+        ]),
         EditorView.updateListener.of((u) => {
           if (u.docChanged) {
             save.drafts[draftKey] = u.state.doc.toString();
@@ -138,6 +147,20 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
         }),
       ],
     });
+    // Barra de teclas difíciles: inserta en el cursor (y deja el cursor dentro de los pares).
+    const insert = (text: string) => {
+      const pairs: Record<string, [string, number]> = { "${}": ["${}", 2], "{}": ["{}", 1], "[]": ["[]", 1] };
+      const [ins, back] = pairs[text] ?? [text === "=>" ? " => " : text, 0];
+      const { from, to } = view.state.selection.main;
+      view.dispatch({ changes: { from, to, insert: ins }, selection: { anchor: from + ins.length - back } });
+      view.focus();
+      sfx("key");
+    };
+    right.querySelectorAll<HTMLButtonElement>(".keybar button").forEach((b) => {
+      b.onmousedown = (e) => e.preventDefault();
+      b.onclick = () => insert(b.dataset.k!);
+    });
+
     // Se enfoca un instante después: así la tecla E que abrió la terminal no se escribe en el editor.
     setTimeout(() => {
       view.focus();
@@ -189,6 +212,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
       }
       if (!verdict.pass) {
         print(`<div class="err">NO CUADRA</div><div>${esc(verdict.feedback)}</div>`);
+        quoteHint(code);
         fail();
         return;
       }
@@ -215,6 +239,14 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean } = {}
       runBtn.focus();
       running = false;
       solved = true;
+    }
+
+    /** ${} dentro de comillas normales: no se sustituye. Es el error más común con las plantillas. */
+    function quoteHint(code: string) {
+      if (/(["'])[^"'`\n]*\$\{[^"'`\n]*\1/.test(code))
+        print(
+          `<div class="hint">Ojo: usaste \${...} dentro de comillas normales. Solo funciona con la comilla invertida \` (botón \` arriba del editor o Ctrl + '). También puedes unir con +: "Cuenta: " + cuenta</div>`,
+        );
     }
 
     function fail() {

@@ -109,7 +109,7 @@ export const ACT1: Mission[] = [
     ],
     lesson: {
       title: "Textos y plantillas",
-      body: "Los textos van entre comillas. Con comillas invertidas (`) puedes meter variables dentro usando ${...}. A esto se le llama plantilla.",
+      body: "Los textos van entre comillas. Con comillas invertidas (`) puedes meter variables dentro usando ${...}: es una plantilla. Ojo: con comillas normales el ${...} no funciona. Otra forma de unir textos es con +: \"Hola, \" + nombre.",
       example: "let nombre = \"Ruth\";\nlet saludo = `Hola, ${nombre}`;\nconsole.log(saludo); // Hola, Ruth",
     },
     task: "Crea la variable informe con el texto: Cuenta sin dueño: seguido de la cuenta (usa una plantilla). Muéstrala.",
