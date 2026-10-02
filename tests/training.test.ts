@@ -139,3 +139,23 @@ describe("nombres casi iguales", () => {
     }
   });
 });
+
+describe("informe de pruebas", () => {
+  it("dice qué prueba falla y detecta el número escrito a mano", async () => {
+    const { caseReports, hardcodeHint, describeInputs } = await import("../src/game/report");
+    const m = findMission("t2c")!;
+    const code = "let total = 0;\nfor (let i = 1; i <= 7; i++) {\n  total = total + i;\n}\nconsole.log(total);";
+    const outs = m.cases.map((c) => runSandboxed({ code, globals: c.globals(), capture: m.capture, probe: m.probe }));
+    const reps = caseReports(m, outs);
+    expect(reps.map((r) => r.pass)).toEqual([true, false]);
+    expect(reps[1].inputs).toBe("dias = 30");
+    expect(reps[1].printed).toBe("28");
+    expect(hardcodeHint(code, m)).toMatch(/número 7.*`dias`/);
+    expect(hardcodeHint(m.hints[m.hints.length - 1], m)).toBeNull();
+    expect(describeInputs(findMission("t3a")!.cases[0])).toBe("notas = [6,8,7,9]");
+  });
+  it("no acusa de número fijo a ninguna solución de referencia", async () => {
+    const { hardcodeHint } = await import("../src/game/report");
+    for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) expect(hardcodeHint(m.hints[m.hints.length - 1], m), m.id).toBeNull();
+  });
+});

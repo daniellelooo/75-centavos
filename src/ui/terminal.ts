@@ -12,6 +12,7 @@ import { tags as t } from "@lezer/highlight";
 import type { Mission } from "../game/missions";
 import { runMission } from "../game/runner";
 import { translateError, typoHint, nameHint, TIMEOUT_ERROR } from "../game/errors";
+import { caseReports, hardcodeHint } from "../game/report";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
@@ -224,11 +225,25 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       }
 
       const verdict = mission.check(outs, mission.cases);
-      if (mission.cases.length > 1) {
+      if (mission.cases.length > 1 && verdict.pass) {
         print(`<div class="muted">probado con ${mission.cases.length} casos: ${mission.cases.map((c) => esc(c.label)).join(", ")}</div>`);
       }
       if (!verdict.pass) {
-        print(`<div class="err">NO CUADRA</div><div>${esc(verdict.feedback)}</div>`);
+        print(`<div class="err">NO CUADRA</div><div>${taskHtml(verdict.feedback)}</div>`);
+        // cada prueba por separado: con qué datos, qué imprimió y si pasó
+        if (mission.cases.length > 1) {
+          const reps = caseReports(mission, outs);
+          print(`<div class="muted">Tu código se probó con estos datos:</div>`);
+          for (const r of reps)
+            print(
+              `<div class="case ${r.pass ? "ok" : "bad"}">${r.pass ? "[OK]" : "[FALLA]"} ${esc(r.label)}${r.inputs ? ` <span class="in">(${esc(r.inputs)})</span>` : ""}` +
+                `<div class="out">imprimió: ${esc(r.printed)}${!r.pass && r.feedback && r.feedback !== verdict.feedback ? ` · ${taskHtml(r.feedback)}` : ""}</div></div>`,
+            );
+          if (reps.some((r) => r.pass) && reps.some((r) => !r.pass))
+            print(`<div class="hint">Acierta con unas pruebas y falla con otras. El juego cambia los datos en cada prueba para comprobar que tu código sirve en general, no solo para un caso.</div>`);
+        }
+        const hc = hardcodeHint(code, mission);
+        if (hc) print(`<div class="hint">${taskHtml(hc)}</div>`);
         quoteHint(code);
         typoTip(code);
         fail();
