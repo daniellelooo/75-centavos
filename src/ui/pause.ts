@@ -1,5 +1,7 @@
 // Menú de pausa: música, efectos, pantalla completa, controles y salida.
 import { formatTime, sessionTime, totalTime } from "../game/playtime";
+import { accountAction, accountName, isConnected } from "../game/cloud";
+import { hasAccounts } from "../shared/auth";
 import { settings, saveSettings, applyCrt } from "../game/settings";
 import { MISSIONS } from "../game/missions";
 import { save } from "../game/state";
@@ -30,7 +32,14 @@ export function setPauseHooks(h: PauseHooks, isBlocked: () => boolean): void {
   blocked = isBlocked;
 }
 
+/** La tecla se está escribiendo en un campo (el correo al entrar, por ejemplo). */
+const typing = (e: KeyboardEvent) => {
+  const t = e.target as HTMLElement | null;
+  return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || !!t.closest("[class*='cl-']"));
+};
+
 window.addEventListener("keydown", (e) => {
+  if (typing(e)) return;
   if (e.code !== "Escape" && e.code !== "KeyP") return;
   if (open) {
     e.preventDefault();
@@ -56,6 +65,7 @@ function render(): void {
     <div class="p-progress">${m ? `Misión ${save.done + 1} de ${MISSIONS.length}: <b>${m.title}</b>` : "Historia completada"}</div>
     <div class="p-time">Esta sesión: <b>${formatTime(sessionTime())}</b> · En total: <b>${formatTime(totalTime())}</b></div>
     <div class="p-row" data-k="resume"><span>REANUDAR</span><span class="hint">ESC</span></div>
+    ${hasAccounts() ? `<div class="p-row" data-k="account"><span>CUENTA</span><span>${isConnected() ? `${accountName() ?? ""} · EN LA NUBE` : "ENTRAR PARA GUARDAR EN LA NUBE"}</span></div>` : ""}
     ${hooks?.notebook ? `<div class="p-row" data-k="notebook"><span>CUADERNO DE SAM</span><span class="hint">C</span></div>` : ""}
     <div class="p-sep">RADIO</div>
     <div class="p-row" data-k="music"><span>MUSICA</span><span>${isMusicOn() ? "ENCENDIDA" : "APAGADA"}</span></div>
@@ -111,6 +121,9 @@ function act(k: string, dir: number, click = false): void {
 function doAct(k: string, dir: number, click = false): void {
   const step = 0.1 * dir;
   switch (k) {
+    case "account":
+      void accountAction();
+      return;
     case "resume":
       if (dir === 0 || click) closePause();
       return;
@@ -160,6 +173,7 @@ function doAct(k: string, dir: number, click = false): void {
 }
 
 function onKey(e: KeyboardEvent) {
+  if (typing(e)) return;
   if (!open) return;
   const r = rows();
   const k = r[sel]?.dataset.k ?? "";
@@ -199,3 +213,6 @@ export function closePause(resume = true): void {
   sfx("close");
   if (resume) hooks?.freeze(false);
 }
+
+// al entrar o salir de la cuenta, la fila CUENTA se actualiza si el menú está abierto
+document.addEventListener("cuenta", () => render());

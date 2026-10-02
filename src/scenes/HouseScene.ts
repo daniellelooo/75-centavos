@@ -89,6 +89,8 @@ export class HouseScene extends Phaser.Scene {
     const onKey = (ev: KeyboardEvent) => {
       if (ev.repeat) return;
       const t = ev.target as HTMLElement | null;
+      // escribiendo en un campo (por ejemplo, el correo al entrar): no son atajos del juego
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.closest(".cl-rootBox, .cl-modalBackdrop"))) return;
       if (t && (t.closest(".term") || t.closest(".notebook") || t.tagName === "BUTTON")) return;
       if (ev.code === "KeyC") return void this.openCuaderno();
       if (["KeyE", "Space", "Enter"].includes(ev.code)) void this.interact();

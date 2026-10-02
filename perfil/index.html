@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfil de jugador — Eternal Games</title>
+    <meta name="description" content="Perfil de un jugador de Eternal Games: su nivel y las historias que ha resuelto programando." />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="theme-color" content="#0f1424" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="Eternal Games" />
+    <meta property="og:title" content="Perfil de jugador — Eternal Games" />
+    <meta property="og:description" content="Su nivel y las historias que ha resuelto programando." />
+    <meta property="og:image" content="https://75-centavos.vercel.app/og-eternal-games.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://75-centavos.vercel.app/og-eternal-games.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/landing/landing.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <a class="mark" href="/">ETERNAL<span>GAMES</span></a>
+      <nav>
+        <a href="/#historias">Historias</a>
+        <a class="play-small" href="/75-centavos/">Jugar</a>
+        <span id="cuenta" class="account"></span>
+      </nav>
+    </header>
+    <main class="profile-page">
+      <div id="perfil" class="profile"><p class="muted">Cargando...</p></div>
+    </main>
+    <footer>
+      <p>Eternal Games es un proyecto de Eternal Growth. Gratis, sin anuncios.</p>
+    </footer>
+    <script type="module" src="/src/landing/main.ts"></script>
+    <script type="module" src="/src/landing/perfil.ts"></script>
+  </body>
+</html>

@@ -49,12 +49,19 @@ export function loadSave(): SaveData | null {
   }
 }
 
+const listeners: Array<(data: SaveData) => void> = [];
+/** Avisa cada vez que se guarda (la nube sube la partida un poco después). */
+export function onSaveWritten(fn: (data: SaveData) => void): void {
+  listeners.push(fn);
+}
+
 export function writeSave(data: SaveData): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
   } catch {
     /* sin guardado disponible */
   }
+  for (const fn of listeners) fn(data);
 }
 
 export function clearSave(): void {

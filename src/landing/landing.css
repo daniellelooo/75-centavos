@@ -148,3 +148,35 @@ footer p { margin: 4px 0; }
   .screen-text { position: static; max-width: none; border-width: 0; border-top: 3px solid #000; }
   .bar nav a:not(.play-small) { display: none; }
 }
+
+/* cuenta en la barra */
+.account { display: inline-flex; align-items: center; gap: 12px; min-height: 32px; }
+.account .enter { font: 600 16px var(--ui); color: var(--cream); background: none; border: 2px solid var(--cream); padding: 4px 12px; cursor: pointer; }
+.account .enter:hover { background: var(--cream); color: var(--ink); }
+.account .me { text-decoration: none; color: var(--cream); }
+
+/* perfil */
+.profile-page { min-height: 70vh; }
+.profile { max-width: 760px; margin: 0 auto; padding: 40px 0 60px; }
+.profile h1 { font-family: var(--title); font-weight: normal; font-size: clamp(18px, 3vw, 28px); color: var(--cream); margin: 0 0 8px; }
+.profile .muted { color: var(--muted); }
+.pc-head span { color: var(--muted); }
+.pc-games { display: grid; gap: 16px; margin: 28px 0; }
+.pg { padding: 18px 20px; background: #fffbe8; color: var(--ink); border: 3px solid #000; box-shadow: 0 0 0 3px #3a3f52; display: grid; gap: 4px; }
+.pg .level { font-family: var(--crt); font-size: 20px; color: #a31d33; }
+.pg b { font-family: var(--title); font-weight: normal; font-size: 18px; }
+.pg .rank { font-family: var(--crt); font-size: 24px; color: #a31d33; }
+.pg.locked { background: #141b33; color: var(--muted); }
+.pg.locked b { color: #5a6488; }
+.bar-prog { height: 10px; border: 2px solid var(--ink); background: #fffbe8; margin: 4px 0; }
+.bar-prog i { display: block; height: 100%; background: var(--amber); }
+.pc-edit { display: grid; gap: 14px; padding: 22px; border: 2px dashed #2b3456; }
+.pc-edit h2 { margin: 0; }
+.pc-edit label { display: grid; gap: 6px; font-size: 16px; }
+.pc-edit input[type="text"], .pc-edit input:not([type]) { font: 18px var(--crt); padding: 8px 10px; background: #0b0f1e; color: var(--cream); border: 2px solid #3a3f52; }
+.pc-edit .check { display: flex; align-items: center; gap: 10px; }
+.pc-actions { display: flex; align-items: center; gap: 14px; }
+.pc-actions .msg { color: var(--amber); }
+.pc-share { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 15px; color: var(--muted); }
+.pc-share code { font-family: var(--crt); font-size: 18px; color: var(--cream); background: #0b0f1e; padding: 4px 8px; word-break: break-all; }
+.pc-share .copy { font: 600 15px var(--ui); background: none; color: var(--cream); border: 2px solid var(--cream); padding: 4px 10px; cursor: pointer; }
