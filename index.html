@@ -3,31 +3,126 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>75 Centavos — juego para aprender JavaScript desde cero</title>
-    <meta name="description" content="Juego pixel art para aprender JavaScript desde cero. Berkeley, 1986: la contabilidad no cuadra por 75 centavos." />
+    <title>Eternal Games — juegos para aprender a programar, en español y gratis</title>
+    <meta name="description" content="Historias en pixel art que se resuelven programando. Empieza con 75 Centavos: aprende JavaScript desde cero en un laboratorio de Berkeley en 1986. Gratis y desde el navegador." />
     <meta name="theme-color" content="#0f1424" />
+    <link rel="canonical" href="https://75-centavos.vercel.app/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="75 Centavos — juego para aprender JavaScript desde cero" />
-    <meta property="og:description" content="Berkeley, 1986. La contabilidad no cuadra por 75 centavos. Aprende JavaScript real programando para atrapar a un intruso." />
-    <meta property="og:image" content="https://75-centavos.vercel.app/og.png" />
+    <meta property="og:site_name" content="Eternal Games" />
+    <meta property="og:title" content="Eternal Games — juegos para aprender a programar" />
+    <meta property="og:description" content="Historias en pixel art que se resuelven escribiendo código de verdad. Gratis, en español y desde el navegador." />
     <meta property="og:url" content="https://75-centavos.vercel.app/" />
-    <link rel="canonical" href="https://75-centavos.vercel.app/" />
+    <meta property="og:image" content="https://75-centavos.vercel.app/og-eternal-games.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://75-centavos.vercel.app/og.png" />
+    <meta name="twitter:image" content="https://75-centavos.vercel.app/og-eternal-games.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "Eternal Games",
+            "url": "https://75-centavos.vercel.app/",
+            "inLanguage": "es"
+          },
+          {
+            "@type": "VideoGame",
+            "name": "75 Centavos",
+            "url": "https://75-centavos.vercel.app/75-centavos/",
+            "description": "Juego pixel art para aprender JavaScript desde cero resolviendo un caso en Berkeley, 1986.",
+            "inLanguage": "es",
+            "genre": ["Educativo", "Aventura", "Misterio"],
+            "gamePlatform": "Navegador web",
+            "applicationCategory": "Game",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "publisher": { "@type": "Organization", "name": "Eternal Growth" }
+          }
+        ]
+      }
+    </script>
+    <link rel="stylesheet" href="/src/landing/landing.css" />
   </head>
   <body>
-    <div id="stage">
-      <div id="game"></div>
-      <div id="ui"></div>
-    </div>
-    <script type="module" src="/src/main.ts"></script>
+    <header class="bar">
+      <a class="mark" href="/">ETERNAL<span>GAMES</span></a>
+      <nav>
+        <a href="#historias">Historias</a>
+        <a href="#como">Cómo se juega</a>
+        <a class="play-small" href="/75-centavos/">Jugar</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="screen">
+          <img src="/img/laboratorio.webp" width="1296" height="722" alt="El laboratorio de 75 Centavos: Sam, Ruth y el Dr. Kessler en el sótano, con la computadora VAX al fondo." />
+          <div class="screen-text">
+            <h1>Aprende a programar resolviendo un caso</h1>
+            <p>Berkeley, 1986. Las cuentas del laboratorio no cuadran por 75 centavos y alguien se está colando en la computadora. Cada pista la consigues escribiendo JavaScript de verdad.</p>
+            <a class="play" href="/75-centavos/">Jugar 75 Centavos</a>
+            <small>Gratis · En español · Desde el navegador del ordenador</small>
+          </div>
+        </div>
+      </section>
+
+      <section id="historias" class="stories">
+        <h2>Las historias</h2>
+        <p class="lead">Cada historia es un nivel. Empiezas sin saber programar y terminas cada una sabiendo un poco más.</p>
+
+        <article class="story">
+          <a class="cover" href="/75-centavos/"><img src="/img/viaje.webp" width="1440" height="810" alt="Sam en bicicleta por una calle de Berkeley, camino a casa de Margarita." loading="lazy" /></a>
+          <div class="story-text">
+            <div class="level">NIVEL 1 · BERKELEY, 1986</div>
+            <h3>75 Centavos</h3>
+            <p>Sam es astrónomo, se le acabó la beca y lo mandan al sótano a cuidar la computadora. Un descuadre de 75 centavos en la factura lo lleva hasta un espía al otro lado del océano. Inspirada en un caso real, con personajes ficticios.</p>
+            <p class="learn">Aprendes: variables · condiciones · bucles · funciones · arrays y objetos · filter y map · closures · clases · async y promesas</p>
+            <p class="meta">6 actos · 30 misiones · 24 ejercicios con Margarita · unas 5 a 7 horas</p>
+            <a class="play" href="/75-centavos/">Jugar</a>
+          </div>
+        </article>
+
+        <article class="story soon">
+          <div class="cover locked"><div class="soon-screen"><b>Diez días</b><span>PRÓXIMAMENTE</span></div></div>
+          <div class="story-text">
+            <div class="level">NIVEL 2 · MOUNTAIN VIEW, 1995</div>
+            <h3>Diez días</h3>
+            <p>Una empresa de navegadores le da a un programador diez días para inventar un lenguaje que haga vivas las páginas web antes del lanzamiento. Tu código transforma una página de 1995 ante tus ojos. Inspirada en cómo nació JavaScript; en construcción.</p>
+            <p class="learn">Aprenderás: el DOM · eventos · módulos</p>
+          </div>
+        </article>
+      </section>
+
+      <section id="como" class="how">
+        <h2>Cómo se juega</h2>
+        <div class="steps">
+          <figure>
+            <img src="/img/terminal.webp" width="1280" height="713" alt="La terminal del juego con una misión resuelta y el sello de aceptado." loading="lazy" />
+            <figcaption><b>1. Un encargo, una terminal.</b> Ruth o Kessler te piden algo y lo resuelves en la terminal. Si falla, el error te dice qué pasó y en qué línea, en palabras normales.</figcaption>
+          </figure>
+          <figure>
+            <img src="/img/casa-margarita.webp" width="900" height="560" alt="El salón de Margarita, con su piano, su estantería y su vieja terminal." loading="lazy" />
+            <figcaption><b>2. Práctica con Margarita.</b> Antes de los encargos difíciles vas en bici a casa de Margarita, que enseñó a programar a Ruth en 1971, a hacer tres ejercicios.</figcaption>
+          </figure>
+          <figure>
+            <img src="/img/cuaderno.webp" width="1224" height="680" alt="El cuaderno de Sam con su credencial del laboratorio y la lista de conceptos aprendidos." loading="lazy" />
+            <figcaption><b>3. Todo queda en tu cuaderno.</b> Cada concepto con su ejemplo, una pregunta rápida para repasar y tu credencial, que sube de rango con cada acto.</figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Eternal Games es un proyecto de Eternal Growth. Gratis, sin anuncios.</p>
+      <p>Las historias se inspiran en hechos reales; los personajes y los nombres son ficticios.</p>
+    </footer>
   </body>
 </html>

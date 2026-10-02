@@ -1,0 +1,150 @@
+/* Landing de Eternal Games: la misma estética que el juego (pixel, ámbar sobre azul
+   noche, tipografías Press Start 2P / VT323 / Pixelify Sans), sin tarjetas con iconos. */
+:root {
+  --night: #0b0f1e;
+  --night-2: #141b33;
+  --ink: #1c1830;
+  --amber: #fed018;
+  --amber-2: #d35600;
+  --cream: #fff4c9;
+  --text: #d6dcf0;
+  --muted: #9aa3c0;
+  --title: "Press Start 2P", monospace;
+  --crt: "VT323", ui-monospace, monospace;
+  --ui: "Pixelify Sans", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--text);
+  font-family: var(--ui);
+  font-size: 18px;
+  line-height: 1.5;
+}
+img { display: block; max-width: 100%; height: auto; image-rendering: pixelated; }
+a { color: inherit; }
+
+/* barra superior */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 48px);
+  background: rgba(11, 15, 30, 0.92);
+  border-bottom: 2px solid #000;
+  box-shadow: 0 2px 0 var(--night-2);
+}
+.mark { font-family: var(--title); font-size: 14px; text-decoration: none; color: var(--cream); letter-spacing: 0.04em; }
+.mark span { color: var(--amber); margin-left: 8px; }
+.bar nav { display: flex; align-items: center; gap: clamp(12px, 2.5vw, 28px); font-size: 16px; }
+.bar nav a { text-decoration: none; color: var(--muted); }
+.bar nav a:hover { color: var(--cream); }
+.bar nav .play-small { color: var(--ink); background: var(--amber); padding: 6px 14px; box-shadow: inset 0 -3px 0 var(--amber-2); font-weight: 600; }
+.bar nav .play-small:hover { color: var(--ink); background: #ffe25a; }
+
+/* botón principal: plano, sin animaciones que salten */
+.play {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 12px 22px;
+  font-family: var(--title);
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--amber);
+  border: 2px solid #000;
+  box-shadow: inset 0 -4px 0 var(--amber-2), 0 4px 0 #000;
+}
+.play:hover { background: #ffe25a; }
+.play:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 var(--amber-2), 0 2px 0 #000; }
+
+main { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+/* portada: la pantalla del juego, con el texto dentro como en un monitor */
+.hero { padding: clamp(20px, 4vw, 44px) 0 clamp(40px, 6vw, 72px); }
+.screen {
+  position: relative;
+  border: 3px solid #000;
+  box-shadow: 0 0 0 6px #3a3f52, 0 0 0 9px #000, 0 18px 0 -3px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+.screen img { width: 100%; }
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 0 2px, transparent 2px 4px);
+}
+.screen-text {
+  position: absolute;
+  left: clamp(14px, 3vw, 36px);
+  bottom: clamp(14px, 3vw, 36px);
+  max-width: min(560px, 62%);
+  padding: clamp(14px, 2.4vw, 26px);
+  background: rgba(11, 15, 30, 0.9);
+  border: 2px solid #000;
+  box-shadow: inset 0 0 0 2px #2b3456;
+  z-index: 1;
+}
+.screen-text h1 { margin: 0 0 10px; font-family: var(--title); font-weight: normal; font-size: clamp(16px, 2.4vw, 26px); line-height: 1.35; color: var(--cream); }
+.screen-text p { margin: 0 0 14px; font-size: clamp(15px, 1.5vw, 18px); }
+.screen-text small { display: block; margin-top: 12px; font-size: 14px; color: var(--muted); }
+
+h2 { font-family: var(--title); font-weight: normal; font-size: clamp(16px, 2vw, 22px); color: var(--amber); margin: 0 0 10px; }
+.lead { margin: 0 0 28px; color: var(--muted); max-width: 640px; }
+
+/* historias: una fila por historia, la imagen como la tapa del cartucho */
+.stories { padding: 24px 0 48px; }
+.story {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(18px, 3vw, 36px);
+  align-items: center;
+  padding: 24px 0;
+  border-top: 2px dashed #2b3456;
+}
+.cover { position: relative; display: block; border: 3px solid #000; box-shadow: 0 0 0 3px #3a3f52; }
+/* tapa provisional de una historia sin arte todavía: un monitor apagado */
+.soon-screen {
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at center, #1b2440 0%, #0b0f1e 75%);
+}
+.soon-screen b { font-family: var(--title); font-weight: normal; font-size: clamp(16px, 2.6vw, 26px); color: #5a6488; }
+.soon-screen span { font-family: var(--crt); font-size: 22px; letter-spacing: 0.2em; color: var(--amber-2); }
+.level { font-family: var(--crt); font-size: 20px; color: var(--amber-2); letter-spacing: 0.06em; }
+.story h3 { margin: 2px 0 10px; font-family: var(--title); font-weight: normal; font-size: clamp(18px, 2.4vw, 26px); color: var(--cream); }
+.story p { margin: 0 0 12px; }
+.story .learn { font-family: var(--crt); font-size: 20px; line-height: 1.25; color: var(--amber); }
+.story .meta { color: var(--muted); font-size: 16px; }
+.story.soon h3, .story.soon p { opacity: 0.8; }
+
+/* cómo se juega: tres capturas reales con su texto, sin iconos */
+.how { padding: 24px 0 56px; border-top: 2px dashed #2b3456; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 28px); margin-top: 18px; }
+.steps figure { margin: 0; }
+.steps img { border: 3px solid #000; box-shadow: 0 0 0 3px #3a3f52; aspect-ratio: 16 / 10; object-fit: cover; width: 100%; }
+.steps figcaption { margin-top: 14px; font-size: 16px; }
+.steps figcaption b { display: block; color: var(--cream); font-weight: 600; }
+
+footer { border-top: 2px solid #000; background: #070a16; padding: 26px clamp(16px, 4vw, 48px); color: var(--muted); font-size: 15px; text-align: center; }
+footer p { margin: 4px 0; }
+
+@media (max-width: 860px) {
+  .story { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .screen-text { position: static; max-width: none; border-width: 0; border-top: 3px solid #000; }
+  .bar nav a:not(.play-small) { display: none; }
+}
