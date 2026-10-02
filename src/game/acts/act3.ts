@@ -47,7 +47,7 @@ export const ACT3: Mission[] = [
       body: "Un objeto agrupa datos relacionados entre llaves. Cada dato es una propiedad: un nombre, dos puntos y su valor. Para leer una propiedad se usa un punto: objeto.propiedad.",
       example: 'let estrella = { nombre: "Vega", brillo: 0.03, constelacion: "Lira" };\nconsole.log(estrella.nombre); // Vega',
     },
-    task: 'Crea el objeto conexion con las propiedades cuenta "hunter", hora 3 y minutos 47. Muestra conexion.cuenta.',
+    task: "Crea el objeto `conexion` con las propiedades `cuenta` \"hunter\", `hora` 3 y `minutos` 47. Muestra `conexion.cuenta`.",
     starter: "// Escribe tu código debajo\n",
     borrowed: [],
     cases: [{ label: "conexión del martes", globals: () => ({}) }],
@@ -95,7 +95,7 @@ export const ACT3: Mission[] = [
       body: "Un array puede guardar objetos. Al recorrerlo, lista[i] es un objeto completo y lista[i].propiedad es uno de sus datos.",
       example: 'let estrellas = [{ nombre: "Vega" }, { nombre: "Altair" }];\nfor (let i = 0; i < estrellas.length; i++) {\n  console.log(estrellas[i].nombre);\n}',
     },
-    task: 'Cuenta en la variable veces cuántos registros tienen cuenta igual a "hunter". Muestra veces.',
+    task: "Cuenta en la variable `veces` cuántos elementos de `registros` tienen la propiedad `cuenta` igual a \"hunter\". Muestra `veces`.",
     starter: "let veces = 0;\n// recorre registros aquí\n\nconsole.log(veces);\n",
     borrowed: ["registros = [{ cuenta, hora, comando, minutos }, ...]"],
     cases: [
@@ -142,7 +142,7 @@ export const ACT3: Mission[] = [
       body: "lista.filter(fn) devuelve un array nuevo con los elementos para los que fn devuelve true. La función flecha es una forma corta de escribir funciones: (x) => condición.",
       example: 'let numeros = [4, 9, 2, 7];\nlet grandes = numeros.filter((n) => n > 5);\nconsole.log(grandes); // [9, 7]',
     },
-    task: 'Crea deHunter con registros.filter(...), quedándote solo con los que tienen cuenta "hunter". Muestra deHunter.length.',
+    task: "Crea `deHunter` con `registros.filter(...)`, quedándote solo con los que tienen `cuenta` \"hunter\". Muestra `deHunter.length`.",
     starter: "// registros ya existe\n",
     borrowed: ["registros = [{ cuenta, hora, comando, minutos }, ...]"],
     cases: [
@@ -187,7 +187,7 @@ export const ACT3: Mission[] = [
       body: "lista.map(fn) devuelve un array nuevo del mismo tamaño, con lo que fn devuelve para cada elemento. Se puede encadenar después de filter.",
       example: 'let estrellas = [{ nombre: "Vega", brillo: 0.03 }, { nombre: "Deneb", brillo: 1.25 }];\nlet nombres = estrellas.map((e) => e.nombre);\nconsole.log(nombres); // ["Vega", "Deneb"]',
     },
-    task: "Crea busquedas con los comandos (la propiedad comando) de los registros de hunter: primero filter, luego map. Muestra busquedas.",
+    task: "Crea `busquedas` con los comandos (la propiedad `comando`) de los registros de hunter: primero `filter`, luego `map`. Muestra `busquedas`.",
     starter: "// registros ya existe\n",
     borrowed: ["registros = [{ cuenta, hora, comando, minutos }, ...]"],
     cases: [
@@ -237,7 +237,7 @@ export const ACT3: Mission[] = [
       body: "for (const x of lista) recorre los elementos directamente, sin índices. Un acumulador es una variable que empieza en 0 y va sumando: total += x es lo mismo que total = total + x.",
       example: "let distancias = [4, 8, 3];\nlet total = 0;\nfor (const d of distancias) {\n  total += d;\n}\nconsole.log(total); // 15",
     },
-    task: "Suma en total los minutos (propiedad minutos) de todas las sesiones de esta noche, usando for...of. Muestra total.",
+    task: "Suma en la variable `total` los minutos (propiedad `minutos`) de todas las `sesiones` de esta noche, usando `for...of`. Muestra `total`.",
     starter: "let total = 0;\n// recorre sesiones aquí\n\nconsole.log(total);\n",
     borrowed: ["sesiones = [{ cuenta, minutos }, ...]"],
     cases: [

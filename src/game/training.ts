@@ -103,7 +103,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Si una variable guarda un precio y otra una cantidad, la multiplicación (*) da el total. Guarda el resultado en una variable nueva y muéstralo.",
           example: "let galletas = 6;\nlet cajas = 2;\nlet todas = galletas * cajas;\nconsole.log(todas); // 12",
         },
-        task: "Margarita compró pan. Crea la variable total con precio por cantidad y muéstrala con console.log.",
+        task: "Margarita compró pan. Crea la variable `total` con `precio` por `cantidad` y muéstrala con `console.log`.",
         borrowed: ["precio", "cantidad"],
         cases: [
           { label: "3 panes a 1.25", globals: () => ({ precio: 1.25, cantidad: 3 }) },
@@ -131,7 +131,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Como en matemáticas, * y / van antes que + y -. Si quieres restar primero, usa paréntesis.",
           example: "let a = (10 - 4) * 2; // 12\nlet b = 10 - 4 * 2;   // 2",
         },
-        task: "El termómetro de Margarita marca grados Fahrenheit. Crea celsius con (fahrenheit - 32) * 5 / 9 y muéstralo.",
+        task: "El termómetro de Margarita marca grados Fahrenheit. Crea la variable `celsius` con `(fahrenheit - 32) * 5 / 9` y muéstrala.",
         borrowed: ["fahrenheit"],
         cases: [
           { label: "agua hirviendo (212 °F)", globals: () => ({ fahrenheit: 212 }) },
@@ -161,7 +161,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Una variable creada con let puede cambiar. Sin let delante, se le da un valor nuevo: ahorros = ahorros + 5 suma 5 a lo que ya había.",
           example: "let pasos = 10;\npasos = pasos + 3;\nconsole.log(pasos); // 13",
         },
-        task: "En la hucha hay ahorros. Margarita mete 20 y luego saca 7.50. Cambia ahorros con esas dos operaciones (sin crear otra variable) y muéstralo.",
+        task: "En la hucha hay `ahorros`. Margarita mete 20 y luego saca 7.50. Cambia `ahorros` con esas dos operaciones (sin crear otra variable) y muéstrala.",
         starter: "// ahorros ya existe: no uses let con él\n",
         borrowed: ["ahorros"],
         cases: [
@@ -209,7 +209,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Con la comilla invertida ` se escriben plantillas: lo que va dentro de ${...} se sustituye por su valor.",
           example: "let gato = \"Byte\";\nconsole.log(`Hola, ${gato}`); // Hola, Byte",
         },
-        task: "Crea tarjeta con el texto Feliz cumpleaños, NOMBRE. Ya tienes EDAD años. (con los valores de nombre y edad) y muéstrala.",
+        task: "Crea la variable `tarjeta` con el texto \"Feliz cumpleaños, NOMBRE. Ya tienes EDAD años.\", usando los valores de `nombre` y `edad`, y muéstrala.",
         borrowed: ["nombre", "edad"],
         cases: [
           { label: "Ruth", globals: () => ({ nombre: "Ruth", edad: 34 }) },
@@ -238,7 +238,7 @@ export const TRAINING: TrainingSet[] = [
           body: "if (condición) { ... } else { ... } ejecuta un bloque u otro. Las comparaciones son <, >, <=, >= y ===.",
           example: "if (temperatura > 30) {\n  console.log(\"calor\");\n} else {\n  console.log(\"bien\");\n}",
         },
-        task: "Si lluvia es mayor que 50 (por ciento), muestra paraguas. Si no, muestra sombrero.",
+        task: "Si `lluvia` es mayor que 50 (por ciento), muestra \"paraguas\". Si no, muestra \"sombrero\".",
         borrowed: ["lluvia"],
         cases: [
           { label: "día nublado (80)", globals: () => ({ lluvia: 80 }) },
@@ -266,7 +266,7 @@ export const TRAINING: TrainingSet[] = [
           body: "for (let i = 1; i <= n; i++) { ... } repite el bloque con i = 1, 2, 3... hasta n. Con una variable fuera del bucle puedes ir acumulando.",
           example: "let suma = 0;\nfor (let i = 1; i <= 3; i++) {\n  suma = suma + i;\n}\nconsole.log(suma); // 6",
         },
-        task: "Margarita practica escalas: el día 1 toca 1 escala, el día 2 toca 2... Suma cuántas escalas toca en total en dias días y muéstralo.",
+        task: "Margarita practica escalas: el día 1 toca 1 escala, el día 2 toca 2, y así cada día. La variable `dias` dice cuántos días practica. Suma todas las escalas de esos días y muestra el total.",
         borrowed: ["dias"],
         cases: [
           { label: "una semana", globals: () => ({ dias: 7 }) },
@@ -311,7 +311,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Las posiciones de una lista empiezan en 0. La última es lista.length - 1.",
           example: "let frutas = [\"pera\", \"uva\", \"kiwi\"];\nconsole.log(frutas[0]); // pera\nconsole.log(frutas[frutas.length - 1]); // kiwi",
         },
-        task: "Muestra la primera nota de la lista notas y después la última.",
+        task: "Muestra la primera nota de la lista `notas` y después la última.",
         borrowed: ["notas"],
         cases: [
           { label: "notas de Ana", globals: () => ({ notas: [6, 8, 7, 9] }) },
@@ -341,7 +341,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Recorre la lista con for y usa push para añadir al final de otra lista solo lo que cumple una condición.",
           example: "let pares = [];\nfor (let i = 0; i < nums.length; i++) {\n  if (nums[i] % 2 === 0) pares.push(nums[i]);\n}",
         },
-        task: "Crea la lista aprobadas con las notas mayores o iguales a 6, en el mismo orden, y muéstrala.",
+        task: "Crea la lista `aprobadas` con las notas de `notas` mayores o iguales a 6, en el mismo orden, y muéstrala.",
         borrowed: ["notas"],
         cases: [
           { label: "clase del martes", globals: () => ({ notas: [6, 3, 8, 5, 10] }) },
@@ -370,7 +370,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Para encontrar el mayor, guarda el primero y recorre la lista: si alguno es más grande, pasa a ser el nuevo mayor.",
           example: "let alto = lista[0];\nfor (let i = 1; i < lista.length; i++) {\n  if (lista[i] > alto) alto = lista[i];\n}",
         },
-        task: "Guarda en mejor la nota más alta de notas y muéstrala.",
+        task: "Guarda en la variable `mejor` la nota más alta de `notas` y muéstrala.",
         borrowed: ["notas"],
         cases: [
           { label: "clase del martes", globals: () => ({ notas: [6, 3, 8, 5, 7] }) },
@@ -415,7 +415,7 @@ export const TRAINING: TrainingSet[] = [
           body: "function nombre(parametro) { return ...; } crea una función. return entrega el resultado a quien la llama.",
           example: "function triple(n) {\n  return n * 3;\n}\nconsole.log(triple(4)); // 12",
         },
-        task: "Escribe la función doble(n) que devuelva n multiplicado por 2.",
+        task: "Escribe la función `doble(n)` que devuelva `n` multiplicado por 2.",
         probe: 'typeof doble !== "function" ? "__nofn" : [doble(4), doble(0), doble(2.5), doble(-3)]',
         cases: [{ label: "cuatro raciones", globals: () => ({}) }],
         check: ([o]) => {
@@ -441,7 +441,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Una función puede recibir varios parámetros separados por comas. Puedes devolver un texto hecho con una plantilla.",
           example: "function saludo(nombre, hora) {\n  return `Hola, ${nombre}. Son las ${hora}.`;\n}",
         },
-        task: "Escribe etiqueta(fruta, anio) que devuelva el texto Mermelada de FRUTA (ANIO). Por ejemplo: Mermelada de higo (1986).",
+        task: "Escribe la función `etiqueta(fruta, anio)` que devuelva el texto \"Mermelada de FRUTA (ANIO)\". Por ejemplo: \"Mermelada de higo (1986)\".",
         probe: 'typeof etiqueta !== "function" ? "__nofn" : [etiqueta("higo", 1986), etiqueta("ciruela", 1985)]',
         cases: [{ label: "dos frascos", globals: () => ({}) }],
         check: ([o]) => {
@@ -467,7 +467,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Dentro de una función puede haber variables y bucles. Lo único que sale de ella es lo que devuelve return.",
           example: "function contar(lista) {\n  let n = 0;\n  for (let i = 0; i < lista.length; i++) n++;\n  return n;\n}",
         },
-        task: "Escribe gastoTotal(precios) que sume todos los precios de la lista y devuelva el total.",
+        task: "Escribe la función `gastoTotal(precios)` que sume todos los números de la lista `precios` y devuelva el total.",
         probe: 'typeof gastoTotal !== "function" ? "__nofn" : [gastoTotal([2, 3.5, 4]), gastoTotal([]), gastoTotal([10])]',
         cases: [{ label: "tres compras", globals: () => ({}) }],
         check: ([o]) => {
@@ -511,7 +511,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Un objeto se escribe entre llaves con pares nombre: valor separados por comas. Se lee con un punto: objeto.dato.",
           example: 'let gato = { nombre: "Byte", edad: 4 };\nconsole.log(gato.nombre); // Byte',
         },
-        task: 'Crea el objeto alumno con nombre "Leo", edad 9 e instrumento "piano". Después muestra alumno.instrumento.',
+        task: "Crea el objeto `alumno` con `nombre` \"Leo\", `edad` 9 e `instrumento` \"piano\". Después muestra `alumno.instrumento`.",
         cases: [{ label: "ficha nueva", globals: () => ({}) }],
         capture: ["alumno"],
         check: ([o]) => {
@@ -537,7 +537,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Un dato de un objeto se cambia igual que una variable: objeto.dato = nuevo valor.",
           example: "let gato = { nombre: \"Byte\", edad: 4 };\ngato.edad = gato.edad + 1;\nconsole.log(gato.edad); // 5",
         },
-        task: "El alumno aprobó el examen: súmale 1 a alumno.nivel y muestra el nivel nuevo.",
+        task: "El alumno aprobó el examen: súmale 1 a `alumno.nivel` y muestra el nivel nuevo.",
         borrowed: ["alumno"],
         cases: [
           { label: "Ana, nivel 2", globals: () => ({ alumno: { nombre: "Ana", nivel: 2 } }) },
@@ -566,7 +566,7 @@ export const TRAINING: TrainingSet[] = [
           body: "En una lista de objetos, partituras[i] es una ficha y partituras[i].autor uno de sus datos.",
           example: 'let libros = [{ autor: "Christie" }, { autor: "Poe" }];\nconsole.log(libros[1].autor); // Poe',
         },
-        task: 'Cuenta cuántas partituras de la lista partituras tienen autor "Chopin" y muestra el número.',
+        task: "Cuenta cuántas partituras de la lista `partituras` tienen `autor` \"Chopin\" y muestra el número.",
         borrowed: ["partituras"],
         cases: [
           {
@@ -632,7 +632,7 @@ export const TRAINING: TrainingSet[] = [
           body: "lista.filter((x) => condición) devuelve una lista nueva solo con los elementos que cumplen la condición.",
           example: "let edades = [12, 30, 8];\nlet adultos = edades.filter((e) => e >= 18); // [30]",
         },
-        task: "Crea baratos con los precios menores que 5 usando filter, y muéstralo.",
+        task: "Crea la lista `baratos` con los números de `precios` menores que 5, usando `filter`, y muéstrala.",
         borrowed: ["precios"],
         cases: [
           { label: "mercado del sábado", globals: () => ({ precios: [3, 7.5, 1.2, 5, 9] }) },
@@ -661,7 +661,7 @@ export const TRAINING: TrainingSet[] = [
           body: "lista.map((x) => ...) devuelve una lista nueva del mismo tamaño con lo que devuelve la flecha para cada elemento.",
           example: "let precios = [2, 4];\nlet dobles = precios.map((p) => p * 2); // [4, 8]",
         },
-        task: "Crea nombres con el nombre de cada alumno de alumnos usando map, y muéstralo.",
+        task: "Crea la lista `nombres` con el nombre de cada alumno de `alumnos`, usando `map`, y muéstrala.",
         borrowed: ["alumnos"],
         cases: [
           { label: "clase del martes", globals: () => ({ alumnos: [{ nombre: "Ana", nota: 8 }, { nombre: "Leo", nota: 5 }, { nombre: "Iris", nota: 9 }] }) },
@@ -689,7 +689,7 @@ export const TRAINING: TrainingSet[] = [
           body: "El resultado de filter es una lista, así que se le puede aplicar map justo detrás: lista.filter(...).map(...).",
           example: "let grandes = [3, 8, 10].filter((n) => n > 5).map((n) => n * 10); // [80, 100]",
         },
-        task: "Crea diplomas con los nombres de los alumnos con nota mayor o igual a 6, encadenando filter y map. Muéstralo.",
+        task: "Crea la lista `diplomas` con los nombres de los alumnos con nota mayor o igual a 6, encadenando `filter` y `map`. Muéstrala.",
         borrowed: ["alumnos"],
         cases: [
           { label: "clase del martes", globals: () => ({ alumnos: [{ nombre: "Ana", nota: 8 }, { nombre: "Leo", nota: 5 }, { nombre: "Iris", nota: 6 }] }) },
@@ -736,7 +736,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Una función puede devolver otra función. La de dentro recuerda los parámetros de la de fuera aunque esta ya haya terminado.",
           example: "function multiplicarPor(n) {\n  return (x) => x * n;\n}\nconst triple = multiplicarPor(3);\nconsole.log(triple(5)); // 15",
         },
-        task: "Escribe crearSaludo(saludo) que devuelva una función. Esa función recibe un nombre y devuelve SALUDO, NOMBRE. Por ejemplo, crearSaludo(\"Hola\")(\"Ruth\") devuelve Hola, Ruth.",
+        task: "Escribe la función `crearSaludo(saludo)` que devuelva otra función. Esa otra recibe un nombre y devuelve el texto \"SALUDO, NOMBRE\". Por ejemplo, `crearSaludo(\"Hola\")(\"Ruth\")` devuelve \"Hola, Ruth\".",
         probe: 'typeof crearSaludo !== "function" ? "__nofn" : (() => { const a = crearSaludo("Hola"); const b = crearSaludo("Buenas noches"); if (typeof a !== "function") return "__nofnret"; return [a("Ruth"), b("Sam"), a("Byte")]; })()',
         cases: [{ label: "tres saludos", globals: () => ({}) }],
         check: ([o]) => {
@@ -763,7 +763,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Si la función de dentro cambia una variable de la de fuera, ese cambio se conserva entre llamadas. Cada fabricación tiene su propia variable.",
           example: "function crearPasos() {\n  let n = 0;\n  return () => {\n    n++;\n    return n;\n  };\n}",
         },
-        task: "Escribe crearMetronomo(inicio) que devuelva una función. Cada vez que se llama, suma 1 a la cuenta (que empieza en inicio) y la devuelve.",
+        task: "Escribe la función `crearMetronomo(inicio)` que devuelva otra función. Cada vez que se llama, suma 1 a una cuenta que empieza en `inicio` y devuelve la cuenta.",
         probe: 'typeof crearMetronomo !== "function" ? "__nofn" : (() => { const a = crearMetronomo(10); const b = crearMetronomo(0); if (typeof a !== "function") return "__nofnret"; return [a(), a(), b(), a(), b()]; })()',
         cases: [{ label: "dos metrónomos", globals: () => ({}) }],
         check: ([o]) => {
@@ -791,7 +791,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Una función puede devolver un objeto con métodos que comparten una variable escondida. Desde fuera solo se usa lo que los métodos permiten.",
           example: "function crearCaja() {\n  let cosas = 0;\n  return {\n    meter() { cosas++; },\n    cuantas() { return cosas; },\n  };\n}",
         },
-        task: "Escribe crearHucha() que devuelva un objeto con meter(cantidad), que suma la cantidad al ahorro, y total(), que devuelve el ahorro. El ahorro empieza en 0 y no se ve desde fuera.",
+        task: "Escribe la función `crearHucha()` que devuelva un objeto con dos métodos: `meter(cantidad)`, que suma la cantidad al ahorro, y `total()`, que devuelve el ahorro. El ahorro empieza en 0 y no se ve desde fuera.",
         probe: 'typeof crearHucha !== "function" ? "__nofn" : (() => { const h = crearHucha(); const g = crearHucha(); if (!h || typeof h.meter !== "function" || typeof h.total !== "function") return "__nometh"; h.meter(5); h.meter(2.5); g.meter(1); return [h.total(), g.total(), Object.keys(h).sort()]; })()',
         cases: [{ label: "dos huchas", globals: () => ({}) }],
         check: ([o]) => {
@@ -835,7 +835,7 @@ export const TRAINING: TrainingSet[] = [
           body: "class Nombre { constructor(a, b) { this.a = a; } } define un molde. new Nombre(...) fabrica un objeto con esos datos.",
           example: 'class Gato {\n  constructor(nombre) {\n    this.nombre = nombre;\n  }\n}\nconst g = new Gato("Byte");',
         },
-        task: "Escribe la clase Instrumento con un constructor(nombre, cuerdas) que guarde los dos datos en this.",
+        task: "Escribe la clase `Instrumento` con un `constructor(nombre, cuerdas)` que guarde los dos datos en `this`.",
         probe: 'typeof Instrumento !== "function" ? "__nocls" : (() => { const a = new Instrumento("violín", 4); const b = new Instrumento("guitarra", 6); return [a.nombre, a.cuerdas, b.nombre, b.cuerdas]; })()',
         cases: [{ label: "dos instrumentos", globals: () => ({}) }],
         check: ([o]) => {
@@ -861,7 +861,7 @@ export const TRAINING: TrainingSet[] = [
           body: "Un método se escribe dentro de la clase, después del constructor. Con this lee y cambia los datos del propio objeto.",
           example: "class Contador {\n  constructor() {\n    this.n = 0;\n  }\n  sumar() {\n    this.n++;\n  }\n}",
         },
-        task: "Escribe la clase Piano con constructor() que ponga this.afinado = false, el método afinar() que lo ponga en true, y el método estado() que devuelva \"afinado\" o \"desafinado\".",
+        task: "Escribe la clase `Piano`: su `constructor()` pone `this.afinado = false`, el método `afinar()` lo pone en `true` y el método `estado()` devuelve \"afinado\" o \"desafinado\".",
         probe: 'typeof Piano !== "function" ? "__nocls" : (() => { const a = new Piano(); const b = new Piano(); if (typeof a.afinar !== "function" || typeof a.estado !== "function") return "__nometh"; const antes = a.estado(); a.afinar(); return [antes, a.estado(), b.estado()]; })()',
         cases: [{ label: "dos pianos", globals: () => ({}) }],
         check: ([o]) => {
@@ -888,7 +888,7 @@ export const TRAINING: TrainingSet[] = [
           body: "class Hija extends Madre hereda todo. En su constructor hay que llamar primero a super(...) con los datos que necesita la madre.",
           example: 'class Animal {\n  constructor(nombre) { this.nombre = nombre; }\n}\nclass Gato extends Animal {\n  constructor(nombre) {\n    super(nombre);\n    this.patas = 4;\n  }\n}',
         },
-        task: "Ya existe la clase Instrumento(nombre, cuerdas). Escribe Violin que extienda Instrumento: su constructor(dueno) llama a super(\"violín\", 4), guarda this.dueno, y tiene el método ficha() que devuelve NOMBRE de DUENO (por ejemplo: violín de Leo).",
+        task: "Ya existe la clase `Instrumento(nombre, cuerdas)`. Escribe la clase `Violin` que extienda `Instrumento`: su `constructor(dueno)` llama a `super(\"violín\", 4)` y guarda `this.dueno`, y su método `ficha()` devuelve el texto \"NOMBRE de DUENO\" (por ejemplo: \"violín de Leo\").",
         starter: "class Instrumento {\n  constructor(nombre, cuerdas) {\n    this.nombre = nombre;\n    this.cuerdas = cuerdas;\n  }\n}\n\n// Escribe Violin debajo\n",
         probe: 'typeof Violin !== "function" ? "__nocls" : (() => { const v = new Violin("Leo"); if (typeof v.ficha !== "function") return "__nometh"; return [v.nombre, v.cuerdas, v.dueno, v.ficha(), v instanceof Instrumento]; })()',
         cases: [{ label: "el violín de Leo", globals: () => ({}) }],

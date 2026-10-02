@@ -15,7 +15,7 @@ import { translateError, typoHint, nameHint, TIMEOUT_ERROR } from "../game/error
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
-import { exampleHtml, bindPeeks } from "./example";
+import { exampleHtml, bindPeeks, taskHtml } from "./example";
 
 const amber = HighlightStyle.define([
   { tag: t.keyword, color: "#fff4c9", fontWeight: "normal" },
@@ -71,7 +71,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
         <pre class="example">${ex.html}</pre>
         ${ex.peeks ? `<p class="peek-tip">Antes de pulsar <b>¿?</b>, piensa qué imprimirá.</p>` : ""}
         <h3>Encargo</h3>
-        <div class="task">${esc(mission.task)}</div>
+        <div class="task">${taskHtml(mission.task)}</div>
         ${
           mission.borrowed.length
             ? `<p class="borrowed" style="margin-top:calc(4*var(--u))">Ya cargado en la máquina: ${mission.borrowed

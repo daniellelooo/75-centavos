@@ -28,3 +28,8 @@ export function bindPeeks(root: HTMLElement): void {
     sfx("tick");
   });
 }
+
+/** Texto de una tarea: lo que va entre comillas invertidas se ve como código. */
+export function taskHtml(text: string): string {
+  return esc(text).replace(/`([^`]+)`/g, '<code class="v">$1</code>');
+}

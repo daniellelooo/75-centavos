@@ -8,7 +8,7 @@ import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui } from "./dom";
 import { badgeHtml, storiesHtml } from "./badge";
-import { exampleHtml, bindPeeks } from "./example";
+import { exampleHtml, bindPeeks, taskHtml } from "./example";
 import { FREE } from "../game/free";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -168,7 +168,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
         ${t.exercises
           .map(
             (ex, k) => `<div class="nb-ex">
-              <div><b>${esc(ex.title)}</b> <span class="nb-ex-c">${esc(ex.concept)}</span><br><span class="nb-ex-t">${esc(ex.task)}</span></div>
+              <div><b>${esc(ex.title)}</b> <span class="nb-ex-c">${esc(ex.concept)}</span><br><span class="nb-ex-t">${taskHtml(ex.task)}</span></div>
               <button class="btn nb-ex-go" data-k="${k}">PRACTICAR</button>
             </div>`,
           )

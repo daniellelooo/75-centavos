@@ -831,3 +831,6 @@ html, body {
 .nb-free span { display: block; font-family: var(--font-ui); font-size: calc(6 * var(--u)); opacity: 0.8; }
 .p-time { padding: 0 calc(4 * var(--u)) calc(3 * var(--u)); font-size: calc(6.5 * var(--u)); color: #c9d3ea; }
 .p-time b { color: var(--amber); font-weight: normal; }
+/* nombres de código dentro de un enunciado */
+.term .task code.v { font-family: var(--font-crt); color: #fed018; background: rgba(254, 208, 24, 0.12); padding: 0 calc(1.5 * var(--u)); }
+.nb-ex-t code.v { font-family: var(--font-crt); font-size: calc(8.5 * var(--u)); color: #a31d33; }
