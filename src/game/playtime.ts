@@ -1,6 +1,6 @@
 // Tiempo de juego: el de esta sesión y el total de la partida. Solo cuenta con
 // la pestaña visible y fuera de la portada, para que no sume horas de pestaña olvidada.
-import { save, writeSave } from "./state";
+import { loadSave, save, writeSave } from "./state";
 
 let sessionMs = 0;
 let last = performance.now();
@@ -16,14 +16,23 @@ function tick(): void {
   sinceWrite += dt;
   if (sinceWrite > 30000) {
     sinceWrite = 0;
-    writeSave(save);
+    persist();
   }
+}
+
+/** Guarda solo el tiempo: con varias pestañas abiertas, escribir la partida
+ *  entera desde una pestaña vieja borraría el progreso hecho en otra. */
+function persist(): void {
+  const stored = loadSave();
+  if (!stored) return;
+  stored.playMs = Math.max(stored.playMs ?? 0, save.playMs ?? 0);
+  writeSave(stored);
 }
 
 setInterval(tick, 1000);
 document.addEventListener("visibilitychange", () => {
   last = performance.now();
-  if (document.hidden) writeSave(save);
+  if (document.hidden) persist();
 });
 
 export const sessionTime = () => sessionMs;
