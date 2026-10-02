@@ -3,6 +3,7 @@ import "./style.css";
 import { VIEW_H, VIEW_W } from "./config";
 import { BootScene } from "./scenes/BootScene";
 import { LabScene } from "./scenes/LabScene";
+import { initCloud } from "./game/cloud";
 import { NetScene } from "./scenes/NetScene";
 import { ViewScene } from "./scenes/ViewScene";
 import { TravelScene } from "./scenes/TravelScene";
@@ -55,3 +56,6 @@ matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener?.("c
 
 // Para pruebas en navegador real (Playwright).
 (window as unknown as { __game: Phaser.Game }).__game = game;
+
+// cuenta y guardado en la nube (si hay sesión); el juego no espera por ello
+void initCloud(() => document.dispatchEvent(new Event("cuenta")));

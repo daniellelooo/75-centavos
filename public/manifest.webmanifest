@@ -2,7 +2,7 @@
   "name": "75 Centavos",
   "short_name": "75 Centavos",
   "description": "Juego pixel art para aprender JavaScript desde cero. Berkeley, 1986.",
-  "start_url": "/",
+  "start_url": "/75-centavos/",
   "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#07080f",
