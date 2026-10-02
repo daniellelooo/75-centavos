@@ -829,3 +829,5 @@ html, body {
 .title .btn.danger { background: #a31d33; color: #fffbe8; border-color: #fffbe8; }
 .nb-free { display: block; width: 100%; margin: 0 0 calc(6 * var(--u)); text-align: left; }
 .nb-free span { display: block; font-family: var(--font-ui); font-size: calc(6 * var(--u)); opacity: 0.8; }
+.p-time { padding: 0 calc(4 * var(--u)) calc(3 * var(--u)); font-size: calc(6.5 * var(--u)); color: #c9d3ea; }
+.p-time b { color: var(--amber); font-weight: normal; }

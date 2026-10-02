@@ -1,4 +1,5 @@
 // Menú de pausa: música, efectos, pantalla completa, controles y salida.
+import { formatTime, sessionTime, totalTime } from "../game/playtime";
 import { settings, saveSettings, applyCrt } from "../game/settings";
 import { MISSIONS } from "../game/missions";
 import { save } from "../game/state";
@@ -52,7 +53,8 @@ function render(): void {
   if (!root) return;
   const m = MISSIONS[save.done];
   root.querySelector(".p-body")!.innerHTML = `
-    <div class="p-progress">${m ? `Misión ${save.done + 1} de ${MISSIONS.length}: <b>${m.title}</b>` : "Acto 1 completado"}</div>
+    <div class="p-progress">${m ? `Misión ${save.done + 1} de ${MISSIONS.length}: <b>${m.title}</b>` : "Historia completada"}</div>
+    <div class="p-time">Esta sesión: <b>${formatTime(sessionTime())}</b> · En total: <b>${formatTime(totalTime())}</b></div>
     <div class="p-row" data-k="resume"><span>REANUDAR</span><span class="hint">ESC</span></div>
     ${hooks?.notebook ? `<div class="p-row" data-k="notebook"><span>CUADERNO DE SAM</span><span class="hint">C</span></div>` : ""}
     <div class="p-sep">RADIO</div>
