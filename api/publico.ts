@@ -1,6 +1,6 @@
 // Perfil público: solo alias, nombre y progreso por juego. Nada de correos ni ids.
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { json, sql } from "./_lib";
+import { json, sql } from "./_lib.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") return json(res, 405, { error: "método no permitido" });

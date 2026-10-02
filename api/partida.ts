@@ -1,6 +1,6 @@
 // La partida en la nube: leerla y guardarla. Una por jugador y juego.
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { JUEGOS, ensurePerfil, json, sql, userIdOf } from "./_lib";
+import { JUEGOS, ensurePerfil, json, sql, userIdOf } from "./_lib.js";
 
 const MAX_BYTES = 256 * 1024;
 

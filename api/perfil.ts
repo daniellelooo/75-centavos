@@ -1,6 +1,6 @@
 // Mi perfil: leerlo (se crea solo la primera vez) y cambiar alias, nombre o si es público.
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { ensurePerfil, json, sql, userIdOf } from "./_lib";
+import { ensurePerfil, json, sql, userIdOf } from "./_lib.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const userId = await userIdOf(req);
