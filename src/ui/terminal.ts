@@ -11,7 +11,7 @@ import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import type { Mission } from "../game/missions";
 import { runMission } from "../game/runner";
-import { translateError, typoHint, TIMEOUT_ERROR } from "../game/errors";
+import { translateError, typoHint, nameHint, TIMEOUT_ERROR } from "../game/errors";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
@@ -268,6 +268,10 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
     function typoTip(code: string) {
       const t = typoHint(code);
       if (t) print(`<div class="hint">${esc(t)}</div>`);
+      // nombres que pide la tarea: las variables comprobadas y la función o clase que se prueba
+      const probed = mission.probe?.match(/typeof\s+([A-Za-z_$][\w$]*)/)?.[1];
+      const n = nameHint(code, [...mission.capture, ...(probed ? [probed] : [])]);
+      if (n) print(`<div class="hint">${esc(n)}</div>`);
     }
 
     /** ${} dentro de comillas normales: no se sustituye. Es el error más común con las plantillas. */

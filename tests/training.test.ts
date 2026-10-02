@@ -125,3 +125,17 @@ describe("erratas típicas", () => {
     for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) expect(typoHint(m.hints[m.hints.length - 1]), m.id).toBeNull();
   });
 });
+
+describe("nombres casi iguales", () => {
+  it("avisa de celcius por celsius y de Total por total, y calla si está bien", async () => {
+    const { nameHint } = await import("../src/game/errors");
+    expect(nameHint("let celcius = 1;", ["celsius"])).toMatch(/celsius/);
+    expect(nameHint("let Total = 1;", ["total"])).toMatch(/mayúsculas/);
+    expect(nameHint("function dobel(n) {}", ["doble"])).toMatch(/doble/);
+    expect(nameHint("let celsius = 1;", ["celsius"])).toBeNull();
+    for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) {
+      const probed = m.probe?.match(/typeof\s+([A-Za-z_$][\w$]*)/)?.[1];
+      expect(nameHint(m.hints[m.hints.length - 1], [...m.capture, ...(probed ? [probed] : [])]), m.id).toBeNull();
+    }
+  });
+});

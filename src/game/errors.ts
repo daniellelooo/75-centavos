@@ -103,3 +103,25 @@ export function typoHint(code: string): string | null {
   }
   return null;
 }
+
+/** Distancia de edición entre dos palabras (cuántas letras cambian). */
+function distance(a: string, b: string): number {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+
+/** Si el código crea una variable o función con un nombre casi igual al que pide la
+ *  tarea (celcius por celsius), lo dice: es lo que más confunde al empezar. */
+export function nameHint(code: string, expected: string[]): string | null {
+  const declared = [...code.matchAll(/\b(?:let|const|var|function|class)\s+([A-Za-z_$][\w$]*)/g)].map((m) => m[1]);
+  for (const want of expected) {
+    if (declared.includes(want)) continue;
+    const near = declared.find((n) => n !== want && (n.toLowerCase() === want.toLowerCase() || distance(n, want) <= 2));
+    if (near) return `Creaste "${near}", pero la tarea pide "${want}". Los nombres tienen que coincidir letra por letra${near.toLowerCase() === want.toLowerCase() ? ", también en mayúsculas y minúsculas" : ""}.`;
+  }
+  return null;
+}
