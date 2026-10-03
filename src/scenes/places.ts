@@ -2,7 +2,7 @@
 // qué se puede mirar y qué hace el mentor mientras Sam practica. La escena que
 // los pone en marcha es HouseScene; aquí solo está lo propio de cada lugar.
 import type Phaser from "phaser";
-import type { CharName, Dir } from "../config";
+import type { CharName, Dir, EmoteName } from "../config";
 import type { Line } from "../game/missions";
 import type { MentorKey } from "../game/mentors";
 import { pianoPhrase, sfx, type SoundName } from "../audio/sfx";
@@ -26,7 +26,7 @@ export interface BuildCtx {
 export interface MentorCtx {
   walk(points: [number, number][]): Promise<void>;
   face(dir: Dir): void;
-  bubble(mood: "alegre" | "serio" | "sorpresa"): void;
+  bubble(mood: EmoteName): void;
   wait(ms: number): Promise<void>;
   sfx(name: SoundName): void;
 }
@@ -171,7 +171,7 @@ const margarita: PlaceDef = {
         await m.walk([[232, 132], [36, 132], [36, 76]]);
         m.face("up");
         const ms = pianoPhrase();
-        for (let t = 0; t < ms; t += 1200) setTimeout(() => m.bubble("alegre"), t);
+        for (let t = 0; t < ms; t += 1200) setTimeout(() => m.bubble("musica"), t);
         await m.wait(ms + 900);
         await m.walk([[36, 132], [232, 132], [232, 92]]);
       },
@@ -186,7 +186,9 @@ const margarita: PlaceDef = {
         await m.walk([[290, 144], [292, 146]]);
         m.face("right");
         m.sfx("water");
-        await m.wait(1800);
+        await m.wait(1200);
+        m.bubble("corazon");
+        await m.wait(1200);
         await m.walk([[290, 92], [232, 92]]);
       },
     },
@@ -196,8 +198,10 @@ const margarita: PlaceDef = {
         await m.walk([[232, 132], [88, 132], [88, 60]]);
         m.face("up");
         await m.wait(1200);
-        m.bubble("serio");
-        await m.wait(2200);
+        m.bubble("duda");
+        await m.wait(1800);
+        m.bubble("idea");
+        await m.wait(1400);
         await m.walk([[88, 132], [232, 132], [232, 92]]);
       },
     },
@@ -281,24 +285,30 @@ const gus: PlaceDef = {
     {
       name: "radio",
       run: async (m) => {
-        await m.walk([[232, 70], [46, 70], [46, 64]]);
+        await m.walk([[232, 84], [46, 84], [46, 64]]);
         m.face("up");
         for (let i = 0; i < 8; i++) setTimeout(() => m.sfx(i % 3 === 2 ? "blip" : "tick"), i * 180);
+        m.bubble("duda");
+        await m.wait(1700);
+        m.bubble("sorpresa");
+        await m.wait(900);
         m.bubble("alegre");
-        await m.wait(3400);
-        await m.walk([[46, 70], [232, 70], [232, 92]]);
+        await m.wait(1500);
+        await m.walk([[46, 84], [232, 84], [232, 92]]);
       },
     },
     {
       name: "banco",
       run: async (m) => {
-        await m.walk([[232, 70], [26, 70], [26, 64]]);
+        await m.walk([[232, 84], [26, 84], [26, 64]]);
         m.face("up");
         for (let i = 0; i < 5; i++) setTimeout(() => m.sfx("click"), 300 + i * 420);
-        await m.wait(2600);
-        m.bubble("serio");
+        await m.wait(1400);
+        m.bubble("sudor");
+        await m.wait(1600);
+        m.bubble("idea");
         await m.wait(1200);
-        await m.walk([[26, 70], [232, 70], [232, 92]]);
+        await m.walk([[26, 84], [232, 84], [232, 92]]);
       },
     },
     {
@@ -307,9 +317,11 @@ const gus: PlaceDef = {
         await m.walk([[232, 128], [238, 128]]);
         m.face("down");
         await m.wait(1500);
-        m.bubble("sorpresa");
+        m.bubble("enfado");
         m.sfx("click");
         await m.wait(1800);
+        m.bubble("brillo");
+        await m.wait(1200);
         await m.walk([[232, 128], [232, 92]]);
       },
     },
@@ -323,20 +335,16 @@ const gus: PlaceDef = {
   },
 };
 
-// ------------------------------------------------------------------ Benny, el programador
+// ------------------------------------------------------------------ Rochy, el programador
 
-const benny: PlaceDef = {
-  mentor: "benny",
+const rochy: PlaceDef = {
+  mentor: "rochy",
   build(c) {
     const g = c.scene.add.graphics().setDepth(0);
-    // moqueta verde oscura con manchas, y cables por el suelo
+    // moqueta verde oscura
     g.fillStyle(0x2f4746, 1).fillRect(0, FLOOR_TOP, ROOM_W, FLOOR_BOTTOM - FLOOR_TOP);
     for (let y = FLOOR_TOP; y < FLOOR_BOTTOM; y += 2)
       for (let x = (y * 5) % 6; x < ROOM_W; x += 6) g.fillStyle(0x344f4e, 1).fillRect(x, y, 1, 1);
-    g.fillStyle(0x283c3b, 1).fillEllipse(110, 150, 22, 8).fillEllipse(180, 84, 14, 5);
-    g.lineStyle(1, 0x1c1830, 1);
-    g.beginPath().moveTo(230, 70).lineTo(230, 96).lineTo(170, 96).lineTo(170, 120).lineTo(120, 120).strokePath();
-    g.beginPath().moveTo(244, 66).lineTo(260, 66).lineTo(260, 110).strokePath();
     // pared morada con una tira de corcho
     const w = c.scene.add.graphics().setDepth(2);
     w.fillStyle(0x3a2f52, 1).fillRect(0, 0, ROOM_W, FLOOR_TOP);
@@ -375,8 +383,8 @@ const benny: PlaceDef = {
     c.prop("book_piles", 126, 30);
     c.prop("book_piles", 30, 150);
     c.solid(32, 160, 24, 8);
-    c.prop("beanbag", 60, 118);
-    c.solid(62, 126, 20, 8);
+    c.prop("beanbag", 56, 114);
+    c.solid(58, 124, 26, 10);
     c.prop("pizza_boxes", 270, 140);
     c.solid(272, 148, 22, 8);
     c.prop("trash", 300, 100);
@@ -388,7 +396,7 @@ const benny: PlaceDef = {
       id: "terminal2", x: 238, y: 74, r: 10, label: "La otra terminal",
       lines: [
         { who: "sam", text: "Pone COMPILANDO... 61%. ¿Desde cuándo?" },
-        { who: "benny", text: "Desde el martes. No la toques. Ni la mires mucho.", mood: "serio" },
+        { who: "rochy", text: "Desde el martes. No la toques. Ni la mires mucho.", mood: "serio" },
       ],
     },
     { id: "pizza", x: 282, y: 156, r: 16, label: "Cajas de pizza", lines: [{ who: "sam", text: "Cinco cajas vacías. Una con una nota: \"no tirar, es arte\"." }] },
@@ -397,14 +405,14 @@ const benny: PlaceDef = {
       id: "servidores", x: 296, y: 56, r: 18, label: "Servidores",
       lines: [
         { who: "sam", text: "¿Tienes dos armarios de servidores en el cuarto?" },
-        { who: "benny", text: "Me los dio la universidad. Bueno, los iban a tirar. Calientan el cuarto gratis." },
+        { who: "rochy", text: "Me los dio la universidad. Bueno, los iban a tirar. Calientan el cuarto gratis." },
       ],
     },
     {
       id: "posteres", x: 184, y: 46, r: 16, label: "Pósteres",
       lines: [
         { who: "sam", text: "Un robot gigante y una chica de ojos enormes. ¿Qué es esto?" },
-        { who: "benny", text: "Anime. De Japón. Me llegan las cintas por correo, subtituladas por un tipo de Ohio.", mood: "alegre" },
+        { who: "rochy", text: "Anime. De Japón. Me llegan las cintas por correo, subtituladas por un tipo de Ohio.", mood: "alegre" },
       ],
     },
   ],
@@ -415,7 +423,7 @@ const benny: PlaceDef = {
         await m.walk([[232, 130], [282, 130], [282, 136]]);
         m.face("down");
         await m.wait(900);
-        m.bubble("alegre");
+        m.bubble("corazon");
         await m.wait(2200);
         await m.walk([[282, 130], [232, 130], [232, 92]]);
       },
@@ -426,8 +434,10 @@ const benny: PlaceDef = {
         await m.walk([[240, 92], [240, 72]]);
         m.face("up");
         for (let i = 0; i < 14; i++) setTimeout(() => m.sfx("key"), i * 110);
-        await m.wait(2200);
-        m.bubble("serio");
+        await m.wait(1400);
+        m.bubble("enfado");
+        await m.wait(1200);
+        m.bubble("idea");
         await m.wait(1000);
         await m.walk([[240, 92], [232, 92]]);
       },
@@ -438,7 +448,7 @@ const benny: PlaceDef = {
         await m.walk([[232, 140], [72, 140], [72, 130]]);
         m.face("down");
         await m.wait(800);
-        m.bubble("serio");
+        for (let t = 0; t < 3600; t += 1300) setTimeout(() => m.bubble("zzz"), t);
         await m.wait(3800);
         m.bubble("sorpresa");
         await m.wait(700);
@@ -455,4 +465,4 @@ const benny: PlaceDef = {
   },
 };
 
-export const PLACES: Record<MentorKey, PlaceDef> = { margarita, gus, benny };
+export const PLACES: Record<MentorKey, PlaceDef> = { margarita, gus, rochy };

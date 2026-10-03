@@ -2,7 +2,7 @@
 // practicar con Margarita, que le enseñó a programar a Ruth en 1971. Cada sesión
 // son tres ejercicios cortos en la terminal de su casa, solo con lo ya aprendido.
 // Hay una sesión antes de las misiones 3, 6, 8, 11, 13, 17, 21 y 26: Margarita da
-// las cuatro primeras, Gus (radioaficionado) las dos siguientes y Benny (programador) las dos últimas.
+// las cuatro primeras, Gus (radioaficionado) las dos siguientes y Rochy (programador) las dos últimas.
 import type { Line, Mission, TestCase } from "./types";
 import type { RunOutput } from "./sandbox";
 import { printed, probeErr, same, show } from "./acts/util";
@@ -751,22 +751,22 @@ export const TRAINING: TrainingSet[] = [
     ],
     farewell: [
       { who: "gus", text: "Lo próximo que te enseñará Ruth tiene un nombre raro: closures. Yo no sé qué son. Pero suena a antena." },
-      { who: "gus", text: "Para eso, mejor Benny. Ya lo conocerás. Setenta y tres, Sam.", mood: "alegre" },
+      { who: "gus", text: "Para eso, mejor Rochy. Ya lo conocerás. Setenta y tres, Sam.", mood: "alegre" },
     ],
     back: [{ who: "kessler", text: "¿Closures? Yo tampoco las entiendo. Por eso estás tú aquí." }],
   },
   {
     id: "t7",
-    mentor: "benny",
+    mentor: "rochy",
     before: "m21",
     title: "Cajas con memoria",
     sendoff: [
-      { who: "kessler", text: "Cuatro países van a leer nuestros datos. Necesitamos orden. Ruth dice que antes veas a Benny." },
+      { who: "kessler", text: "Cuatro países van a leer nuestros datos. Necesitamos orden. Ruth dice que antes veas a Rochy." },
       { who: "kessler", text: "Un estudiante de doctorado que vive de pizza y sabe más que todo el departamento junto. No lo despiertes antes de mediodía." },
     ],
     welcome: [
-      { who: "benny", text: "Ugh. Tú eres el de la VAX. Ruth me debe una. Pasa. No pises los cables. Ni las cajas. Ni nada.", mood: "serio" },
-      { who: "benny", text: "Funciones que fabrican funciones. Lo explico una vez. Bueno, las veces que haga falta. Pero rápido." },
+      { who: "rochy", text: "Ugh. Tú eres el de la VAX. Ruth me debe una. Pasa. No pises las cajas. Ni los libros. Ni nada.", mood: "serio" },
+      { who: "rochy", text: "Funciones que fabrican funciones. Lo explico una vez. Bueno, las veces que haga falta. Pero rápido." },
     ],
     exercises: [
       ex({
@@ -780,7 +780,7 @@ export const TRAINING: TrainingSet[] = [
           example: "function multiplicarPor(n) {\n  return (x) => x * n;\n}\nconst triple = multiplicarPor(3);\nconsole.log(triple(5)); // 15",
         },
         task: "Escribe la función `crearPrompt(usuario)` que devuelva otra función. Esa otra recibe un comando y devuelve el texto \"USUARIO> COMANDO\". Por ejemplo, `crearPrompt(\"sam\")(\"ls\")` devuelve \"sam> ls\".",
-        probe: 'typeof crearPrompt !== "function" ? "__nofn" : (() => { const a = crearPrompt("sam"); const b = crearPrompt("benny"); if (typeof a !== "function") return "__nofnret"; return [a("ls"), b("make"), a("who")]; })()',
+        probe: 'typeof crearPrompt !== "function" ? "__nofn" : (() => { const a = crearPrompt("sam"); const b = crearPrompt("rochy"); if (typeof a !== "function") return "__nofnret"; return [a("ls"), b("make"), a("who")]; })()',
         cases: [{ label: "tres comandos", globals: () => ({}) }],
         check: ([o]) => {
           const p = o.values.__probe;
@@ -789,7 +789,7 @@ export const TRAINING: TrainingSet[] = [
           if (p === "__nofn") return no("No encuentro la función crearPrompt.");
           if (p === "__nofnret") return no("crearPrompt tiene que devolver una función: return (comando) => ...");
           if (err) return no(`La función dio un error: ${err}`);
-          const want = ["sam> ls", "benny> make", "sam> who"];
+          const want = ["sam> ls", "rochy> make", "sam> who"];
           if (!same(p, want)) return no(`Los prompts salieron ${show(p)} y debían ser ${show(want)}. Ojo al espacio después del >.`);
           return ok("Cada prompt recuerda a su usuario.");
         },
@@ -866,22 +866,22 @@ export const TRAINING: TrainingSet[] = [
       }),
     ],
     farewell: [
-      { who: "benny", text: "Ya está. Lo siguiente son las clases: moldes para fabricar objetos. Otro día. O nunca." },
-      { who: "benny", text: "No, en serio. Vuelve. Pero trae pizza.", mood: "alegre" },
+      { who: "rochy", text: "Ya está. Lo siguiente son las clases: moldes para fabricar objetos. Otro día. O nunca." },
+      { who: "rochy", text: "No, en serio. Vuelve. Pero trae pizza.", mood: "alegre" },
     ],
     back: [{ who: "kessler", text: "Hueles a pizza fría. ¿Has aprendido algo? Bien. Clases." }],
   },
   {
     id: "t8",
-    mentor: "benny",
+    mentor: "rochy",
     before: "m26",
     title: "La sala de máquinas",
     sendoff: [
-      { who: "ruth", text: "Lo último que te queda es el tiempo: esperar respuestas. Antes, una sesión más con Benny." },
+      { who: "ruth", text: "Lo último que te queda es el tiempo: esperar respuestas. Antes, una sesión más con Rochy." },
       { who: "ruth", text: "Dice que no tiene tiempo. Tiene todo el tiempo del mundo. Ve." },
     ],
     welcome: [
-      { who: "benny", text: "Otra vez tú. Vale. Clases: moldes para fabricar objetos iguales. Así hago los enemigos de mis juegos." },
+      { who: "rochy", text: "Otra vez tú. Vale. Clases: moldes para fabricar objetos iguales. Así hago los enemigos de mis juegos." },
     ],
     exercises: [
       ex({
@@ -978,9 +978,9 @@ export const TRAINING: TrainingSet[] = [
       }),
     ],
     farewell: [
-      { who: "benny", text: "Ya no te hace falta venir. Pero si traes pizza, la puerta está abierta. Literalmente: se rompió el pestillo.", mood: "alegre" },
+      { who: "rochy", text: "Ya no te hace falta venir. Pero si traes pizza, la puerta está abierta. Literalmente: se rompió el pestillo.", mood: "alegre" },
     ],
-    back: [{ who: "ruth", text: "¿Benny te dio las gracias? Lo apunto como un milagro." }],
+    back: [{ who: "ruth", text: "¿Rochy te dio las gracias? Lo apunto como un milagro." }],
   },
 ];
 

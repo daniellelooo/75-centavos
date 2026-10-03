@@ -5,7 +5,7 @@ export const VIEW_H = 270;
 export const TILE = 16;
 
 /** Índices de personaje dentro de assets/characters.png (tools/art/characters.py). */
-export const CHAR = { sam: 0, ruth: 1, kessler: 2, margarita: 3, gus: 4, benny: 5 } as const;
+export const CHAR = { sam: 0, ruth: 1, kessler: 2, margarita: 3, gus: 4, rochy: 5 } as const;
 export type CharName = keyof typeof CHAR;
 
 /** Fila de la hoja de cada dirección. */
@@ -15,3 +15,10 @@ export type Dir = keyof typeof DIR;
 export function charFrame(name: CharName, dir: Dir, step = 0): number {
   return (CHAR[name] * 4 + DIR[dir]) * 4 + step;
 }
+
+/** Cuadros de assets/emotes.png: burbujas de emoción sobre los personajes. */
+export const EMOTE = {
+  sorpresa: 0, duda: 1, serio: 2, musica: 3, corazon: 4, zzz: 5,
+  idea: 6, sudor: 7, enfado: 8, brillo: 9, alegre: 10, cafe: 11,
+} as const;
+export type EmoteName = keyof typeof EMOTE;

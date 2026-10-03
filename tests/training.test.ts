@@ -9,7 +9,7 @@ function play(id: string, code: string) {
   return m.check(outs, m.cases);
 }
 
-describe("ejercicios de Margarita: la última pista los resuelve", () => {
+describe("ejercicios de práctica: la última pista los resuelve", () => {
   for (const m of TRAINING_EXERCISES) {
     it(m.id, () => {
       const r = play(m.id, m.hints[m.hints.length - 1]);

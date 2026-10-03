@@ -1,7 +1,7 @@
 // Los mentores de las sesiones de práctica: quién es, dónde vive y cómo se dice
 // ir a verle. Margarita para lo básico (actos 1 y 2), Gus para los actos 3 y 4,
-// Benny para los actos 5 y 6. Las escenas de cada lugar están en scenes/places.ts.
-export type MentorKey = "margarita" | "gus" | "benny";
+// Rochy para los actos 5 y 6. Las escenas de cada lugar están en scenes/places.ts.
+export type MentorKey = "margarita" | "gus" | "rochy";
 
 export interface MentorInfo {
   /** Nombre en los textos: "Margarita". */
@@ -27,10 +27,10 @@ export const MENTORS: Record<MentorKey, MentorInfo> = {
     card: ["Garaje de Gus", "Rockridge, Oakland"],
     travel: "Rumbo al garaje de Gus",
   },
-  benny: {
-    name: "Benny",
-    to: "al cuarto de Benny",
-    card: ["Cuarto de Benny", "Southside, Berkeley"],
-    travel: "Rumbo al cuarto de Benny",
+  rochy: {
+    name: "Rochy",
+    to: "al cuarto de Rochy",
+    card: ["Cuarto de Rochy", "Southside, Berkeley"],
+    travel: "Rumbo al cuarto de Rochy",
   },
 };

@@ -42,9 +42,9 @@ CHARS = {
         "w": "#f4f4ec", "v": "#c8c8be", "r": "#c83a3a", "R": "#ee6a6a", "J": "#6e4c2c",
         "p": "#5c5c66", "P": "#45454f", "b": "#1c1830", "B": "#3e3a5c",
     },
-    # Benny: programador grande y desganado. Pelo castaño revuelto, gafas grandes,
+    # Rochy: programador grande y desganado. Pelo castaño revuelto, gafas grandes,
     # barba de tres días, camiseta verde que le queda justa en la barriga, vaqueros.
-    "benny": {
+    "rochy": {
         "s": "#f2c79a", "S": "#d9a273", "c": "#c99a74",
         "H": "#7a5636", "h": "#523620", "d": "#2e1c12",
         "g": "#3e3a5c", "L": "#cfeeff",
@@ -250,7 +250,7 @@ VIEWS = {
             "....kkPppPkk....",
         ],
     },
-    "benny": {
+    "rochy": {
         "down": [
             "................",
             "....kkkkkkkk....",
@@ -317,7 +317,7 @@ VIEWS = {
     },
 }
 
-BENNY_LEGS_FRONT = {
+ROCHY_LEGS_FRONT = {
     "stand": [
         ".kkTTTTTTTTTTkk.",
         "...kpppPPpppk...",
@@ -341,7 +341,7 @@ BENNY_LEGS_FRONT = {
     ],
 }
 
-BENNY_LEGS_SIDE = {
+ROCHY_LEGS_SIDE = {
     "stand": [
         ".kkTTTTTTTk.....",
         "...kppppPk......",
@@ -492,8 +492,8 @@ def frame_raw(name, view, step):
     rows = VIEWS[name][view]
     if name in ("sam", "ruth"):
         rows = autoshade(rows, "strands" if name == "sam" else "curls")
-    if name == "benny":
-        rows = rows + (BENNY_LEGS_SIDE if view == "left" else BENNY_LEGS_FRONT)[step]
+    if name == "rochy":
+        rows = rows + (ROCHY_LEGS_SIDE if view == "left" else ROCHY_LEGS_FRONT)[step]
     else:
         rows = rows + (LEGS_SIDE if view == "left" else LEGS_FRONT)[step]
     assert len(rows) == 24, (name, view, len(rows))
@@ -520,7 +520,7 @@ FACE_EDITS = {
         "serio": [(11, 7, "S"), (11, 8, "S"), (8, 4, "k"), (8, 5, "k"), (8, 10, "k"), (8, 11, "k")],
         "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (9, 4, "k"), (9, 5, "k"), (9, 10, "k"), (9, 11, "k"), (10, 5, "s"), (10, 10, "s")],
     },
-    "benny": {
+    "rochy": {
         "sorpresa": [(11, 7, "k"), (11, 8, "k"), (12, 7, "k"), (12, 8, "k")],
         "serio": [(11, 7, "k"), (11, 8, "k"), (11, 6, "k"), (11, 9, "k"), (6, 3, "d"), (6, 4, "d"), (6, 11, "d"), (6, 12, "d")],
         "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (10, 3, "R"), (10, 12, "R")],
@@ -552,7 +552,7 @@ def portrait(name, mood):
 
 
 def build_portraits():
-    order = ["sam", "ruth", "kessler", "margarita", "gus", "benny"]
+    order = ["sam", "ruth", "kessler", "margarita", "gus", "rochy"]
     sheet = Image.new("RGBA", (16 * len(MOODS), 20 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for m, mood in enumerate(MOODS):
@@ -590,7 +590,7 @@ def pack_color(name, ch, y):
         if head:
             return {"S": "#a39886", "o": "#6e6556", "s": "#e6b088", "p": "#c97a62", "b": "#1c1830", "r": "#b8392f", "B": "#7a6c4c", "y": "#a39886", "W": "#fffbe8", "H": "#c4baa6"}[ch]
         return {"r": "#b8392f", "B": "#7a6c4c", "b": "#5c5038", "S": "#e6b088", "o": "#8f897c", "s": "#e6b088", "p": "#c97a62", "y": "#e8d8b0", "W": "#fffbe8"}[ch]
-    if name == "benny":
+    if name == "rochy":
         # programador: pelo castaño revuelto, gafas de cristal claro, camiseta verde, vaqueros
         if head:
             return {"p": "#4a3020", "S": "#f2c79a", "s": "#d9a273", "B": "#bfe6ff", "b": "#3e3a5c", "M": "#b4504a", "o": "#4a3020", "r": "#b4504a", "y": "#f2c79a", "W": "#fffbe8", "H": "#6b4a30", "h": "#4a3020"}[ch]
@@ -637,7 +637,7 @@ def pack_frame(name, row, col, edits=()):
             for x in range(16):
                 if grid[y][x] == "k" and not edge_r(x, y):
                     grid[y][x] = "D" if (x + y) % 5 else "E"
-    if name == "benny":
+    if name == "rochy":
         # los brillos del pelo del original no son piel: de espaldas toda la cabeza es pelo,
         # de lado la mitad de atrás, y de frente las filas de arriba
         for y in range(0, 12):
@@ -647,7 +647,7 @@ def pack_frame(name, row, col, edits=()):
                 back = row == 2 or (row == 3 and x >= 8) or (row == 1 and x <= 7) or y <= 4
                 if back:
                     grid[y][x] = "H" if grid[y][x] == "S" else "h"
-    if name == "benny" and row == 0:
+    if name == "rochy" and row == 0:
         # la boca: el rosa del centro de la cara
         for y in (10, 11):
             for x in range(6, 10):
@@ -677,7 +677,7 @@ PACK_MOODS = {
         "serio": [(11, 6, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830"), (11, 9, "#1c1830")],
         "alegre": [(10, 6, "#fffbe8"), (10, 7, "#fffbe8"), (10, 8, "#fffbe8"), (10, 9, "#fffbe8")],
     },
-    "benny": {
+    "rochy": {
         "sorpresa": [(10, 7, "#1c1830"), (10, 8, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830")],
         "serio": [(10, 6, "#1c1830"), (10, 7, "#1c1830"), (10, 8, "#1c1830"), (10, 9, "#1c1830")],
         "alegre": [(10, 6, "#b4504a"), (10, 7, "#fffbe8"), (10, 8, "#fffbe8"), (10, 9, "#b4504a")],
@@ -701,7 +701,7 @@ PACK_MOODS = {
 
 
 def build():
-    order = ["sam", "ruth", "kessler", "margarita", "gus", "benny"]
+    order = ["sam", "ruth", "kessler", "margarita", "gus", "rochy"]
     sheet = Image.new("RGBA", (64, 24 * 4 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for d, view in enumerate(["down", "left", "up", "right"]):

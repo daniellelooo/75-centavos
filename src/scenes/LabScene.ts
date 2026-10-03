@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { VIEW_H, VIEW_W, charFrame, type CharName, type Dir } from "../config";
+import { EMOTE, VIEW_H, VIEW_W, charFrame, type CharName, type Dir, type EmoteName } from "../config";
 import { MISSIONS, ACTS, actOf, lastOfAct, missionsOfAct, type Line, type Mission } from "../game/missions";
 import { save, writeSave, resetSave } from "../game/state";
 import { playDialog, isDialogOpen } from "../ui/dialog";
@@ -896,7 +896,7 @@ export class LabScene extends Phaser.Scene {
 
   /** Burbuja sobre quien habla cuando la línea lleva emoción: ! sorpresa, ... serio, nota alegre. */
   private moodBubble(line: Line): void {
-    const frame = { sorpresa: 0, serio: 2, alegre: 3 }[line.mood as string];
+    const frame = EMOTE[line.mood as EmoteName];
     if (frame === undefined) return;
     const who = line.who === "sam" ? this.player : line.who === "ruth" || line.who === "kessler" ? this.npcs[line.who] : null;
     if (who?.visible) this.emote(who, frame, 1600);
@@ -1063,7 +1063,7 @@ export class LabScene extends Phaser.Scene {
     const ruthDay: Act[] = [
       { path: [[214, 104]], face: "up", ms: 4200, doing: typing, say: ["Otra copia de seguridad...", "¿Quién borró mi macro?", "Compilando. Paciencia."] },
       { path: [[238, 130], [309, 130], [309, 78]], face: "up", ms: 2600, doing: print, say: ["Papel atascado. Clásico.", "Doce páginas de nada.", "¿Esto es tuyo, Sam?"] },
-      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => R() && this.emote(R()!, 3, 1800), say: ["Café número cuatro.", "Este café tiene historia.", "Alguien se acabó el azúcar."] },
+      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => R() && this.emote(R()!, EMOTE.cafe, 1800), say: ["Café número cuatro.", "Este café tiene historia.", "Alguien se acabó el azúcar."] },
       { path: [[238, 130], [396, 136]], face: "up", ms: 2600, say: ["Agosto, septiembre...", "¿Dónde archivé eso?"] },
       { path: [[238, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600), say: ["Hola, Byte.", "Tú sí que vives bien."] },
       { path: [[238, 130], [48, 130], [48, 78]], face: "up", ms: 3200, say: ["¿Esto se ve de día?", "Solo veo el campanario."] },

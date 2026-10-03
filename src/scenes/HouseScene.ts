@@ -1,8 +1,8 @@
 // El lugar del mentor de cada sesión de práctica: la casa de Margarita, el garaje
-// de Gus o el cuarto de Benny. La mecánica es la misma (llegar, hacer los tres
+// de Gus o el cuarto de Rochy. La mecánica es la misma (llegar, hacer los tres
 // ejercicios en su terminal, volver); lo propio de cada lugar está en places.ts.
 import Phaser from "phaser";
-import { VIEW_H, VIEW_W, charFrame, type Dir } from "../config";
+import { EMOTE, VIEW_H, VIEW_W, charFrame, type Dir, type EmoteName } from "../config";
 import { MISSIONS, type Line } from "../game/missions";
 import { save, writeSave } from "../game/state";
 import { trainingById, type TrainingSet } from "../game/training";
@@ -230,7 +230,7 @@ export class HouseScene extends Phaser.Scene {
     const ctx = {
       walk: (p: [number, number][]) => this.walkMarga(p),
       face: (d: Dir) => this.face(d),
-      bubble: (mood: "alegre" | "serio" | "sorpresa") => this.bubble(this.marga, mood),
+      bubble: (mood: EmoteName) => this.bubble(this.marga, mood),
       wait: (ms: number) => new Promise<void>((r) => this.time.delayedCall(ms, () => r())),
       sfx: (n: Parameters<typeof sfx>[0]) => sfx(n),
     };
@@ -286,7 +286,7 @@ export class HouseScene extends Phaser.Scene {
   }
 
   private bubble(target: Phaser.GameObjects.Sprite, mood?: string): void {
-    const frame = { sorpresa: 0, serio: 2, alegre: 3 }[mood ?? ""];
+    const frame = EMOTE[mood as EmoteName];
     if (frame === undefined) return;
     const e = this.add.sprite(target.x, target.y - 30, "emotes", frame).setDepth(20003);
     this.tweens.add({ targets: e, y: e.y - 3, duration: 200, ease: "Back.Out" });

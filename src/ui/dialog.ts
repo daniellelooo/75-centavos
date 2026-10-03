@@ -10,7 +10,7 @@ const NAMES: Record<Speaker, string> = {
   kessler: "DR. KESSLER",
   margarita: "MARGARITA",
   gus: "GUS",
-  benny: "BENNY",
+  rochy: "ROCHY",
   narrador: "",
   sistema: "TERMINAL",
 };

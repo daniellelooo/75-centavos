@@ -1,5 +1,5 @@
 """Muebles de los lugares de los mentores nuevos: el garaje de Gus (radioaficionado)
-y el cuarto de Benny (programador). Mismo estilo que build_art.py: paleta común
+y el cuarto de Rochy (programador). Mismo estilo que build_art.py: paleta común
 y contorno de tinta (lo pone save() al guardar).
 
 Uso: python3 tools/art/mentor_props.py
@@ -128,18 +128,47 @@ def pizza_boxes():
 
 
 def beanbag():
-    """Puf blando, hundido de tanto usarlo."""
-    c = Canvas(24, 16)
-    c.disc(12, 10, 7, "m")
-    c.rect(3, 9, 18, 6, "m")
-    c.disc(11, 9, 5, "r")
-    c.disc(9, 7, 2, "R")
-    c.rect(5, 13, 14, 2, "a")
+    """Puf de tela naranja de los 70, despanzurrado: un saco blando y torcido con el
+    respaldo caído hacia un lado, el hueco donde uno se hunde y arrugas alrededor."""
+    w, h = 30, 22
+    c = Canvas(w, h)
+    ell = lambda x, y, cx, cy, rx, ry: ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2
+    base = lambda x, y: ell(x, y, 14.5, 13.5, 14, 7.5) <= 1
+    back = lambda x, y: ell(x, y, 18, 7.5, 9.5, 6.5) <= 1
+    inside = lambda x, y: base(x, y) or back(x, y)
+    for y in range(h):
+        for x in range(w):
+            if not inside(x, y):
+                continue
+            col = "C"
+            if y >= 17 or (x >= 24 and y >= 6):
+                col = "M"
+            if back(x, y) and not back(x, y - 2) and x <= 20:
+                col = "c"
+            if base(x, y) and not inside(x, y - 2) and x <= 9:
+                col = "c"
+            c.put(x, y, col)
+    # el hueco: sombra profunda arriba, borde de tela levantado abajo
+    for y in range(h):
+        for x in range(w):
+            e = ell(x, y, 12, 11.5, 6.5, 3.5)
+            if e <= 1:
+                c.put(x, y, "2" if y <= 11 else "M")
+            elif e <= 1.5 and y > 12:
+                c.put(x, y, "c")
+    # arrugas que salen del hueco
+    for pts in (((5, 9), (4, 8), (3, 8)), ((19, 11), (20, 12), (21, 12)), ((8, 16), (7, 17)), ((16, 16), (17, 17), (18, 17)), ((21, 4), (22, 5))):
+        for x, y in pts:
+            c.put(x, y, "2")
+    edge = [(x, y) for y in range(h) for x in range(w)
+            if inside(x, y) and not all(0 <= x + i < w and 0 <= y + j < h and inside(x + i, y + j) for i, j in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
+    for x, y in edge:
+        c.put(x, y, "k")
     return c
 
 
 def poster(kind):
-    """Pósteres del cuarto de Benny: 0 una nave espacial, 1 un ordenador de los 80,
+    """Pósteres del cuarto de Rochy: 0 una nave espacial, 1 un ordenador de los 80,
     2 un robot gigante de anime, 3 una chica de anime de ojos enormes."""
     c = Canvas(18, 24)
     c.box(0, 0, 18, 24, "z")
