@@ -134,16 +134,17 @@ export const ACT3: Mission[] = [
     giver: "ruth",
     clock: "11:30",
     briefing: [
-      { who: "ruth", text: "Los arrays saben filtrarse solos. Les das una función que diga sí o no a cada elemento." },
-      { who: "ruth", text: "Quiero un array nuevo solo con los registros de hunter." },
+      { who: "ruth", text: "Ayer contaste a hunter a mano: un for, un if y un contador. Funciona, pero es largo." },
+      { who: "ruth", text: "Las listas saben filtrarse solas. Les haces una pregunta de sí o no y se quedan con los que dicen sí." },
+      { who: "ruth", text: "Quiero una lista nueva solo con los registros de hunter." },
     ],
     lesson: {
-      title: "filter y funciones flecha",
-      body: "lista.filter(fn) devuelve un array nuevo con los elementos para los que fn devuelve true. La función flecha es una forma corta de escribir funciones: (x) => condición.",
-      example: 'let numeros = [4, 9, 2, 7];\nlet grandes = numeros.filter((n) => n > 5);\nconsole.log(grandes); // [9, 7]',
+      title: "filter: quedarse con algunos",
+      body: "`filter` recorre la lista por ti, elemento a elemento, y a cada uno le hace una pregunta. Se queda solo con los que responden `true` y los devuelve en una lista nueva; la original no cambia. La pregunta se escribe con una función flecha: `(n) => n > 5` se lee \"para cada n, ¿es n mayor que 5?\". La `n` es el nombre que tú le pones a cada elemento mientras se revisa, como la `i` de un for: puedes llamarla como quieras.",
+      example: 'let numeros = [4, 9, 2, 7];\n// para cada n: ¿es n mayor que 5?\nlet grandes = numeros.filter((n) => n > 5);\nconsole.log(grandes); // [9, 7]',
     },
     task: "Crea `deHunter` con `registros.filter(...)`, quedándote solo con los que tienen `cuenta` \"hunter\". Muestra `deHunter.length`.",
-    starter: "// registros ya existe\n",
+    starter: "// registros es una lista; cada registro tiene cuenta, hora, comando y minutos\n",
     borrowed: ["registros = [{ cuenta, hora, comando, minutos }, ...]"],
     cases: [
       { label: "registro de la semana", globals: regs(REG_A) },
@@ -163,8 +164,8 @@ export const ACT3: Mission[] = [
       return { pass: true, feedback: "Una línea en vez de seis. Ruth sonríe por primera vez en el acto." };
     },
     hints: [
-      "registros.filter((r) => ...)",
-      'La flecha recibe cada registro: (r) => r.cuenta === "hunter"',
+      'La pregunta para cada registro es: ¿su cuenta es "hunter"? Llama r a cada registro; su cuenta es r.cuenta.',
+      'Escrita como flecha: (r) => r.cuenta === "hunter". Pásasela a registros.filter(...) y guarda el resultado en deHunter.',
       'const deHunter = registros.filter((r) => r.cuenta === "hunter");\nconsole.log(deHunter.length);',
     ],
     debrief: [{ who: "sam", text: "Ahora veamos qué hace cuando entra." }],
@@ -184,11 +185,11 @@ export const ACT3: Mission[] = [
     ],
     lesson: {
       title: "map: transformar cada elemento",
-      body: "lista.map(fn) devuelve un array nuevo del mismo tamaño, con lo que fn devuelve para cada elemento. Se puede encadenar después de filter.",
-      example: 'let estrellas = [{ nombre: "Vega", brillo: 0.03 }, { nombre: "Deneb", brillo: 1.25 }];\nlet nombres = estrellas.map((e) => e.nombre);\nconsole.log(nombres); // ["Vega", "Deneb"]',
+      body: "`map` también recorre la lista elemento a elemento, pero en vez de preguntar, transforma: cambia cada elemento por lo que devuelva la flecha. La lista nueva tiene el mismo tamaño. `(e) => e.nombre` se lee \"de cada estrella e, quédate con su nombre\". Como `filter` devuelve una lista, puedes ponerle `.map(...)` justo detrás: primero filtras y luego transformas.",
+      example: 'let estrellas = [{ nombre: "Vega", brillo: 0.03 }, { nombre: "Deneb", brillo: 1.25 }];\n// de cada estrella e, su nombre\nlet nombres = estrellas.map((e) => e.nombre);\nconsole.log(nombres); // ["Vega", "Deneb"]',
     },
     task: "Crea `busquedas` con los comandos (la propiedad `comando`) de los registros de hunter: primero `filter`, luego `map`. Muestra `busquedas`.",
-    starter: "// registros ya existe\n",
+    starter: "// registros es una lista; cada registro tiene cuenta, hora, comando y minutos\n",
     borrowed: ["registros = [{ cuenta, hora, comando, minutos }, ...]"],
     cases: [
       { label: "registro de la semana", globals: regs(REG_A) },
@@ -209,8 +210,8 @@ export const ACT3: Mission[] = [
       return { pass: true, feedback: "nuclear, SDI, NORAD. No es un estudiante curioso." };
     },
     hints: [
-      'registros.filter((r) => r.cuenta === "hunter").map(...)',
-      ".map((r) => r.comando)",
+      'Dos pasos: primero el filtro de ayer, registros.filter((r) => r.cuenta === "hunter"). Eso te da los registros de hunter.',
+      'Detrás pon .map(...) con la flecha que, de cada registro r, se queda con su comando: (r) => r.comando',
       'const busquedas = registros\n  .filter((r) => r.cuenta === "hunter")\n  .map((r) => r.comando);\nconsole.log(busquedas);',
     ],
     debrief: [
