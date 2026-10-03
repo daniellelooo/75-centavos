@@ -718,11 +718,18 @@ export class LabScene extends Phaser.Scene {
 
   private async afterLoad(): Promise<void> {
     this.busy = true;
-    await fadeIn();
     const m = this.mission;
-    if (m && save.actIntro < m.act) {
-      const info = ACTS[m.act - 1];
+    // la tarjeta de lugar y hora va sobre negro, ANTES de ver la sala (showCard abre la escena al terminar)
+    const actCard = !!m && save.actIntro < m.act;
+    const nightCard = !actCard && !this.back && this.arrive && !!m;
+    if (nightCard || this.back) this.player.setPosition(208, 240);
+    if (actCard) {
+      const info = ACTS[m!.act - 1];
       await showCard(`Acto ${info.n} · ${info.title}`, `Berkeley, California · ${info.date}`);
+    } else if (nightCard) await showCard(m!.clock, "Esa misma noche");
+    else await fadeIn();
+    if (m && actCard) {
+      const info = ACTS[m.act - 1];
       await this.talk(info.opening);
       if (m.act > 1) {
         // Kessler le da a Sam la credencial del rango nuevo
@@ -745,14 +752,11 @@ export class LabScene extends Phaser.Scene {
       if (m.act === 1) showControls();
     } else if (this.back) {
       // vuelve de casa de Margarita (entra lo bastante para no quedarse en la puerta)
-      this.player.setPosition(208, 240);
       await this.walk(this.player, "sam", [[208, 188]], 50);
       this.facing = "up";
       this.player.setFrame(charFrame("sam", "up"));
-    } else if (this.arrive && m) {
-      await showCard(m.clock, "Esa misma noche");
+    } else if (nightCard) {
       // Sam entra por la puerta del sótano
-      this.player.setPosition(208, 240);
       await this.walk(this.player, "sam", [[208, 200]], 50);
       this.facing = "up";
       this.player.setFrame(charFrame("sam", "up"));
