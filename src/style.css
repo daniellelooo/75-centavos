@@ -847,3 +847,10 @@ html, body {
 /* la consola parte las líneas largas en vez de ensanchar la terminal */
 .term .console { overflow-wrap: anywhere; min-width: 0; }
 .term .console .log { white-space: pre-wrap; }
+/* código dentro de lecciones y enunciados: misma letra y tamaño que el texto */
+.term code.v { font-family: var(--font-crt); font-size: 1em; line-height: inherit; color: #fed018; background: rgba(254, 208, 24, 0.12); padding: 0 calc(1 * var(--u)); }
+.nb-page code.v { font-family: var(--font-crt); font-size: 1.05em; color: #a31d33; }
+/* el encargo queda fijo y siempre visible; lo que se desplaza es la lección */
+.term .task-pin { flex: none; display: flex; flex-direction: column; gap: calc(2 * var(--u)); padding-top: calc(3 * var(--u)); border-top: var(--u) dashed rgba(254, 208, 24, 0.25); }
+.term .task-pin h3 { margin: 0; }
+.term .task-pin .borrowed { margin: 0; }

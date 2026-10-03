@@ -69,19 +69,19 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${free ? "" : training ? "CASA DE MARGARITA · " : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
       <div class="scroll">
         <h3>${esc(mission.lesson.title)}</h3>
-        <p>${esc(mission.lesson.body)}</p>
+        <p>${taskHtml(mission.lesson.body)}</p>
         <pre class="example">${ex.html}</pre>
         ${ex.peeks ? `<p class="peek-tip">Antes de pulsar <b>¿?</b>, piensa qué imprimirá.</p>` : ""}
+        <div class="hints"></div>
+      </div>
+      <div class="task-pin">
         <h3>Encargo</h3>
         <div class="task">${taskHtml(mission.task)}</div>
         ${
           mission.borrowed.length
-            ? `<p class="borrowed" style="margin-top:calc(4*var(--u))">Ya cargado en la máquina: ${mission.borrowed
-                .map((b) => `<code>${esc(b)}</code>`)
-                .join(", ")}</p>`
+            ? `<p class="borrowed">Ya cargado en la máquina: ${mission.borrowed.map((b) => `<code>${esc(b)}</code>`).join(", ")}</p>`
             : ""
         }
-        <div class="hints"></div>
       </div>
       <div class="actions"><button class="btn hint-btn">PISTA</button><button class="btn close-btn">SALIR [ESC]</button></div>
     `;
@@ -113,6 +113,8 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
         .join("");
       hintBtn.disabled = n >= mission.hints.length;
       hintBtn.textContent = n >= mission.hints.length ? "SIN MAS PISTAS" : n === mission.hints.length - 1 ? "VER SOLUCION" : "PISTA";
+      // la pista nueva queda a la vista, al final de la lección
+      if (n) hintsBox.lastElementChild?.scrollIntoView({ block: "nearest" });
     };
     renderHints(hintsShown);
     hintBtn.addEventListener("click", () => {

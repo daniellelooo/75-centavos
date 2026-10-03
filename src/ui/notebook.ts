@@ -117,7 +117,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
       right.innerHTML = `
         <div class="nb-tag">ACTO ${m.act} · MISION "${esc(m.title)}"</div>
         <h3>${esc(m.lesson.title)}</h3>
-        <p>${esc(m.lesson.body)}</p>
+        <p>${taskHtml(m.lesson.body)}</p>
         <pre class="nb-code">${exampleHtml(m.lesson.example).html}</pre>
         <div class="nb-quiz">
           <div class="nb-q">PREGUNTA RAPIDA · ¿Qué imprime?</div>

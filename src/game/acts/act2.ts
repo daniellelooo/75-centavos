@@ -175,15 +175,17 @@ export const ACT2: Mission[] = [
     clock: "16:30",
     briefing: [
       { who: "ruth", text: "La compañía telefónica puede rastrear la llamada. Pero tarda: necesita que siga conectado un buen rato." },
-      { who: "ruth", text: "Necesito saber cuánto dura cada visita. Te doy hora y minuto de entrada y de salida." },
+      { who: "ruth", text: "Necesito saber cuánto dura cada visita. Anoche entró a las 2:51 y se fue a las 3:40." },
+      { who: "sam", text: "Restar 3:40 menos 2:51 a mano es un lío. 40 menos 51 da negativo." },
+      { who: "ruth", text: "Por eso los relojeros lo pasan todo a minutos. Hazle una función a la máquina y que cuente ella." },
     ],
     lesson: {
       title: "Varios parámetros y return",
-      body: "Una función puede recibir varios datos separados por comas. Dentro los usas como variables normales y con return entregas el resultado. Para pasar horas a minutos: horas * 60 + minutos.",
-      example: "function area(ancho, alto) {\n  return ancho * alto;\n}\nconsole.log(area(3, 4)); // 12",
+      body: "Una función puede recibir varios datos separados por comas: sus parámetros. Llegan en orden, el primer número al primer parámetro y así. Con `return` entregas el resultado. Truco para las horas: pásalas a minutos con `horas * 60 + minutos`. 2:51 son 171 minutos y 3:40 son 220; la duración es 220 - 171 = 49.",
+      example: "function total(precio, envio) {\n  return precio + envio;\n}\n// precio = 30, envio = 5\nconsole.log(total(30, 5)); // 35",
     },
-    task: "Escribe la función `duracion(h1, m1, h2, m2)`: recibe la hora y el minuto de entrada y de salida, y devuelve cuántos minutos estuvo conectado. Luego muestra `duracion(2, 51, 3, 40)`.",
-    starter: "function duracion(h1, m1, h2, m2) {\n  // tu código\n}\n\nconsole.log(duracion(2, 51, 3, 40));\n",
+    task: "Escribe la función `duracion(h1, m1, h2, m2)`. `h1` y `m1` son la hora y el minuto en que entró; `h2` y `m2`, la hora y el minuto en que salió. Devuelve cuántos minutos estuvo conectado. Luego muestra `duracion(2, 51, 3, 40)`, que debe dar 49.",
+    starter: "function duracion(h1, m1, h2, m2) {\n  // 1. pasa la entrada a minutos\n  // 2. pasa la salida a minutos\n  // 3. devuelve la resta\n}\n\nconsole.log(duracion(2, 51, 3, 40));\n",
     borrowed: [],
     cases: [{ label: "visitas de esta semana", globals: () => ({}) }],
     capture: [],
@@ -205,8 +207,8 @@ export const ACT2: Mission[] = [
       return { pass: true, feedback: "49 minutos. No basta para rastrearlo." };
     },
     hints: [
-      "Pasa cada hora a minutos: h1 * 60 + m1",
-      "return (h2 * 60 + m2) - (h1 * 60 + m1);",
+      "Primero la entrada en minutos: let entrada = h1 * 60 + m1;  Con 2:51 da 171.",
+      "Igual con la salida: let salida = h2 * 60 + m2;  y al final: return salida - entrada;",
       "function duracion(h1, m1, h2, m2) {\n  return (h2 * 60 + m2) - (h1 * 60 + m1);\n}\n\nconsole.log(duracion(2, 51, 3, 40));",
     ],
     debrief: [
