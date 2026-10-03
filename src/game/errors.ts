@@ -125,3 +125,22 @@ export function nameHint(code: string, expected: string[]): string | null {
   }
   return null;
 }
+
+/** Para "no existe nada llamado X": si X es el parámetro de una función, explica que
+ *  solo vive dentro de ella; si hay un nombre parecido a mano, lo sugiere. */
+export function missingNameHint(missing: string, code: string, known: string[]): string | null {
+  const params = [...code.matchAll(/function\s+(\w+)\s*\(([^)]*)\)/g)].flatMap((m) =>
+    m[2].split(",").map((p) => ({ fn: m[1], p: p.trim().replace(/=.*$/, "").trim() })),
+  );
+  const names = new Set([
+    ...known,
+    ...[...code.matchAll(/\b(?:let|const|var|function|class)\s+([A-Za-z_$][\w$]*)/g)].map((m) => m[1]),
+  ]);
+  names.delete(missing);
+  const near = [...names].find((n) => distance(n, missing) <= 2 || n.toLowerCase() === missing.toLowerCase());
+  const param = params.find((x) => x.p === missing);
+  if (param)
+    return `"${missing}" es el parámetro de la función \`${param.fn}\`: solo existe dentro de sus llaves.${near ? ` Aquí fuera, ¿quisiste decir \`${near}\`?` : ""}`;
+  if (near) return `¿Quisiste decir \`${near}\`? Es el nombre más parecido que existe.`;
+  return null;
+}

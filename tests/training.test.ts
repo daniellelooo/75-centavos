@@ -184,3 +184,15 @@ describe("errores de escritura con su línea", () => {
     for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) expect(locateSyntax(m.hints[m.hints.length - 1]), m.id).toBeNull();
   });
 });
+
+describe("nombres que no existen", () => {
+  it("explica el parámetro usado fuera de su función y sugiere el parecido", async () => {
+    const { missingNameHint } = await import("../src/game/errors");
+    const code = "function archivoFalso(tema) {\n  return `SDINET-${tema}.txt`;\n}\nlet archivos = [];\nfor (let i = 0; i < temas.length; i++) {\n  archivos.push(archivoFalso(tema[i]));\n}";
+    const h = missingNameHint("tema", code, ["temas"])!;
+    expect(h).toMatch(/parámetro de la función `archivoFalso`/);
+    expect(h).toMatch(/`temas`/);
+    expect(missingNameHint("totl", "let total = 0;\nconsole.log(totl);", [])).toMatch(/`total`/);
+    expect(missingNameHint("xyz", "let a = 1;", [])).toBeNull();
+  });
+});

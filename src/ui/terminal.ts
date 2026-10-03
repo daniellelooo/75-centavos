@@ -11,7 +11,7 @@ import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
 import type { Mission } from "../game/missions";
 import { runMission } from "../game/runner";
-import { translateError, typoHint, nameHint, TIMEOUT_ERROR } from "../game/errors";
+import { translateError, typoHint, nameHint, missingNameHint, TIMEOUT_ERROR } from "../game/errors";
 import { caseReports, hardcodeHint } from "../game/report";
 import { locateSyntax } from "../game/syntax";
 import { save, writeSave } from "../game/state";
@@ -226,6 +226,13 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
           );
         } else print(`<div>${esc(fe.hint)}</div>`);
         print(`<div class="muted">${esc(fe.raw)}</div>`);
+        // nombre que no existe: ¿es un parámetro usado fuera de su función, o una errata?
+        const missing = crashed.error.message.match(/(\w+) is not defined|Can't find variable: (\w+)/);
+        if (missing) {
+          const known = mission.borrowed.map((b) => b.split(/[\s=]/)[0]).concat(Object.keys(mission.cases[0]?.globals() ?? {}));
+          const mh = missingNameHint(missing[1] ?? missing[2], code, known);
+          if (mh) print(`<div class="hint">${taskHtml(mh)}</div>`);
+        }
         if (line) view.dispatch({ effects: setErrorLine.of(line) });
         typoTip(code);
         fail();
