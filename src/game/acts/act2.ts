@@ -124,7 +124,7 @@ export const ACT2: Mission[] = [
     ],
     lesson: {
       title: "Funciones: una pregunta que puedes repetir",
-      body: "Una función agrupa código bajo un nombre. Recibe datos (parámetros) y devuelve un resultado con return. Para unir condiciones, || significa \"o\": basta con que una sea verdadera.",
+      body: "Una función agrupa código bajo un nombre. El nombre entre paréntesis es su parámetro: una etiqueta que recibe el dato con el que la llames. Con `esFinde(\"sabado\")`, dentro de la función `dia` vale \"sabado\". Con `return` devuelve el resultado. Para unir condiciones, `||` significa \"o\": basta con que una sea verdadera.",
       example: 'function esFinde(dia) {\n  return dia === "sabado" || dia === "domingo";\n}\nconsole.log(esFinde("sabado")); // true\nconsole.log(esFinde("lunes"));  // false',
     },
     task: "Escribe la función `esSospechosa(cuenta)` que devuelva `true` si la cuenta es \"hunter\", \"quasar\" o \"nadir\", y `false` en cualquier otro caso.",
@@ -233,11 +233,11 @@ export const ACT2: Mission[] = [
     ],
     lesson: {
       title: "Funciones dentro de bucles",
-      body: "Las piezas se combinan: una función hace una tarea pequeña y un bucle la repite para cada elemento de un array. Así no copias el mismo código una y otra vez.",
-      example: "function saludo(nombre) {\n  return `Hola, ${nombre}`;\n}\nlet nombres = [\"Ruth\", \"Sam\"];\nfor (let i = 0; i < nombres.length; i++) {\n  console.log(saludo(nombres[i]));\n}",
+      body: "Una función hace una tarea pequeña y un bucle la repite para cada elemento de una lista. Ojo con los nombres: el parámetro (`nombre`) solo existe dentro de las llaves de su función. Fuera de ella, la lista se llama `nombres` y cada elemento es `nombres[i]`. Al llamar `saludo(nombres[i])`, ese elemento entra en `nombre`. Truco: la lista en plural, cada elemento en singular.",
+      example: "function saludo(nombre) {\n  // aquí dentro: nombre es UN nombre\n  return `Hola, ${nombre}`;\n}\nlet nombres = [\"Ruth\", \"Sam\"];\nfor (let i = 0; i < nombres.length; i++) {\n  // aquí fuera: la lista es nombres\n  console.log(saludo(nombres[i]));\n}",
     },
     task: "Escribe la función `archivoFalso(tema)` que devuelva el texto \"SDINET-TEMA.txt\" con el tema dentro (por ejemplo \"SDINET-misiles.txt\"). Después recorre `temas`, guarda cada `archivoFalso(...)` en el array `archivos` y muestra `archivos.length`.",
-    starter: "function archivoFalso(tema) {\n  // tu código\n}\n\nlet archivos = [];\n// recorre temas aquí\n\nconsole.log(archivos.length);\n",
+    starter: "function archivoFalso(tema) {\n  // aquí dentro, tema es UN tema\n}\n\nlet archivos = [];\n// aquí fuera, la lista se llama temas: cada elemento es temas[i]\n\nconsole.log(archivos.length);\n",
     borrowed: ['temas = ["misiles", "satelites", ...]'],
     cases: [
       { label: "temas de la primera noche", globals: () => ({ temas: [...TEMAS_A] }) },
