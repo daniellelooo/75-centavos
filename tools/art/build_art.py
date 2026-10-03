@@ -876,21 +876,29 @@ def postit():
 
 
 def emotes():
-    """Burbujas de emoción sobre los personajes: ! ? ... y nota musical."""
+    """Burbujas de emoción sobre los personajes. El orden es el de EMOTE en config.ts:
+    ! ? ... nota corazón, y luego zzz, idea, sudor, enfado, brillo, sonrisa y café."""
     frames = []
-    icons = {
-        "exclaim": ["..y..", "..y..", "..y..", ".....", "..y.."],
-        "question": [".yyy.", "...y.", "..yy.", ".....", "..y.."],
-        "dots": [".....", ".....", "y.y.y", ".....", "....."],
-        "note": ["..yy.", "..y.y", "..y..", "yyy..", "yy..."],
-        "heart": [".r.r.", "rrrrr", "rrrrr", ".rrr.", "..r.."],
-    }
-    for name, icon in icons.items():
+    icons = [
+        ["..k..", "..k..", "..k..", ".....", "..k.."],  # sorpresa
+        [".kkk.", "...k.", "..kk.", ".....", "..k.."],  # duda
+        [".....", ".....", "k.k.k", ".....", "....."],  # serio
+        ["..kk.", "..k.k", "..k..", "kkk..", "kk..."],  # musica
+        [".r.r.", "rrrrr", "rrrrr", ".rrr.", "..r.."],  # corazon
+        ["kkkk.", "...k.", "..k..", ".k...", "kkkk."],  # zzz
+        [".kkk.", "kyyyk", "kyyyk", ".kyk.", "..k.."],  # idea
+        ["...u.", "..uu.", ".uuuu", ".uuUu", "..uu."],  # sudor
+        ["r...r", ".r.r.", ".....", ".rrr.", "r...r"],  # enfado
+        ["..A..", ".AyA.", "AyyyA", ".AyA.", "..A.."],  # brillo
+        [".k.k.", ".k.k.", ".....", "k...k", ".kkk."],  # alegre
+        [".k.k.", "k.k..", "kkkk.", "kkkkk", ".kk.."],  # cafe
+    ]
+    for icon in icons:
         c = Canvas(11, 11)
         c.rect(1, 0, 9, 9, "k")
         c.rect(0, 1, 11, 7, "k")
         c.rect(1, 1, 9, 7, "W")
-        c.ascii(3, 2, [row.replace("y", "k") if name != "heart" else row for row in icon][:5])
+        c.ascii(3, 2, icon)
         # piquito
         c.rect(4, 9, 3, 1, "k")
         c.put(5, 10, "k")

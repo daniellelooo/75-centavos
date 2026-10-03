@@ -1,7 +1,8 @@
-// La casa de Margarita, en Elmwood: salón con piano, estanterías y su vieja
-// terminal. Aquí se hacen los ejercicios de práctica de cada sesión.
+// El lugar del mentor de cada sesión de práctica: la casa de Margarita, el garaje
+// de Gus o el cuarto de Rochy. La mecánica es la misma (llegar, hacer los tres
+// ejercicios en su terminal, volver); lo propio de cada lugar está en places.ts.
 import Phaser from "phaser";
-import { VIEW_H, VIEW_W, charFrame, type Dir } from "../config";
+import { EMOTE, VIEW_H, VIEW_W, charFrame, type Dir, type EmoteName } from "../config";
 import { MISSIONS, type Line } from "../game/missions";
 import { save, writeSave } from "../game/state";
 import { trainingById, type TrainingSet } from "../game/training";
@@ -11,20 +12,18 @@ import { openNotebook, isNotebookOpen } from "../ui/notebook";
 import { setClock, setObjective, setPrompt, hudVisible, setNotebookAction } from "../ui/hud";
 import { fadeOut, showCard } from "../ui/fade";
 import { setPauseHooks } from "../ui/pause";
-import { sfx, pianoPhrase } from "../audio/sfx";
+import { sfx } from "../audio/sfx";
+import { MENTORS } from "../game/mentors";
+import { PLACES, ROOM_W, FLOOR_TOP, FLOOR_BOTTOM, type PlaceDef } from "./places";
 
-const ROOM_W = 320;
-const FLOOR_TOP = 40;
-const FLOOR_BOTTOM = 184;
 const ROOM_H = 192;
-const EXIT = { x0: 144, x1: 176 };
-const kenney = (col: number, row: number) => row * 27 + col;
 
 interface Rect { x: number; y: number; w: number; h: number }
 interface Thing { id: string; x: number; y: number; r: number; label: () => string | null; use: () => Promise<void> | void }
 
 export class HouseScene extends Phaser.Scene {
   private set!: TrainingSet;
+  private place!: PlaceDef;
   private solids: Rect[] = [];
   private things: Thing[] = [];
   private player!: Phaser.GameObjects.Sprite;
@@ -37,9 +36,9 @@ export class HouseScene extends Phaser.Scene {
   private near: Thing | null = null;
   private lastClose = 0;
   private stepTimer = 0;
-  /** Hueco que ocupa Margarita: se mueve con ella. */
+  /** Hueco que ocupa el mentor: se mueve con él. */
   private margaSolid!: Rect;
-  /** Margarita está ocupada (caminando o haciendo algo): no se la interrumpe con otra rutina. */
+  /** El mentor está ocupado (caminando o haciendo algo): no se le interrumpe con otra rutina. */
   private margaBusy = false;
   private margaShadow!: Phaser.GameObjects.Image;
   /** Sam está hablando con ella: se queda quieta. */
@@ -51,6 +50,7 @@ export class HouseScene extends Phaser.Scene {
 
   init(data: { set: string }): void {
     this.set = trainingById(data.set)!;
+    this.place = PLACES[this.set.mentor];
     this.margaBusy = false;
     this.margaTalking = false;
     this.solids = [];
@@ -71,13 +71,21 @@ export class HouseScene extends Phaser.Scene {
     cam.setBackgroundColor("#07080f");
     cam.setScroll(-(VIEW_W - ROOM_W) / 2, -(VIEW_H - ROOM_H) / 2 - 4);
     cam.roundPixels = true;
-    this.buildRoom();
+    const act = this.set.exercises[0].act;
+    this.place.build({
+      scene: this,
+      img: (k, x, y, f) => this.img(k, x, y, f),
+      prop: (k, x, y, f) => this.prop(k, x, y, f),
+      solid: (x, y, w, h) => this.solid(x, y, w, h),
+      act,
+    });
 
     this.shadow = this.add.image(0, 0, "shadow").setOrigin(0.5, 0.5).setDepth(99);
     this.player = this.add.sprite(160, 200, "chars", charFrame("sam", "up")).setOrigin(0.5, 1);
-    this.marga = this.add.sprite(232, 92, "chars", charFrame("margarita", "down")).setOrigin(0.5, 1).setDepth(100 + 92);
-    this.margaShadow = this.add.image(232, 91, "shadow").setDepth(99);
-    this.margaSolid = { x: 225, y: 86, w: 14, h: 8 };
+    const [hx, hy] = this.place.home;
+    this.marga = this.add.sprite(hx, hy, "chars", charFrame(this.place.mentor, "down")).setOrigin(0.5, 1).setDepth(100 + hy);
+    this.margaShadow = this.add.image(hx, hy - 1, "shadow").setDepth(99);
+    this.margaSolid = { x: hx - 7, y: hy - 6, w: 14, h: 8 };
     this.solids.push(this.margaSolid);
     this.marker = this.add.sprite(0, 0, "marker").play("marker-bob").setDepth(20000).setVisible(false);
 
@@ -141,116 +149,28 @@ export class HouseScene extends Phaser.Scene {
     this.solids.push({ x, y, w, h });
   }
 
-  private buildRoom(): void {
-    const g = this.add.graphics().setDepth(0);
-    // suelo de tablas de madera, con las juntas escalonadas
-    for (let y = FLOOR_TOP, row = 0; y < FLOOR_BOTTOM; y += 8, row++) {
-      g.fillStyle(row % 2 ? 0x8a5a3a : 0x93623f, 1).fillRect(0, y, ROOM_W, 8);
-      g.fillStyle(0x5e3c26, 1).fillRect(0, y + 7, ROOM_W, 1);
-      g.fillStyle(0xa8754c, 1).fillRect(0, y, ROOM_W, 1);
-      for (let x = (row * 19) % 40; x < ROOM_W; x += 40 + ((row * 7) % 12)) {
-        g.fillStyle(0x5e3c26, 1).fillRect(x, y, 1, 7);
-        if ((x + row) % 3 === 0 && x + 16 < ROOM_W) g.fillStyle(0x7a4e32, 1).fillRect(x + 12, y + 3, 4, 1);
-      }
-    }
-    // papel pintado verde salvia con rayas y un friso de madera
-    const w = this.add.graphics().setDepth(2);
-    w.fillStyle(0x6b8f71, 1).fillRect(0, 0, ROOM_W, FLOOR_TOP);
-    for (let x = 0; x < ROOM_W; x += 8) {
-      w.fillStyle(0x5f8265, 1).fillRect(x, 0, 2, 28);
-      w.fillStyle(0x7da583, 1).fillRect(x + 4, 4 + ((x / 8) % 2) * 10, 1, 2);
-    }
-    w.fillStyle(0xc08a5a, 1).fillRect(0, 26, ROOM_W, 2);
-    w.fillStyle(0x8a5a36, 1).fillRect(0, 28, ROOM_W, 12);
-    for (let x = 4; x < ROOM_W; x += 20) w.fillStyle(0x744a2c, 1).fillRect(x, 30, 14, 8);
-    w.fillStyle(0x5e3c26, 1).fillRect(0, 39, ROOM_W, 1);
-    this.add.rectangle(0, FLOOR_TOP, ROOM_W, 3, 0x1c1830, 0.3).setOrigin(0, 0).setDepth(1);
-    // marco de la habitación
-    for (let y = -8; y < ROOM_H; y += 16) {
-      this.img("wall_cap_v", -8, y).setDepth(5000);
-      this.img("wall_cap_v", ROOM_W, y).setDepth(5000);
-    }
-    for (let x = 0; x < ROOM_W; x += 16) if (x < EXIT.x0 || x >= EXIT.x1) this.img("wall_cap_h", x, FLOOR_BOTTOM).setDepth(5000);
-    this.img("wall_cap_h", -8, -8).setDepth(5000).setScale(21, 1);
-    this.add.rectangle(EXIT.x0, FLOOR_BOTTOM, 32, 8, 0x4a2e1e).setOrigin(0, 0).setDepth(1);
-
-    // en la pared: cuadros, ventana y reloj
-    this.img("kenney", 20, 6, kenney(19, 12)).setDepth(3);
-    this.img("kenney", 40, 6, kenney(20, 12)).setDepth(3);
-    this.img("kenney", 56, 6, kenney(21, 12)).setDepth(3);
-    this.img("window", 120, 2, [4, 5].includes(this.set.exercises[0].act) ? 2 : 0).setDepth(3);
-    this.img("clock", 160, 8).setDepth(3);
-    this.img("kenney", 252, 6, kenney(19, 14)).setDepth(3);
-    this.img("kenney", 274, 6, kenney(19, 13)).setDepth(3);
-
-    // piano vertical contra la pared
-    this.prop("kenney", 16, 24, kenney(23, 8));
-    this.prop("kenney", 32, 24, kenney(24, 8));
-    this.prop("kenney", 16, 40, kenney(23, 9));
-    this.prop("kenney", 32, 40, kenney(24, 9));
-    this.prop("chair", 24, 58);
-    this.solid(16, 44, 32, 12);
-    // estanterías de libros
-    this.prop("kenney", 64, 26, kenney(20, 17));
-    this.prop("kenney", 80, 26, kenney(21, 17));
-    this.prop("kenney", 96, 26, kenney(19, 17));
-    this.solid(64, 34, 48, 8);
-    // escritorio con la terminal de Margarita
-    this.prop("desk", 196, 46);
-    this.add.sprite(204, 36, "terminal", 0).setOrigin(0, 0).setDepth(100 + 72).play("term-on");
-    this.prop("lamp", 226, 44);
-    this.solid(196, 56, 48, 14);
-    // rincón de lectura: dos sillones y una mesita con té entre ellos
-    this.prop("kenney", 120, 100, kenney(14, 9));
-    this.solid(120, 106, 16, 10);
-    this.prop("table", 140, 102);
-    this.prop("mug", 149, 103);
-    this.solid(140, 108, 26, 10);
-    this.prop("kenney", 170, 100, kenney(14, 9)).setFlipX(true);
-    this.solid(170, 106, 16, 10);
-    // plantas
-    this.prop("kenney", 296, 26, kenney(16, 0));
-    this.solid(298, 36, 12, 6);
-    this.prop("kenney", 2, 160, kenney(17, 0));
-    this.solid(4, 170, 12, 6);
-    this.prop("kenney", 300, 150, kenney(16, 0));
-    this.solid(302, 160, 12, 6);
-  }
-
   private defineThings(): void {
-    const say = (lines: Line[]) => this.talk(lines);
+    const name = MENTORS[this.set.mentor].name;
+    const t = this.place.terminal;
     this.things.push(
       {
-        id: "marga", x: 232, y: 98, r: 14,
-        label: () => "Hablar con Margarita",
+        id: "marga", x: this.place.home[0], y: this.place.home[1] + 6, r: 14,
+        label: () => `Hablar con ${name}`,
         use: () => this.talkMarga(),
       },
       {
-        id: "terminal", x: 216, y: 74, r: 14,
-        label: () => (this.finished ? "Terminal de Margarita" : `Ejercicio ${this.solved + 1} de ${this.set.exercises.length}`),
+        id: "terminal", x: t.x, y: t.y, r: 14,
+        label: () => (this.finished ? `Terminal de ${name}` : `Ejercicio ${this.solved + 1} de ${this.set.exercises.length}`),
         use: () => this.useTerminal(),
       },
-      {
-        id: "piano", x: 32, y: 64, r: 16,
-        label: () => "Piano",
+      ...this.place.flavor.map((f) => ({
+        id: f.id, x: f.x, y: f.y, r: f.r,
+        label: () => f.label,
         use: async () => {
-          for (let i = 0; i < 5; i++) this.time.delayedCall(i * 140, () => sfx("blip"));
-          await say([
-            { who: "sam", text: "Do, re, mi... y ahí se acaba mi repertorio." },
-            { who: "margarita", text: "Con escalas se empieza. Igual que con los bucles." },
-          ]);
+          f.sound?.();
+          await this.talk(f.lines);
         },
-      },
-      {
-        id: "books", x: 88, y: 48, r: 16,
-        label: () => "Estantería",
-        use: () => say([{ who: "sam", text: "Manuales de FORTRAN, de COBOL, partituras de Chopin y una novela de Agatha Christie. Todo subrayado." }]),
-      },
-      {
-        id: "tea", x: 153, y: 124, r: 12,
-        label: () => "Té",
-        use: () => say([{ who: "sam", text: "Té de manzanilla. Todavía caliente." }]),
-      },
+      })),
       {
         id: "door", x: 160, y: 182, r: 14,
         label: () => "Volver al laboratorio",
@@ -264,7 +184,8 @@ export class HouseScene extends Phaser.Scene {
   private async arrive(): Promise<void> {
     // la tarjeta va sobre negro, antes de ver la casa (showCard abre la escena al terminar)
     hudVisible(false);
-    await showCard("Casa de Margarita", "Elmwood, Berkeley");
+    const [cardTitle, cardSub] = MENTORS[this.set.mentor].card;
+    await showCard(cardTitle, cardSub);
     hudVisible(true);
     setClock("17:30");
     this.refresh();
@@ -278,7 +199,7 @@ export class HouseScene extends Phaser.Scene {
     this.startRoutine();
   }
 
-  // ------------------------------------------------------------------ rutina de Margarita
+  // ------------------------------------------------------------------ rutina del mentor
 
   /** Camina por una ruta de puntos (en L) con su animación. */
   private walkMarga(points: [number, number][]): Promise<void> {
@@ -293,7 +214,7 @@ export class HouseScene extends Phaser.Scene {
         const d = Math.hypot(dx, dy);
         if (d < 1) return step(i + 1);
         const dir: Dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : dy < 0 ? "up" : "down";
-        this.marga.play(`margarita-walk-${dir}`, true);
+        this.marga.play(`${this.place.mentor}-walk-${dir}`, true);
         this.tweens.add({ targets: this.marga, x, y, duration: (d / 34) * 1000, onComplete: () => step(i + 1) });
       };
       step(0);
@@ -301,73 +222,39 @@ export class HouseScene extends Phaser.Scene {
   }
 
   private face(dir: Dir): void {
-    this.marga.setFrame(charFrame("margarita", dir));
+    this.marga.setFrame(charFrame(this.place.mentor, dir));
   }
 
-  /** Cada 25 a 45 segundos hace algo tranquilo y vuelve a su escritorio. Nunca repite seguido. */
+  /** Cada 25 a 45 segundos hace algo de su rutina y vuelve a su sitio. Nunca repite seguido. */
   private startRoutine(): void {
-    const home: [number, number] = [232, 92];
-    const acts: { name: string; run: () => Promise<void> }[] = [
-      {
-        name: "piano",
-        run: async () => {
-          await this.walkMarga([[232, 132], [36, 132], [36, 76]]);
-          this.face("up");
-          const ms = pianoPhrase();
-          for (let t = 0; t < ms; t += 1200) this.time.delayedCall(t, () => this.bubble(this.marga, "alegre"));
-          await new Promise((r) => this.time.delayedCall(ms + 900, r));
-          await this.walkMarga([[36, 132], [232, 132], home]);
-        },
-      },
-      {
-        name: "plantas",
-        run: async () => {
-          await this.walkMarga([[290, 92], [290, 56]]);
-          this.face("up");
-          sfx("water");
-          await new Promise((r) => this.time.delayedCall(1800, r));
-          await this.walkMarga([[290, 144], [292, 146]]);
-          this.face("right");
-          sfx("water");
-          await new Promise((r) => this.time.delayedCall(1800, r));
-          await this.walkMarga([[290, 92], home]);
-        },
-      },
-      {
-        name: "libros",
-        run: async () => {
-          await this.walkMarga([[232, 132], [88, 132], [88, 60]]);
-          this.face("up");
-          await new Promise((r) => this.time.delayedCall(1200, r));
-          this.bubble(this.marga, "serio");
-          await new Promise((r) => this.time.delayedCall(2200, r));
-          await this.walkMarga([[88, 132], [232, 132], home]);
-        },
-      },
-    ];
-    let last = "";
-    const next = () => {
-      this.time.delayedCall(25000 + Math.random() * 20000, async () => {
-        if (!this.scene.isActive() || this.margaTalking || this.margaBusy) return next();
-        const options = acts.filter((a) => a.name !== last);
-        const pick = options[Math.floor(Math.random() * options.length)];
-        last = pick.name;
-        this.margaBusy = true;
-        await pick.run();
-        this.face("down");
-        this.margaBusy = false;
-        next();
-      });
+    const ctx = {
+      walk: (p: [number, number][]) => this.walkMarga(p),
+      face: (d: Dir) => this.face(d),
+      bubble: (mood: EmoteName) => this.bubble(this.marga, mood),
+      wait: (ms: number) => new Promise<void>((r) => this.time.delayedCall(ms, () => r())),
+      sfx: (n: Parameters<typeof sfx>[0]) => sfx(n),
     };
-    // la primera vez, pronto: que se note que la casa está viva
-    this.time.delayedCall(9000 + Math.random() * 4000, async () => {
-      if (this.margaTalking || this.margaBusy) return next();
-      last = "piano";
+    const acts = this.place.routine;
+    let last = "";
+    const runOne = async (pick: (typeof acts)[number]) => {
+      last = pick.name;
       this.margaBusy = true;
-      await acts[0].run();
+      await pick.run(ctx);
       this.face("down");
       this.margaBusy = false;
       next();
+    };
+    const next = () => {
+      this.time.delayedCall(25000 + Math.random() * 20000, () => {
+        if (!this.scene.isActive() || this.margaTalking || this.margaBusy) return next();
+        const options = acts.filter((a) => a.name !== last);
+        void runOne(options[Math.floor(Math.random() * options.length)]);
+      });
+    };
+    // la primera vez, pronto: que se note que el lugar está vivo
+    this.time.delayedCall(9000 + Math.random() * 4000, () => {
+      if (this.margaTalking || this.margaBusy) return next();
+      void runOne(acts[0]);
     });
   }
 
@@ -377,8 +264,8 @@ export class HouseScene extends Phaser.Scene {
       setObjective(this.set.title.toUpperCase(), "Vuelve al laboratorio.");
       this.pointAt(160, 172);
     } else {
-      setObjective(this.set.title.toUpperCase(), `Ejercicios de Margarita: ${this.solved} de ${n}. Usa su terminal.`);
-      this.pointAt(213, 30);
+      setObjective(this.set.title.toUpperCase(), `Ejercicios de ${MENTORS[this.set.mentor].name}: ${this.solved} de ${n}. Usa su terminal.`);
+      this.pointAt(...this.place.terminal.mark);
     }
   }
 
@@ -391,7 +278,7 @@ export class HouseScene extends Phaser.Scene {
     this.player.anims.stop();
     setPrompt(null);
     await playDialog(lines, (line) => {
-      if (line.who === "margarita") this.bubble(this.marga, line.mood);
+      if (line.who === this.place.mentor) this.bubble(this.marga, line.mood);
       if (line.who === "sam") this.bubble(this.player, line.mood);
     });
     this.lastClose = performance.now();
@@ -399,7 +286,7 @@ export class HouseScene extends Phaser.Scene {
   }
 
   private bubble(target: Phaser.GameObjects.Sprite, mood?: string): void {
-    const frame = { sorpresa: 0, serio: 2, alegre: 3 }[mood ?? ""];
+    const frame = EMOTE[mood as EmoteName];
     if (frame === undefined) return;
     const e = this.add.sprite(target.x, target.y - 30, "emotes", frame).setDepth(20003);
     this.tweens.add({ targets: e, y: e.y - 3, duration: 200, ease: "Back.Out" });
@@ -409,21 +296,19 @@ export class HouseScene extends Phaser.Scene {
   private async talkMarga(): Promise<void> {
     if (this.margaBusy) {
       // está a mitad de algo: contesta sin dejarlo a medias
-      await this.talk([{ who: "margarita", text: this.finished ? "Ve tranquilo, Sam. Yo sigo con lo mío." : "Ahora voy. Tú ve empezando en mi terminal." }]);
+      await this.talk([{ who: this.place.mentor, text: this.finished ? this.place.lines.busyDone : this.place.lines.busy }]);
       return;
     }
     this.margaTalking = true;
-    this.marga.setFrame(charFrame("margarita", this.player.x < this.marga.x - 6 ? "left" : this.player.x > this.marga.x + 6 ? "right" : this.player.y > this.marga.y ? "down" : "up"));
+    this.marga.setFrame(charFrame(this.place.mentor, this.player.x < this.marga.x - 6 ? "left" : this.player.x > this.marga.x + 6 ? "right" : this.player.y > this.marga.y ? "down" : "up"));
     if (this.finished) {
-      await this.talk([{ who: "margarita", text: "Anda, vuelve con Ruth. Y saluda a Byte de mi parte." }]);
+      await this.talk([{ who: this.place.mentor, text: this.place.lines.done }]);
     } else {
       const ex = this.set.exercises[this.solved];
-      await this.talk([
-        { who: "margarita", text: `El siguiente se llama «${ex.title}». Está en mi terminal. Si te atascas, pide una pista: no muerdo.` },
-      ]);
+      await this.talk([{ who: this.place.mentor, text: this.place.lines.next(ex.title) }]);
     }
     this.time.delayedCall(2500, () => {
-      if (!this.margaBusy) this.marga.setFrame(charFrame("margarita", "down"));
+      if (!this.margaBusy) this.marga.setFrame(charFrame(this.place.mentor, "down"));
       this.margaTalking = false;
     });
   }
@@ -457,7 +342,7 @@ export class HouseScene extends Phaser.Scene {
 
   private async leave(): Promise<void> {
     if (!this.finished) {
-      await this.talk([{ who: "margarita", text: "¿Ya te vas? Puedes volver cuando quieras, pero Ruth no te dará trabajo hasta que termines." }]);
+      await this.talk([{ who: this.place.mentor, text: this.place.lines.early }]);
     }
     this.busy = true;
     setPrompt(null);
@@ -468,7 +353,7 @@ export class HouseScene extends Phaser.Scene {
     this.scene.start("travel", { to: "lab", set: this.set.id });
   }
 
-  /** El cuaderno también se abre en casa de Margarita: es buen sitio para repasar. */
+  /** El cuaderno también se abre en casa del mentor: es buen sitio para repasar. */
   private async openCuaderno(): Promise<void> {
     if (this.busy || isDialogOpen() || isNotebookOpen() || document.querySelector(".pause")) return;
     this.busy = true;

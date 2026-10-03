@@ -42,6 +42,15 @@ CHARS = {
         "w": "#f4f4ec", "v": "#c8c8be", "r": "#c83a3a", "R": "#ee6a6a", "J": "#6e4c2c",
         "p": "#5c5c66", "P": "#45454f", "b": "#1c1830", "B": "#3e3a5c",
     },
+    # Rochy: programador grande y desganado. Pelo castaño revuelto, gafas grandes,
+    # barba de tres días, camiseta verde que le queda justa en la barriga, vaqueros.
+    "rochy": {
+        "s": "#f2c79a", "S": "#d9a273", "c": "#c99a74",
+        "H": "#7a5636", "h": "#523620", "d": "#2e1c12",
+        "g": "#3e3a5c", "L": "#cfeeff",
+        "t": "#4f7a46", "T": "#3a5c34", "l": "#689a5c", "y": "#fed018",
+        "p": "#3a4a6e", "P": "#2c3858", "b": "#3a2818", "B": "#5c4030",
+    },
 }
 
 # Cada vista: 13 filas de cabeza + 6 de cuerpo (las piernas van aparte).
@@ -241,6 +250,119 @@ VIEWS = {
             "....kkPppPkk....",
         ],
     },
+    "rochy": {
+        "down": [
+            "................",
+            "....kkkkkkkk....",
+            "...kHHhHHhhhk...",
+            "..khHHhHhhhhdk..",
+            "..khdhhhhdhhdk..",
+            "..kdhsshhsshdk..",
+            "..kssssssssssk..",
+            "..kggggssggggk..",
+            "..kgLegssgLegk..",
+            ".kSsggsSSsggsSk.",
+            ".kSssssssssssSk.",
+            ".kSssssrrssssSk.",
+            ".kScsccsscccsSk.",
+            "..kkSSSSSSSSkk..",
+            ".kTttttttttttTk.",
+            "kTttttllllttttTk",
+            "kTtttllyyllttTTk",
+            "ksTtttllllttTTsk",
+            "kssTttttttttTssk",
+        ],
+        "up": [
+            "................",
+            "....kkkkkkkk....",
+            "...kHHhHHhhhk...",
+            "..khHHhHhhhhdk..",
+            "..khhhhhdhhhdk..",
+            "..khhdhhhhhhdk..",
+            "..khhhhhhdhhdk..",
+            "..kghhdhhhhhgk..",
+            "..kshhhhhhhdsk..",
+            ".kSsshhdhhhssSk.",
+            ".kSssshhhhsssSk.",
+            ".kSssssssssssSk.",
+            ".kSSssssssssSSk.",
+            "..kkSSSSSSSSkk..",
+            ".kTttttttttttTk.",
+            "kTttttttttttttTk",
+            "kTtttttttttttTTk",
+            "ksTttttttttttTsk",
+            "kssTttttttttTssk",
+        ],
+        "left": [
+            "................",
+            ".....kkkkkk.....",
+            "....kHHhHhhkk...",
+            "...khHhhhhhhhk..",
+            "..khhhhhdhhhhhk.",
+            "..kdhshhhhdhhhk.",
+            ".kssssshhhhdhhk.",
+            "kgggsssShhhhhk..",
+            "kLegssssShdhhk..",
+            "kgggsssssShhhk..",
+            ".kssssssSShhk...",
+            ".krrsssSSShhk...",
+            ".kcscsSSSSkk....",
+            "..kkSSSSSk......",
+            "..kkTtttTTk.....",
+            ".ktttlttTTTk....",
+            "ktllllttTTTk....",
+            "ktlllltTTTTk....",
+            "ktTlltTTsSTk....",
+        ],
+    },
+}
+
+ROCHY_LEGS_FRONT = {
+    "stand": [
+        ".kkTTTTTTTTTTkk.",
+        "...kpppPPpppk...",
+        "...kppPkkPppk...",
+        "...kBbbkkbbBk...",
+        "...kkkk..kkkk...",
+    ],
+    "a": [
+        ".kkTTTTTTTTTTkk.",
+        "...kpppPPpppk...",
+        "...kppPkkbbBk...",
+        "...kBbbk.kkkk...",
+        "...kkkk.........",
+    ],
+    "b": [
+        ".kkTTTTTTTTTTkk.",
+        "...kpppPPpppk...",
+        "...kbbBkkPppk...",
+        "...kkkk.kBbbk...",
+        ".........kkkk...",
+    ],
+}
+
+ROCHY_LEGS_SIDE = {
+    "stand": [
+        ".kkTTTTTTTk.....",
+        "...kppppPk......",
+        "...kpPpppk......",
+        "..kBbbbbbk......",
+        "..kkkkkkkk......",
+    ],
+    "a": [
+        ".kkTTTTTTTk.....",
+        "..kppkkPPk......",
+        ".kppk..kPPk.....",
+        "kBbbk...kbbk....",
+        "kkkk.....kkk....",
+    ],
+    "b": [
+        ".kkTTTTTTTk.....",
+        "..kPPkkppk......",
+        ".kPPk..kppk.....",
+        "kbbbk...kBbk....",
+        "kkkk.....kkk....",
+    ],
 }
 
 LEGS_FRONT = {
@@ -370,7 +492,10 @@ def frame_raw(name, view, step):
     rows = VIEWS[name][view]
     if name in ("sam", "ruth"):
         rows = autoshade(rows, "strands" if name == "sam" else "curls")
-    rows = rows + (LEGS_SIDE if view == "left" else LEGS_FRONT)[step]
+    if name == "rochy":
+        rows = rows + (ROCHY_LEGS_SIDE if view == "left" else ROCHY_LEGS_FRONT)[step]
+    else:
+        rows = rows + (LEGS_SIDE if view == "left" else LEGS_FRONT)[step]
     assert len(rows) == 24, (name, view, len(rows))
     im = Image.new("RGBA", (16, 24), (0, 0, 0, 0))
     for y, row in enumerate(rows):
@@ -394,6 +519,11 @@ FACE_EDITS = {
         "sorpresa": [(11, 7, "k"), (11, 8, "k"), (7, 4, "k"), (7, 5, "k"), (7, 10, "k"), (7, 11, "k")],
         "serio": [(11, 7, "S"), (11, 8, "S"), (8, 4, "k"), (8, 5, "k"), (8, 10, "k"), (8, 11, "k")],
         "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (9, 4, "k"), (9, 5, "k"), (9, 10, "k"), (9, 11, "k"), (10, 5, "s"), (10, 10, "s")],
+    },
+    "rochy": {
+        "sorpresa": [(11, 7, "k"), (11, 8, "k"), (12, 7, "k"), (12, 8, "k")],
+        "serio": [(11, 7, "k"), (11, 8, "k"), (11, 6, "k"), (11, 9, "k"), (6, 3, "d"), (6, 4, "d"), (6, 11, "d"), (6, 12, "d")],
+        "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (10, 3, "R"), (10, 12, "R")],
     },
     "kessler": {
         "sorpresa": [(11, 7, "k"), (11, 8, "k"), (7, 3, "s"), (7, 4, "s"), (7, 11, "s"), (7, 12, "s"), (6, 4, "d"), (6, 5, "d"), (6, 10, "d"), (6, 11, "d")],
@@ -422,7 +552,7 @@ def portrait(name, mood):
 
 
 def build_portraits():
-    order = ["sam", "ruth", "kessler", "margarita"]
+    order = ["sam", "ruth", "kessler", "margarita", "gus", "rochy"]
     sheet = Image.new("RGBA", (16 * len(MOODS), 20 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for m, mood in enumerate(MOODS):
@@ -440,7 +570,7 @@ def build_portraits():
 # izquierda (por eso al principio Sam "caminaba al revés").
 
 PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source", "piano_characters.png")
-PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 6}
+PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 6, "gus": 3}
 PACK_ROWS = [0, 3, 2, 1]  # abajo, izquierda, arriba, derecha
 
 PACK_SRC = {
@@ -455,6 +585,16 @@ def pack_color(name, ch, y):
     skin, skin_s, skin_l = "#f6d0a8", "#dca27e", "#fbe2c4"
     if ch == "k":
         return "#1c1830"
+    if name == "gus":
+        # radioaficionado: canoso, barba gris, camisa de franela roja, pantalón caqui
+        if head:
+            return {"S": "#a39886", "o": "#6e6556", "s": "#e6b088", "p": "#c97a62", "b": "#1c1830", "r": "#b8392f", "B": "#7a6c4c", "y": "#a39886", "W": "#fffbe8", "H": "#c4baa6"}[ch]
+        return {"r": "#b8392f", "B": "#7a6c4c", "b": "#5c5038", "S": "#e6b088", "o": "#8f897c", "s": "#e6b088", "p": "#c97a62", "y": "#e8d8b0", "W": "#fffbe8"}[ch]
+    if name == "rochy":
+        # programador: pelo castaño revuelto, gafas de cristal claro, camiseta verde, vaqueros
+        if head:
+            return {"p": "#4a3020", "S": "#f2c79a", "s": "#d9a273", "B": "#bfe6ff", "b": "#3e3a5c", "M": "#b4504a", "o": "#4a3020", "r": "#b4504a", "y": "#f2c79a", "W": "#fffbe8", "H": "#6b4a30", "h": "#4a3020"}[ch]
+        return {"B": "#4f7a46", "b": "#3f6638", "S": "#f2c79a", "s": "#3a4a6e", "p": "#2c3858", "o": "#3a2818", "r": "#4f7a46", "y": "#e8d8b0", "W": "#fffbe8"}[ch]
     if name == "margarita":
         # base de pelo largo: canas plateadas, cara clara, rebeca morada y falda lavanda
         return {"s": "#d6d6de", "p": "#a9a9b8", "S": skin, "o": "#7a4a9a" if not head else "#8a8a9a",
@@ -497,6 +637,22 @@ def pack_frame(name, row, col, edits=()):
             for x in range(16):
                 if grid[y][x] == "k" and not edge_r(x, y):
                     grid[y][x] = "D" if (x + y) % 5 else "E"
+    if name == "rochy":
+        # los brillos del pelo del original no son piel: de espaldas toda la cabeza es pelo,
+        # de lado la mitad de atrás, y de frente las filas de arriba
+        for y in range(0, 12):
+            for x in range(16):
+                if grid[y][x] not in ("S", "s"):
+                    continue
+                back = row == 2 or (row == 3 and x >= 8) or (row == 1 and x <= 7) or y <= 4
+                if back:
+                    grid[y][x] = "H" if grid[y][x] == "S" else "h"
+    if name == "rochy" and row == 0:
+        # la boca: el rosa del centro de la cara
+        for y in (10, 11):
+            for x in range(6, 10):
+                if grid[y][x] == "p":
+                    grid[y][x] = "M"
     if name == "margarita":
         # la boca: los píxeles rosados rodeados de cara
         for y in (11, 12):
@@ -516,6 +672,16 @@ def pack_frame(name, row, col, edits=()):
 
 
 PACK_MOODS = {
+    "gus": {
+        "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (6, 5, "#8f897c"), (6, 10, "#8f897c")],
+        "serio": [(11, 6, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830"), (11, 9, "#1c1830")],
+        "alegre": [(10, 6, "#fffbe8"), (10, 7, "#fffbe8"), (10, 8, "#fffbe8"), (10, 9, "#fffbe8")],
+    },
+    "rochy": {
+        "sorpresa": [(10, 7, "#1c1830"), (10, 8, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830")],
+        "serio": [(10, 6, "#1c1830"), (10, 7, "#1c1830"), (10, 8, "#1c1830"), (10, 9, "#1c1830")],
+        "alegre": [(10, 6, "#b4504a"), (10, 7, "#fffbe8"), (10, 8, "#fffbe8"), (10, 9, "#b4504a")],
+    },
     "margarita": {
         "sorpresa": [(11, 7, "#1c1830"), (11, 8, "#1c1830"), (12, 7, "#1c1830"), (12, 8, "#1c1830"), (7, 5, "#6a6a7a"), (7, 10, "#6a6a7a")],
         "serio": [(11, 6, "#1c1830"), (11, 7, "#1c1830"), (11, 8, "#1c1830"), (11, 9, "#1c1830"), (8, 6, "#6a6a7a"), (8, 9, "#6a6a7a")],
@@ -535,7 +701,7 @@ PACK_MOODS = {
 
 
 def build():
-    order = ["sam", "ruth", "kessler", "margarita"]
+    order = ["sam", "ruth", "kessler", "margarita", "gus", "rochy"]
     sheet = Image.new("RGBA", (64, 24 * 4 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for d, view in enumerate(["down", "left", "up", "right"]):
@@ -550,8 +716,8 @@ def build():
                 sheet.alpha_composite(im, (f * 16, (c * 4 + d) * 24))
     sheet.save(os.path.join(OUT, "characters.png"))
     # vista previa: cada personaje en una columna, x6
-    big = Image.new("RGBA", (64 * 4 + 60, 96), (60, 66, 92, 255))
-    for c in range(4):
+    big = Image.new("RGBA", (84 * len(order), 96), (60, 66, 92, 255))
+    for c in range(len(order)):
         big.alpha_composite(sheet.crop((0, c * 96, 64, c * 96 + 96)), (c * (64 + 20), 0))
     big.resize((big.width * 6, big.height * 6), Image.NEAREST).save(os.path.join(PREV, "characters.png"))
     # primer plano: cuadro quieto de frente y de perfil de cada uno, x10

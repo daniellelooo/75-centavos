@@ -9,7 +9,7 @@ function play(id: string, code: string) {
   return m.check(outs, m.cases);
 }
 
-describe("ejercicios de Margarita: la última pista los resuelve", () => {
+describe("ejercicios de práctica: la última pista los resuelve", () => {
   for (const m of TRAINING_EXERCISES) {
     it(m.id, () => {
       const r = play(m.id, m.hints[m.hints.length - 1]);
@@ -68,22 +68,22 @@ describe("errores típicos con mensaje claro", () => {
 
 describe("sesiones de los actos 3 a 6: errores típicos", () => {
   it("t6a: <= en vez de <", () => {
-    expect(play("t6a", "let baratos = precios.filter((p) => p <= 5);\nconsole.log(baratos);").feedback).toMatch(/menor que 5/);
+    expect(play("t6a", "let debiles = senales.filter((s) => s <= 5);\nconsole.log(debiles);").feedback).toMatch(/menor que 5/);
   });
   it("t6c: sin map", () => {
-    expect(play("t6c", "let diplomas = alumnos.filter((a) => a.nota >= 6);\nconsole.log(diplomas);").feedback).toMatch(/map/);
+    expect(play("t6c", "let porMandar = contactos.filter((c) => c.senal >= 6);\nconsole.log(porMandar);").feedback).toMatch(/map/);
   });
   it("t7b: cuenta compartida", () => {
-    expect(play("t7b", "let cuenta = 0;\nfunction crearMetronomo(inicio) { if (cuenta === 0) cuenta = inicio; return () => { cuenta++; return cuenta; }; }").pass).toBe(false);
+    expect(play("t7b", "let cuenta = 0;\nfunction crearMarcador(inicio) { if (cuenta === 0) cuenta = inicio; return () => { cuenta++; return cuenta; }; }").pass).toBe(false);
   });
-  it("t7c: ahorro visible en el objeto", () => {
-    expect(play("t7c", "function crearHucha() { return { ahorro: 0, meter(c) { this.ahorro += c; }, total() { return this.ahorro; } }; }").feedback).toMatch(/escondida/);
+  it("t7c: saldo visible en el objeto", () => {
+    expect(play("t7c", "function crearMonedero() { return { saldo: 0, meter(c) { this.saldo += c; }, total() { return this.saldo; } }; }").feedback).toMatch(/escondida/);
   });
   it("t8b: estado compartido", () => {
-    expect(play("t8b", 'let af = false;\nclass Piano { constructor() {} afinar() { af = true; } estado() { return af ? "afinado" : "desafinado"; } }').feedback).toMatch(/this.afinado/);
+    expect(play("t8b", 'let on = false;\nclass Terminal { constructor() {} encender() { on = true; } estado() { return on ? "encendida" : "apagada"; } }').feedback).toMatch(/this.encendida/);
   });
   it("t8c: sin super", () => {
-    expect(play("t8c", "class Instrumento { constructor(n, c) { this.nombre = n; this.cuerdas = c; } }\nclass Violin extends Instrumento { constructor(d) { this.dueno = d; } ficha() { return ''; } }").feedback).toMatch(/super/);
+    expect(play("t8c", "class Ordenador { constructor(n, m) { this.nombre = n; this.memoria = m; } }\nclass Portatil extends Ordenador { constructor(d) { this.dueno = d; } ficha() { return ''; } }").feedback).toMatch(/super/);
   });
 });
 

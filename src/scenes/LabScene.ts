@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { VIEW_H, VIEW_W, charFrame, type CharName, type Dir } from "../config";
+import { EMOTE, VIEW_H, VIEW_W, charFrame, type CharName, type Dir, type EmoteName } from "../config";
 import { MISSIONS, ACTS, actOf, lastOfAct, missionsOfAct, type Line, type Mission } from "../game/missions";
 import { save, writeSave, resetSave } from "../game/state";
 import { playDialog, isDialogOpen } from "../ui/dialog";
@@ -20,6 +20,7 @@ import { setPauseHooks } from "../ui/pause";
 import { stageOf } from "../game/stage";
 import { settings } from "../game/settings";
 import { trainingBefore } from "../game/training";
+import { MENTORS } from "../game/mentors";
 import { rankOf } from "../game/rank";
 import { showBadge } from "../ui/badge";
 
@@ -48,7 +49,7 @@ export class LabScene extends Phaser.Scene {
   private mode: Mode = "play";
   private night = false;
   private arrive = false;
-  /** Sesión de Margarita de la que vuelve Sam (entra por la puerta). */
+  /** Sesión de práctica de la que vuelve Sam (entra por la puerta). */
   private back = "";
   private player!: Phaser.GameObjects.Sprite;
   private facing: Dir = "up";
@@ -688,9 +689,12 @@ export class LabScene extends Phaser.Scene {
       {
         id: "exit",
         x: 208, y: 220, r: 14,
-        label: () => (this.training()?.state === "away" ? "Ir a casa de Margarita" : "Salida"),
+        label: () => {
+          const tr = this.training();
+          return tr?.state === "away" ? `Ir ${MENTORS[tr.set.mentor].to}` : "Salida";
+        },
         use: async () => {
-          if (this.training()?.state === "away") return this.goToMargarita();
+          if (this.training()?.state === "away") return this.goToMentor();
           await say([{ who: "sam", text: this.night ? "No pienso irme ahora." : "Todavía no. Hay trabajo." }]);
         },
       },
@@ -751,7 +755,7 @@ export class LabScene extends Phaser.Scene {
       writeSave(save);
       if (m.act === 1) showControls();
     } else if (this.back) {
-      // vuelve de casa de Margarita (entra lo bastante para no quedarse en la puerta)
+      // vuelve de casa del mentor (entra lo bastante para no quedarse en la puerta)
       await this.walk(this.player, "sam", [[208, 188]], 50);
       this.facing = "up";
       this.player.setFrame(charFrame("sam", "up"));
@@ -778,8 +782,10 @@ export class LabScene extends Phaser.Scene {
     }
     // la terminal de Sam avisa cuando la noche trae una conexión
     this.termSprite.play(this.night && m.giver === "terminal" ? "term-alert" : "term-on", true);
-    if (this.training()?.state === "away") {
-      setObjective("CASA DE MARGARITA", "Ve a casa de Margarita. Sal por la puerta.");
+    const tr0 = this.training();
+    if (tr0?.state === "away") {
+      const mi = MENTORS[tr0.set.mentor];
+      setObjective(mi.card[0].toUpperCase(), `Ve ${mi.to}. Sal por la puerta.`);
       this.pointAt("exit");
       return;
     }
@@ -802,7 +808,7 @@ export class LabScene extends Phaser.Scene {
     this.pointAt("terminal");
   }
 
-  /** Sesión de Margarita pendiente antes de la misión actual y en qué punto está. */
+  /** Sesión de práctica pendiente antes de la misión actual y en qué punto está. */
   private training() {
     const m = this.mission;
     const t = save.briefed ? undefined : trainingBefore(m?.id);
@@ -890,7 +896,7 @@ export class LabScene extends Phaser.Scene {
 
   /** Burbuja sobre quien habla cuando la línea lleva emoción: ! sorpresa, ... serio, nota alegre. */
   private moodBubble(line: Line): void {
-    const frame = { sorpresa: 0, serio: 2, alegre: 3 }[line.mood as string];
+    const frame = EMOTE[line.mood as EmoteName];
     if (frame === undefined) return;
     const who = line.who === "sam" ? this.player : line.who === "ruth" || line.who === "kessler" ? this.npcs[line.who] : null;
     if (who?.visible) this.emote(who, frame, 1600);
@@ -1057,7 +1063,7 @@ export class LabScene extends Phaser.Scene {
     const ruthDay: Act[] = [
       { path: [[214, 104]], face: "up", ms: 4200, doing: typing, say: ["Otra copia de seguridad...", "¿Quién borró mi macro?", "Compilando. Paciencia."] },
       { path: [[238, 130], [309, 130], [309, 78]], face: "up", ms: 2600, doing: print, say: ["Papel atascado. Clásico.", "Doce páginas de nada.", "¿Esto es tuyo, Sam?"] },
-      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => R() && this.emote(R()!, 3, 1800), say: ["Café número cuatro.", "Este café tiene historia.", "Alguien se acabó el azúcar."] },
+      { path: [[238, 130], [26, 130], [26, 190]], face: "up", ms: 3200, doing: () => R() && this.emote(R()!, EMOTE.cafe, 1800), say: ["Café número cuatro.", "Este café tiene historia.", "Alguien se acabó el azúcar."] },
       { path: [[238, 130], [396, 136]], face: "up", ms: 2600, say: ["Agosto, septiembre...", "¿Dónde archivé eso?"] },
       { path: [[238, 130], [209, 172]], face: "up", ms: 2600, doing: () => this.emote(this.catSprite, 4, 1600), say: ["Hola, Byte.", "Tú sí que vives bien."] },
       { path: [[238, 130], [48, 130], [48, 78]], face: "up", ms: 3200, say: ["¿Esto se ve de día?", "Solo veo el campanario."] },
@@ -1191,7 +1197,7 @@ export class LabScene extends Phaser.Scene {
   }
 
   /** En bici hasta Elmwood. */
-  private async goToMargarita(): Promise<void> {
+  private async goToMentor(): Promise<void> {
     const tr = this.training();
     if (!tr) return;
     this.busy = true;
@@ -1228,7 +1234,7 @@ export class LabScene extends Phaser.Scene {
         return;
       }
       if (tr.state === "away") {
-        await this.talk([{ who, text: "Margarita te está esperando. La puerta está abajo." }]);
+        await this.talk([{ who, text: `${MENTORS[tr.set.mentor].name} te está esperando. La puerta está abajo.` }]);
         return;
       }
       await this.talk(tr.set.back);
@@ -1275,7 +1281,7 @@ export class LabScene extends Phaser.Scene {
           return;
         }
       } else if (this.training()?.state === "away") {
-        await this.talk([{ who: "sam", text: "Primero, la casa de Margarita. Ella me pondrá a practicar." }]);
+        await this.talk([{ who: "sam", text: `Primero tengo que ir ${MENTORS[this.training()!.set.mentor].to}. Me espera para practicar.` }]);
         return;
       } else {
         const name = m.giver === "ruth" ? "Ruth" : "Kessler";

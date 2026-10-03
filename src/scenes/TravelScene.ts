@@ -1,4 +1,4 @@
-// El trayecto en bici entre el laboratorio y la casa de Margarita: el paisaje
+// El trayecto en bici entre el laboratorio y la casa del mentor: el paisaje
 // de la ventana al fondo, la calle pasando deprisa y Sam pedaleando.
 import Phaser from "phaser";
 import { VIEW_H, VIEW_W } from "../config";
@@ -6,6 +6,8 @@ import { MISSIONS, ACTS } from "../game/missions";
 import { save } from "../game/state";
 import { fadeIn, fadeOut } from "../ui/fade";
 import { hudVisible } from "../ui/hud";
+import { trainingById } from "../game/training";
+import { MENTORS } from "../game/mentors";
 import { sfx } from "../audio/sfx";
 
 const GROUND = 206;
@@ -58,12 +60,13 @@ export class TravelScene extends Phaser.Scene {
     };
     for (let x = -20; x < VIEW_W + 40; x += 64 + Math.random() * 30) spawn(x);
 
-    // Sam en bici: hacia la derecha a casa de Margarita, a la izquierda de vuelta
+    // Sam en bici: hacia la derecha a casa del mentor, a la izquierda de vuelta
     this.add.image(VIEW_W / 2, GROUND + 18, "shadow").setDepth(9).setScale(3, 1);
     this.sam = this.add.sprite(VIEW_W / 2, GROUND + 19, "sam_bike", 0).setOrigin(0.5, 1).setDepth(11).setFlipX(this.to === "lab");
     this.sam.play("sam-bike");
 
-    const text = this.to === "house" ? "Rumbo a casa de Margarita" : "De vuelta al laboratorio";
+    const mentor = trainingById(this.set)?.mentor ?? "margarita";
+    const text = this.to === "house" ? MENTORS[mentor].travel : "De vuelta al laboratorio";
     const cap = document.createElement("div");
     cap.className = "view-cap travel-cap pixel-frame";
     cap.innerHTML = `<span>${text}</span><span class="key">E</span>`;
