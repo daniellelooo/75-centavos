@@ -46,6 +46,7 @@ export const ACT4: Mission[] = [
         const ll = cases[i].globals().llamadas as number[];
         const want = ll.reduce((a, b) => a + b, 0);
         const v = outs[i].values.total;
+        if (v === undefined) return { pass: false, feedback: "total no existe donde haces console.log: se creó dentro de las llaves del for y desapareció al salir. Crea let total = 0; antes del for." };
         if (v === ll[ll.length - 1]) return { pass: false, feedback: `total quedó en ${v}: solo la última llamada. Se reinicia en cada vuelta porque se crea dentro del bucle.` };
         if (v !== want) return { pass: false, feedback: `Con ${cases[i].label} total vale ${show(v)} y debía ser ${want}.` };
         if (!printed(outs[i], String(want))) return { pass: false, feedback: "La suma está bien. Falta console.log(total)." };
@@ -77,8 +78,8 @@ export const ACT4: Mission[] = [
     ],
     lesson: {
       title: "Closures: funciones con memoria",
-      body: "Una función creada dentro de otra recuerda las variables de la función que la creó, incluso después de que esta termine. Así cada contador guarda su propio número, privado, sin variables globales.",
-      example: "function crearSaludo(nombre) {\n  return function () {\n    return `Hola, ${nombre}`;\n  };\n}\nconst hola = crearSaludo(\"Ruth\");\nconsole.log(hola()); // Hola, Ruth",
+      body: "Una función puede devolver otra función, igual que devuelve un número. La de dentro no tiene nombre: la guardas en una variable y la llamas con paréntesis. Lo curioso es que recuerda las variables de la función que la creó, incluso después de que esta termine, y puede cambiarlas. Así cada contador guarda su propio número, privado, sin variables sueltas fuera.",
+      example: "function crearMarcador() {\n  let puntos = 0;\n  return function () {\n    puntos += 10;\n    return puntos;\n  };\n}\nconst m = crearMarcador();\nconsole.log(m()); // 10\nconsole.log(m()); // 20",
     },
     task: "Escribe la función `crearContador()`: crea una variable `cuenta` en 0 y devuelve una función que, cada vez que se llama, suma 1 a `cuenta` y la devuelve. Cada contador cuenta por separado.",
     starter: "function crearContador() {\n  // tu código\n}\n",
@@ -167,9 +168,9 @@ export const ACT4: Mission[] = [
     lesson: {
       title: "Pasar una función fabricada a filter",
       body: "filter recibe una función que dice sí o no. La que fabrica crearFiltro es justo eso, así que puedes pasarla directamente: lista.filter(crearFiltro(\"palabra\")).",
-      example: "const esPar = (n) => n % 2 === 0;\nconsole.log([1, 2, 3, 4].filter(esPar)); // [2, 4]",
+      example: "const esCorta = (palabra) => palabra.length < 4;\nconsole.log([\"sol\", \"planeta\", \"luz\"].filter(esCorta)); // [\"sol\",\"luz\"]",
     },
-    task: "Usa tu `crearFiltro` (escríbelo de nuevo arriba) y `filter` para guardar en `pagos` los elementos de `mensajes` que contienen \"pago\". Muestra `pagos.length`.",
+    task: "Usa tu `crearFiltro` (ya está escrito arriba) y `filter` para guardar en `pagos` los mensajes de `mensajes` que contienen \"pago\". Muestra `pagos.length`.",
     starter: "function crearFiltro(palabra) {\n  return (mensaje) => mensaje.includes(palabra);\n}\n\n// usa mensajes y crearFiltro aquí\n",
     borrowed: ["mensajes = [\"hola, sigues ahi?\", ...]"],
     cases: [
@@ -190,7 +191,7 @@ export const ACT4: Mission[] = [
       return { pass: true, feedback: "Dos pagos en enero. Alguien cobra por esos planos." };
     },
     hints: [
-      'const pagos = mensajes.filter(crearFiltro("pago"));',
+      "crearFiltro(\"pago\") te fabrica una función que responde sí o no a cada mensaje. Eso es justo lo que filter necesita: pásasela dentro de los paréntesis.",
       "Después: console.log(pagos.length);",
       'function crearFiltro(palabra) {\n  return (mensaje) => mensaje.includes(palabra);\n}\n\nconst pagos = mensajes.filter(crearFiltro("pago"));\nconsole.log(pagos.length);',
     ],
@@ -215,7 +216,7 @@ export const ACT4: Mission[] = [
     ],
     lesson: {
       title: "Objetos con estado privado",
-      body: "Una función puede devolver un objeto con métodos. Los métodos comparten las variables de la función que los creó (un closure), y nadie de fuera puede tocarlas: es estado privado.",
+      body: "Una función puede devolver un objeto cuyas propiedades son funciones: se llaman métodos. Dentro del objeto se escriben sin la palabra function: `meter(n) { ... }`. Se usan con un punto: `h.meter(5)`. Los métodos comparten las variables de la función que los creó (un closure) y nadie de fuera puede tocarlas: es estado privado.",
       example: "function crearHucha() {\n  let dinero = 0;\n  return {\n    meter(n) { dinero += n; },\n    ver() { return dinero; },\n  };\n}\nconst h = crearHucha();\nh.meter(5);\nconsole.log(h.ver()); // 5",
     },
     task: "Escribe la función `crearBoveda(clave)`: devuelve un objeto con el método `abrir(intento)`. `abrir` devuelve `true` si `intento` es la clave, y `false` si no. Tras 3 fallos, la bóveda queda bloqueada y `abrir` siempre devuelve `false`.",

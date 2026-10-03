@@ -26,7 +26,7 @@ export const ACT2: Mission[] = [
     ],
     lesson: {
       title: "Arrays: una lista en una sola variable",
-      body: "Un array guarda varios valores en orden, entre corchetes y separados por comas. Cada elemento tiene una posición que empieza en 0. Con .length sabes cuántos hay.",
+      body: "Un array es una lista: guarda varios valores en orden, entre corchetes y separados por comas. Cada elemento tiene una posición que empieza en 0. Con `.length` sabes cuántos hay.",
       example: 'let planetas = ["Mercurio", "Venus", "Tierra"];\nconsole.log(planetas[0]);     // Mercurio\nconsole.log(planetas.length); // 3',
     },
     task: "Crea el array `sospechosas` con \"hunter\", \"quasar\" y \"nadir\", en ese orden. Muestra cuántas son con `console.log(sospechosas.length)`.",
@@ -72,7 +72,7 @@ export const ACT2: Mission[] = [
     lesson: {
       title: "Recorrer un array y llenar otro",
       body: "Con un for puedes visitar cada posición: i va de 0 hasta lista.length - 1, y lista[i] es el elemento. Con .push(valor) añades un elemento al final de otro array.",
-      example: "let notas = [7, 3, 9];\nlet altas = [];\nfor (let i = 0; i < notas.length; i++) {\n  if (notas[i] > 5) {\n    altas.push(notas[i]);\n  }\n}\nconsole.log(altas); // [7, 9]",
+      example: "let notas = [7, 3, 9];\nlet altas = [];\nfor (let i = 0; i < notas.length; i++) {\n  if (notas[i] > 5) {\n    altas.push(notas[i]);\n  }\n}\nconsole.log(altas); // [7,9]",
     },
     task: "Crea el array vacío `madrugada`. Recorre `horas` y guarda con `push` las que sean menores que 6. Muestra `madrugada`.",
     starter: "let madrugada = [];\n// recorre horas aquí\n\nconsole.log(madrugada);\n",
@@ -98,7 +98,7 @@ export const ACT2: Mission[] = [
       return { pass: true, feedback: "Solo la madrugada. Siempre la madrugada." };
     },
     hints: [
-      "for (let i = 0; i < horas.length; i++) { ... }",
+      "Necesitas visitar cada posición de horas, de la 0 a la última, y decidir con un if si esa hora se queda.",
       "Dentro: if (horas[i] < 6) { madrugada.push(horas[i]); }",
       "let madrugada = [];\nfor (let i = 0; i < horas.length; i++) {\n  if (horas[i] < 6) {\n    madrugada.push(horas[i]);\n  }\n}\nconsole.log(madrugada);",
     ],
@@ -262,8 +262,8 @@ export const ACT2: Mission[] = [
       return { pass: true, feedback: "Archivos falsos listos. El anzuelo está puesto." };
     },
     hints: [
-      "return `SDINET-${tema}.txt`;",
-      "for (let i = 0; i < temas.length; i++) { archivos.push(archivoFalso(temas[i])); }",
+      "Primero la función: tiene que devolver un texto que empieza por SDINET-, sigue con el tema y termina en .txt. Una plantilla con ${tema} en medio lo resuelve.",
+      "Después, fuera de la función, un for que recorra temas. En cada vuelta llama a archivoFalso(temas[i]) y mete el resultado en archivos con push.",
       "function archivoFalso(tema) {\n  return `SDINET-${tema}.txt`;\n}\n\nlet archivos = [];\nfor (let i = 0; i < temas.length; i++) {\n  archivos.push(archivoFalso(temas[i]));\n}\nconsole.log(archivos.length);",
     ],
     debrief: [

@@ -50,7 +50,7 @@ export const ACT6: Mission[] = [
     ],
     lesson: {
       title: "setTimeout: hacer algo más tarde",
-      body: "setTimeout(funcion, ms) ejecuta la función pasados esos milisegundos. Mientras tanto, el resto del código sigue: no se queda esperando. Por eso lo que hay después del setTimeout se ejecuta antes.",
+      body: "`setTimeout(funcion, ms)` ejecuta la función pasados esos milisegundos. Mientras tanto, el resto del código sigue: no se queda esperando. Por eso lo que hay después del setTimeout se ejecuta antes. `() => ...` es una función flecha que no recibe nada.",
       example: 'setTimeout(() => console.log("segundo"), 500);\nconsole.log("primero");\n// primero\n// segundo',
     },
     task: "Usa `setTimeout` para mostrar \"listo\" pasados 300 ms, y muestra \"conectando\" de inmediato. En pantalla debe salir primero \"conectando\" y luego \"listo\".",
@@ -67,7 +67,7 @@ export const ACT6: Mission[] = [
       return { pass: true, feedback: "Primero lo inmediato, luego lo diferido. Así piensa la red." };
     },
     hints: [
-      'setTimeout(() => console.log("listo"), 300);',
+      "Lo que debe salir más tarde va dentro de setTimeout, envuelto en una flecha; lo que sale ya va fuera, en una línea normal.",
       'Y aparte, sin setTimeout: console.log("conectando");',
       'setTimeout(() => console.log("listo"), 300);\nconsole.log("conectando");',
     ],
@@ -91,7 +91,7 @@ export const ACT6: Mission[] = [
     lesson: {
       title: "Promesas y .then",
       body: "Una promesa es un valor que llegará más tarde. Con .then(funcion) dices qué hacer cuando llegue: la función recibe el resultado.",
-      example: 'pedirCafe().then((cafe) => {\n  console.log(`Llegó: ${cafe}`);\n});\nconsole.log("esperando...");',
+      example: "// pedirCafe() tarda y devuelve una promesa\npedirCafe().then((cafe) => {\n  console.log(`Llegó: ${cafe}`);\n});\nconsole.log(\"esperando...\");\n// esperando...\n// Llegó: espresso",
     },
     task: "Llama a `preguntarNodo(\"Bremen\")` y, con `.then`, muestra el texto \"NOMBRE: ACTIVO\", por ejemplo \"Bremen: true\". La respuesta trae `r.nombre` y `r.activo`.",
     starter: "// preguntarNodo ya existe\n",
@@ -153,7 +153,7 @@ export const ACT6: Mission[] = [
       return { pass: true, feedback: "Tymnet y Bremen. Uno tras otro, sin escaleras." };
     },
     hints: [
-      "for (const nombre of nombres) { const r = await preguntarNodo(nombre); ... }",
+      "Recorre nombres con for...of. En cada vuelta pregunta al nodo con await preguntarNodo(nombre) y guarda la respuesta en r.",
       "if (r.activo) abiertos.push(nombre);",
       "async function revisar(nombres) {\n  const abiertos = [];\n  for (const nombre of nombres) {\n    const r = await preguntarNodo(nombre);\n    if (r.activo) abiertos.push(nombre);\n  }\n  return abiertos;\n}",
     ],
@@ -175,7 +175,7 @@ export const ACT6: Mission[] = [
     ],
     lesson: {
       title: "try / catch: atrapar errores",
-      body: "Si algo dentro de try falla (también un await de una promesa rechazada), el programa no se cae: salta al bloque catch, donde decides qué hacer.",
+      body: "Si algo dentro de `try` falla (también un `await` de una promesa rechazada), el programa no se cae: salta al bloque `catch`, donde decides qué hacer. Pon el `await` dentro del `try`: sin await, el error se escapa del catch.",
       example: 'async function seguro() {\n  try {\n    return await pedirCafe();\n  } catch (error) {\n    return "sin cafe";\n  }\n}',
     },
     task: "Escribe la función `async estado(nombre)`: devuelve el `activo` del nodo (`true` o `false`); si `preguntarNodo` falla, devuelve \"sin respuesta\".",
@@ -226,8 +226,8 @@ export const ACT6: Mission[] = [
     ],
     lesson: {
       title: "Promise.all: esperar varias cosas en paralelo",
-      body: "Promise.all(arrayDePromesas) espera a todas a la vez y devuelve un array con todos los resultados. Si cada una tarda lo mismo, el total tarda como una sola, no como la suma.",
-      example: "const [a, b] = await Promise.all([pedirCafe(), pedirTe()]);\n// tarda lo que la más lenta, no la suma",
+      body: "`Promise.all(listaDePromesas)` espera a todas a la vez y devuelve una lista con todos los resultados. Si cada una tarda lo mismo, el total tarda como una sola, no como la suma. `nodos.map(preguntarNodo)` llama a preguntarNodo con cada nombre y te da una lista de promesas: justo lo que Promise.all espera. En esta terminal puedes usar `await` directamente, fuera de una función async: la terminal ya lo prepara por ti.",
+      example: "const respuestas = await Promise.all([pedirCafe(), pedirTe()]);\nconsole.log(respuestas.length); // 2\n// tarda lo que la más lenta, no la suma",
     },
     task: "Pregunta a todos los elementos de la lista `nodos` en paralelo con `Promise.all`. Guarda en `abiertos` cuántos tienen `activo` en `true` y muéstralo. Tienes menos de medio segundo.",
     starter: "// nodos ya existe\nconst respuestas = await Promise.all(/* aquí */);\n",
@@ -253,7 +253,7 @@ export const ACT6: Mission[] = [
       return { pass: true, feedback: "Cinco nodos en un cuarto de segundo. Todas las puertas, a la vista." };
     },
     hints: [
-      "Promise.all(nodos.map(preguntarNodo))",
+      "Primero convierte la lista de nombres en una lista de preguntas con nodos.map(preguntarNodo). Después pásale esa lista a Promise.all.",
       "const abiertos = respuestas.filter((r) => r.activo).length;",
       "const respuestas = await Promise.all(nodos.map(preguntarNodo));\nconst abiertos = respuestas.filter((r) => r.activo).length;\nconsole.log(abiertos);",
     ],

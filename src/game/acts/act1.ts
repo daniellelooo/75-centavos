@@ -25,7 +25,7 @@ export const ACT1: Mission[] = [
     ],
     lesson: {
       title: "Variables: etiquetas para recordar",
-      body: "Una variable es un nombre que apunta a un valor. Se crea con let. Para ver un valor en la pantalla usa console.log(...). Los decimales se escriben con punto.",
+      body: "Una variable es un nombre que apunta a un valor. Se crea con `let`, el nombre, el signo `=` y el valor: `let cafes = 3;`. Ese `=` no significa \"igual\" como en matemáticas: significa \"guarda esto aquí\". Para ver un valor en la pantalla usa `console.log(...)`. Los decimales se escriben con punto, no con coma.",
       example: "let cafes = 3;\nconsole.log(cafes); // 3",
     },
     task: "Crea una variable llamada `facturado` con el valor 2387.50 y muéstrala con `console.log`.",
@@ -136,7 +136,7 @@ export const ACT1: Mission[] = [
       return { pass: true, feedback: "Informe listo. Funciona con cualquier cuenta." };
     },
     hints: [
-      "Las plantillas usan comillas invertidas: ` (al lado del 0 o del Enter según tu teclado).",
+      "Las plantillas se escriben entre comillas invertidas: ` (no es la comilla normal '). En muchos teclados en español es una tecla \"muerta\": púlsala y después la barra espaciadora. También tienes el botón ` arriba del editor.",
       "Dentro de la plantilla, la variable va así: ${cuenta}",
       "let informe = `Cuenta sin dueño: ${cuenta}`;\nconsole.log(informe);",
     ],
@@ -161,7 +161,7 @@ export const ACT1: Mission[] = [
     ],
     lesson: {
       title: "Decisiones: if y else",
-      body: "if ejecuta un bloque solo si la condición es verdadera; else, si es falsa. Para comparar: < menor, > mayor, <= menor o igual, === igual.",
+      body: "`if` ejecuta el bloque entre llaves `{ }` solo si la condición es verdadera; `else`, el otro bloque, si es falsa. Para comparar: `<` menor, `>` mayor, `<=` menor o igual, `===` igual. Ojo: un solo `=` guarda un valor; para preguntar si dos cosas son iguales se usan tres: `===`.",
       example: "if (cafes < 2) {\n  console.log(\"falta cafe\");\n} else {\n  console.log(\"suficiente\");\n}",
     },
     task: "Si `hora` es menor que 6, muestra \"ALERTA\". Si no, muestra \"normal\". Lo probaremos con varias horas.",
@@ -213,7 +213,7 @@ export const ACT1: Mission[] = [
     ],
     lesson: {
       title: "Bucles: repetir sin copiar",
-      body: "for repite un bloque mientras se cumpla una condición. Tiene tres partes: dónde empieza, hasta cuándo sigue y cómo avanza. Con ++ sumas uno a una variable.",
+      body: "`for` repite un bloque. Tiene tres partes separadas por punto y coma: dónde empieza (`let dia = 1`), hasta cuándo sigue (`dia <= 30`) y cómo avanza (`dia++`, que suma uno). La variable del bucle puedes llamarla como quieras: `i`, `dia`... En cada vuelta vale un número distinto. Algunas herramientas ya vienen hechas y responden sí o no: `huboConexion(5)` pregunta por el día 5 y devuelve `true` o `false`. Esa respuesta va directa en un if: `if (huboConexion(dia)) { ... }` solo se ejecuta los días que responde `true`.",
       example: "let total = 0;\nfor (let i = 1; i <= 3; i++) {\n  total++;\n}\nconsole.log(total); // 3",
     },
     task: "Recorre los días del 1 al 30. Cuenta en la variable `noches` en cuántos días `huboConexion(dia)` es `true`. Muestra `noches`.",
@@ -244,7 +244,7 @@ export const ACT1: Mission[] = [
       return { pass: true, feedback: "Doce noches en agosto. Siempre de madrugada." };
     },
     hints: [
-      "for (let dia = 1; dia <= 30; dia++) { ... }",
+      "Usa un for que empiece en el día 1 y llegue hasta el 30 incluido. En cada vuelta, pregunta por ese día con huboConexion(dia).",
       "Dentro del bucle: if (huboConexion(dia)) { noches++; }",
       "let noches = 0;\nfor (let dia = 1; dia <= 30; dia++) {\n  if (huboConexion(dia)) {\n    noches++;\n  }\n}\nconsole.log(noches);",
     ],

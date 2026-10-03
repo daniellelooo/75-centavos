@@ -25,7 +25,7 @@ export const ACT5: Mission[] = [
       body: "Una clase es un molde. Su constructor recibe datos y los guarda en el objeto con this.propiedad = valor. Cada objeto nuevo se crea con new.",
       example: "class Estrella {\n  constructor(nombre, brillo) {\n    this.nombre = nombre;\n    this.brillo = brillo;\n  }\n}\nconst vega = new Estrella(\"Vega\", 0.03);\nconsole.log(vega.nombre); // Vega",
     },
-    task: "Crea la clase `Nodo` con un `constructor(nombre, ciudad)` que guarde ambos en `this`. Después crea `lbl = new Nodo(\"LBL\", \"Berkeley\")` y muestra `lbl.ciudad`.",
+    task: "Crea la clase `Nodo` con un `constructor(nombre, ciudad)` que guarde ambos en `this`. Después crea el nodo con `const lbl = new Nodo(\"LBL\", \"Berkeley\");` y muestra `lbl.ciudad`.",
     starter: "class Nodo {\n  // tu constructor aquí\n}\n\n",
     borrowed: [],
     cases: [{ label: "nodos de la red", globals: () => ({}) }],
@@ -43,7 +43,7 @@ export const ACT5: Mission[] = [
       return { pass: true, feedback: "Un molde para todos. Kessler imprime cuarenta copias." };
     },
     hints: [
-      "constructor(nombre, ciudad) { ... } dentro de la clase",
+      "El constructor es una función especial dentro de la clase que recibe los datos al hacer new. Ahí los guardas en el objeto con this.",
       "Dentro del constructor: this.nombre = nombre; this.ciudad = ciudad;",
       'class Nodo {\n  constructor(nombre, ciudad) {\n    this.nombre = nombre;\n    this.ciudad = ciudad;\n  }\n}\n\nconst lbl = new Nodo("LBL", "Berkeley");\nconsole.log(lbl.ciudad);',
     ],
@@ -79,10 +79,10 @@ export const ACT5: Mission[] = [
       if (nc) return nc;
       if (p === "__nometh") return { pass: false, feedback: "Nodo no tiene el método describir(). Va dentro de la clase, después del constructor." };
       const err = probeErr(o);
-      if (err) return { pass: false, feedback: `describir() falló: ${err}` };
+      if (err) return { pass: false, feedback: /is not defined|Can't find variable/.test(err) ? "Dentro de un método, nombre a secas no existe. Los datos del nodo están en this: usa this.nombre y this.ciudad." : `describir() falló: ${err}` };
       const got = p as unknown[];
       if (got[0] === undefined) return { pass: false, feedback: "describir() no devuelve nada. Falta return." };
-      if (String(got[0]).includes("undefined")) return { pass: false, feedback: `describir() devolvió "${got[0]}": usa this.nombre y this.ciudad, no nombre a secas.` };
+      if (String(got[0]).includes("undefined")) return { pass: false, feedback: `describir() devolvió "${got[0]}": alguna propiedad no existe. Escribe this.nombre y this.ciudad igual que en el constructor.` };
       if (!same(got, ["Datex-P (Bremen)", "LBL (Berkeley)"])) return { pass: false, feedback: `describir() devolvió ${show(got[0])}; debía ser "Datex-P (Bremen)". Ojo al espacio y a los paréntesis.` };
       return { pass: true, feedback: "Cada nodo se presenta solo." };
     },
@@ -133,7 +133,7 @@ export const ACT5: Mission[] = [
       return { pass: true, feedback: "Tres saltos, de Hannover a Berkeley, en un solo objeto." };
     },
     hints: [
-      "agregar(ciudad) { this.saltos.push(ciudad); }",
+      "Cada método trabaja con this.saltos: agregar lo llena con push, total pregunta su length y ultimo lee la última posición.",
       "total() { return this.saltos.length; }  ultimo() { return this.saltos[this.saltos.length - 1]; }",
       "class Ruta {\n  constructor() {\n    this.saltos = [];\n  }\n  agregar(ciudad) {\n    this.saltos.push(ciudad);\n  }\n  total() {\n    return this.saltos.length;\n  }\n  ultimo() {\n    return this.saltos[this.saltos.length - 1];\n  }\n}",
     ],
@@ -155,9 +155,9 @@ export const ACT5: Mission[] = [
     lesson: {
       title: "Herencia: extends y super",
       body: "Una clase puede heredar de otra con extends: recibe todas sus propiedades y métodos, y puede añadir los suyos. En su constructor, super(...) llama al constructor de la clase madre.",
-      example: "class Animal {\n  constructor(nombre) { this.nombre = nombre; }\n}\nclass Gato extends Animal {\n  maullar() { return `${this.nombre}: miau`; }\n}\nconsole.log(new Gato(\"Byte\").maullar()); // Byte: miau",
+      example: "class Animal {\n  constructor(nombre) { this.nombre = nombre; }\n}\nclass Gato extends Animal {\n  constructor(nombre, color) {\n    super(nombre);       // la madre guarda el nombre\n    this.color = color;  // el gato añade lo suyo\n  }\n  maullar() { return `${this.nombre}: miau`; }\n}\nconsole.log(new Gato(\"Byte\", \"gris\").maullar()); // Byte: miau",
     },
-    task: "La clase `Usuario` ya existe en tu código. Crea `Intruso` que extienda `Usuario`: su `constructor(nombre, alias)` llama a `super(nombre)` y guarda `alias`. Añade el método `ficha()` que devuelva \"NOMBRE alias ALIAS\", con el alias en mayúsculas (usa `.toUpperCase()`).",
+    task: "La clase `Usuario` ya está en tu código. Crea `Intruso` que extienda `Usuario`: su `constructor(nombre, alias)` llama a `super(nombre)` y guarda el alias en `this.alias`. Añade el método `ficha()`, que devuelve el nombre tal cual, la palabra alias y el alias en mayúsculas (con `.toUpperCase()`). Por ejemplo, `new Intruso(\"E. Vogel\", \"hunter\").ficha()` devuelve \"E. Vogel alias HUNTER\".",
     starter: "class Usuario {\n  constructor(nombre) {\n    this.nombre = nombre;\n  }\n}\n\n// crea class Intruso extends Usuario aquí\n",
     borrowed: [],
     cases: [{ label: "fichas", globals: () => ({}) }],
@@ -185,7 +185,7 @@ export const ACT5: Mission[] = [
       return { pass: true, feedback: "Ficha lista. La orden de registro sale esta noche." };
     },
     hints: [
-      "class Intruso extends Usuario { constructor(nombre, alias) { super(nombre); ... } }",
+      "Primero la cabecera: class Intruso extends Usuario. Dentro, el constructor recibe nombre y alias, y lo primero que hace es super(nombre).",
       "ficha() { return `${this.nombre} alias ${this.alias.toUpperCase()}`; }",
       "class Usuario {\n  constructor(nombre) {\n    this.nombre = nombre;\n  }\n}\n\nclass Intruso extends Usuario {\n  constructor(nombre, alias) {\n    super(nombre);\n    this.alias = alias;\n  }\n  ficha() {\n    return `${this.nombre} alias ${this.alias.toUpperCase()}`;\n  }\n}",
     ],
@@ -238,7 +238,7 @@ export const ACT5: Mission[] = [
     },
     hints: [
       "constructor(nombres) { this.pendientes = nombres; this.servidos = 0; }",
-      'siguiente() { if (this.pendientes.length === 0) return "FIN"; this.servidos++; return this.pendientes.shift(); }',
+      "En siguiente(), primero pregunta si this.pendientes está vacío (length === 0): entonces devuelve \"FIN\". Si no, suma 1 a this.servidos y devuelve lo que saca shift().",
       'class Senuelos {\n  constructor(nombres) {\n    this.pendientes = nombres;\n    this.servidos = 0;\n  }\n  siguiente() {\n    if (this.pendientes.length === 0) return "FIN";\n    this.servidos++;\n    return this.pendientes.shift();\n  }\n}',
     ],
     debrief: [

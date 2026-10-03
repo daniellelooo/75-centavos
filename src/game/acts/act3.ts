@@ -68,7 +68,7 @@ export const ACT3: Mission[] = [
       return { pass: true, feedback: "Una ficha ordenada. Kessler estaría orgulloso, si supiera estarlo." };
     },
     hints: [
-      "let conexion = { ... };",
+      "Un objeto va entre llaves { }, y cada dato se escribe nombre: valor, separados por comas.",
       'Dentro de las llaves: cuenta: "hunter", hora: 3, minutos: 47',
       'let conexion = { cuenta: "hunter", hora: 3, minutos: 47 };\nconsole.log(conexion.cuenta);',
     ],
@@ -118,7 +118,7 @@ export const ACT3: Mission[] = [
       return { pass: true, feedback: "Tres de siete en la semana. hunter es puntual." };
     },
     hints: [
-      "for (let i = 0; i < registros.length; i++) { ... }",
+      "Recorre registros con un for, como en la misión de las horas. En cada vuelta, registros[i] es una ficha entera: mira su cuenta.",
       'if (registros[i].cuenta === "hunter") { veces++; }',
       'let veces = 0;\nfor (let i = 0; i < registros.length; i++) {\n  if (registros[i].cuenta === "hunter") {\n    veces++;\n  }\n}\nconsole.log(veces);',
     ],
@@ -140,8 +140,8 @@ export const ACT3: Mission[] = [
     ],
     lesson: {
       title: "filter: quedarse con algunos",
-      body: "`filter` recorre la lista por ti, elemento a elemento, y a cada uno le hace una pregunta. Se queda solo con los que responden `true` y los devuelve en una lista nueva; la original no cambia. La pregunta se escribe con una función flecha: `(n) => n > 5` se lee \"para cada n, ¿es n mayor que 5?\". La `n` es el nombre que tú le pones a cada elemento mientras se revisa, como la `i` de un for: puedes llamarla como quieras.",
-      example: 'let numeros = [4, 9, 2, 7];\n// para cada n: ¿es n mayor que 5?\nlet grandes = numeros.filter((n) => n > 5);\nconsole.log(grandes); // [9, 7]',
+      body: "`filter` recorre la lista por ti, elemento a elemento, y a cada uno le hace una pregunta. Se queda solo con los que responden `true` y los devuelve en una lista nueva; la original no cambia. La pregunta se escribe con una función flecha: `(n) => n > 5` se lee \"para cada n, ¿es n mayor que 5?\". La `n` es el nombre que tú le pones a cada elemento mientras se revisa, como la `i` de un for. Verás también `const` en lugar de `let`: crea una variable igual, pero que no vas a volver a cambiar. Si dudas, `let` siempre funciona.",
+      example: 'let numeros = [4, 9, 2, 7];\n// para cada n: ¿es n mayor que 5?\nlet grandes = numeros.filter((n) => n > 5);\nconsole.log(grandes); // [9,7]',
     },
     task: "Crea `deHunter` con `registros.filter(...)`, quedándote solo con los que tienen `cuenta` \"hunter\". Muestra `deHunter.length`.",
     starter: "// registros es una lista; cada registro tiene cuenta, hora, comando y minutos\n",
@@ -186,7 +186,7 @@ export const ACT3: Mission[] = [
     lesson: {
       title: "map: transformar cada elemento",
       body: "`map` también recorre la lista elemento a elemento, pero en vez de preguntar, transforma: cambia cada elemento por lo que devuelva la flecha. La lista nueva tiene el mismo tamaño. `(e) => e.nombre` se lee \"de cada estrella e, quédate con su nombre\". Como `filter` devuelve una lista, puedes ponerle `.map(...)` justo detrás: primero filtras y luego transformas.",
-      example: 'let estrellas = [{ nombre: "Vega", brillo: 0.03 }, { nombre: "Deneb", brillo: 1.25 }];\n// de cada estrella e, su nombre\nlet nombres = estrellas.map((e) => e.nombre);\nconsole.log(nombres); // ["Vega", "Deneb"]',
+      example: 'let estrellas = [{ nombre: "Vega", brillo: 0.03 }, { nombre: "Deneb", brillo: 1.25 }];\n// de cada estrella e, su nombre\nlet nombres = estrellas.map((e) => e.nombre);\nconsole.log(nombres); // ["Vega","Deneb"]',
     },
     task: "Crea `busquedas` con los comandos (la propiedad `comando`) de los registros de hunter: primero `filter`, luego `map`. Muestra `busquedas`.",
     starter: "// registros es una lista; cada registro tiene cuenta, hora, comando y minutos\n",
@@ -235,7 +235,7 @@ export const ACT3: Mission[] = [
     ],
     lesson: {
       title: "for...of y acumuladores",
-      body: "for (const x of lista) recorre los elementos directamente, sin índices. Un acumulador es una variable que empieza en 0 y va sumando: total += x es lo mismo que total = total + x.",
+      body: "`for (const s of sesiones)` recorre los elementos directamente, sin índices: en cada vuelta, `s` es la siguiente sesión. Un acumulador es una variable que empieza en 0 y va sumando: `total += x` es lo mismo que `total = total + x`.",
       example: "let distancias = [4, 8, 3];\nlet total = 0;\nfor (const d of distancias) {\n  total += d;\n}\nconsole.log(total); // 15",
     },
     task: "Suma en la variable `total` los minutos (propiedad `minutos`) de todas las `sesiones` de esta noche, usando `for...of`. Muestra `total`.",
@@ -260,7 +260,7 @@ export const ACT3: Mission[] = [
       return { pass: true, feedback: "97 minutos. Más de hora y media. La línea sigue abierta." };
     },
     hints: [
-      "for (const s of sesiones) { ... }",
+      "for...of te da cada sesión, una por vuelta, sin índices. Llámala s: su duración es s.minutos.",
       "Dentro del bucle: total += s.minutos;",
       "let total = 0;\nfor (const s of sesiones) {\n  total += s.minutos;\n}\nconsole.log(total);",
     ],

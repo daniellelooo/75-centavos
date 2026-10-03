@@ -338,8 +338,8 @@ export const TRAINING: TrainingSet[] = [
         concept: "push",
         lesson: {
           title: "Llenar una lista nueva",
-          body: "Recorre la lista con for y usa push para añadir al final de otra lista solo lo que cumple una condición.",
-          example: "let pares = [];\nfor (let i = 0; i < nums.length; i++) {\n  if (nums[i] % 2 === 0) pares.push(nums[i]);\n}",
+          body: "Recorre la lista con for y usa `push` para añadir al final de otra lista solo lo que cumple una condición. Si el bloque del if tiene una sola línea, puedes escribirlo sin llaves: `if (x > 5) lista.push(x);` Es lo mismo.",
+          example: "let edades = [12, 30, 8, 41];\nlet mayores = [];\nfor (let i = 0; i < edades.length; i++) {\n  if (edades[i] >= 18) {\n    mayores.push(edades[i]);\n  }\n}\nconsole.log(mayores); // [30,41]",
         },
         task: "Crea la lista `aprobadas` con las notas de `notas` mayores o iguales a 6, en el mismo orden, y muéstrala.",
         borrowed: ["notas"],
@@ -382,7 +382,7 @@ export const TRAINING: TrainingSet[] = [
           every(outs, cases, (o, g) => {
             const want = Math.max(...(g.notas as number[]));
             if (o.values.mejor === undefined) return "Falta la variable mejor.";
-            if (o.values.mejor !== want) return `Con ${show(g.notas)} mejor quedó ${show(o.values.mejor)} y debía ser ${want}.${g.notas && (g.notas as number[])[0] === 2 ? " Si empiezas con mejor = 0 funciona aquí, pero empieza mejor con notas[0]." : ""}`;
+            if (o.values.mejor !== want) return `Con ${show(g.notas)} mejor quedó ${show(o.values.mejor)} y debía ser ${want}.${o.values.mejor !== undefined && !(g.notas as number[]).includes(o.values.mejor as number) ? " Ese número no está en la lista: parece que empezaste con un valor escrito a mano. Empieza con let mejor = notas[0]; así sirve para cualquier lista." : ""}`;
             if (!printed(o, String(want))) return "Está bien. Falta console.log(mejor).";
             return null;
           }, "El diez del pequeño Leo. Se lo diré el sábado."),
@@ -465,7 +465,7 @@ export const TRAINING: TrainingSet[] = [
         lesson: {
           title: "Una función que recorre",
           body: "Dentro de una función puede haber variables y bucles. Lo único que sale de ella es lo que devuelve return.",
-          example: "function contar(lista) {\n  let n = 0;\n  for (let i = 0; i < lista.length; i++) n++;\n  return n;\n}",
+          example: "function contarAltas(notas) {\n  let altas = 0;\n  for (let i = 0; i < notas.length; i++) {\n    if (notas[i] > 8) {\n      altas++;\n    }\n  }\n  return altas;\n}\nconsole.log(contarAltas([9, 5, 10])); // 2",
         },
         task: "Escribe la función `gastoTotal(precios)` que sume todos los números de la lista `precios` y devuelva el total.",
         probe: 'typeof gastoTotal !== "function" ? "__nofn" : [gastoTotal([2, 3.5, 4]), gastoTotal([]), gastoTotal([10])]',
@@ -476,7 +476,7 @@ export const TRAINING: TrainingSet[] = [
           if (o.error) return no(`Error: ${o.error.message}`);
           if (p === ("__nofn" as unknown)) return no("No encuentro la función gastoTotal.");
           if (err) return no(`La función dio un error: ${err}`);
-          if (Array.isArray(p) && p[1] === undefined) return no("Con una lista vacía devolvió undefined. ¿El return está fuera del bucle?");
+          if (Array.isArray(p) && p[1] === undefined) return no("Con una lista vacía devolvió undefined: el return quedó dentro del bucle. Ponlo después de la llave que cierra el for.");
           if (!same(p, [9.5, 0, 10])) return no(`Dio ${show(p)} y debía dar [9.5,0,10]. Fíjate en que la suma empiece en 0 y el return vaya después del bucle.`);
           return ok("Nueve dólares y medio. Los precios de 1986, Sam.");
         },
@@ -659,7 +659,7 @@ export const TRAINING: TrainingSet[] = [
         lesson: {
           title: "Transformar cada uno",
           body: "lista.map((x) => ...) devuelve una lista nueva del mismo tamaño con lo que devuelve la flecha para cada elemento.",
-          example: "let precios = [2, 4];\nlet dobles = precios.map((p) => p * 2); // [4, 8]",
+          example: "let precios = [2, 4];\nlet dobles = precios.map((p) => p * 2); // [4,8]",
         },
         task: "Crea la lista `nombres` con el nombre de cada alumno de `alumnos`, usando `map`, y muéstrala.",
         borrowed: ["alumnos"],
@@ -687,7 +687,7 @@ export const TRAINING: TrainingSet[] = [
         lesson: {
           title: "Encadenar",
           body: "El resultado de filter es una lista, así que se le puede aplicar map justo detrás: lista.filter(...).map(...).",
-          example: "let grandes = [3, 8, 10].filter((n) => n > 5).map((n) => n * 10); // [80, 100]",
+          example: "let grandes = [3, 8, 10].filter((n) => n > 5).map((n) => n * 10); // [80,100]",
         },
         task: "Crea la lista `diplomas` con los nombres de los alumnos con nota mayor o igual a 6, encadenando `filter` y `map`. Muéstrala.",
         borrowed: ["alumnos"],
@@ -761,7 +761,7 @@ export const TRAINING: TrainingSet[] = [
         lesson: {
           title: "Una variable que sobrevive",
           body: "Si la función de dentro cambia una variable de la de fuera, ese cambio se conserva entre llamadas. Cada fabricación tiene su propia variable.",
-          example: "function crearPasos() {\n  let n = 0;\n  return () => {\n    n++;\n    return n;\n  };\n}",
+          example: "function crearPasos() {\n  let n = 0;\n  return () => {\n    n++;\n    return n;\n  };\n}\nconst paso = crearPasos();\nconsole.log(paso()); // 1\nconsole.log(paso()); // 2",
         },
         task: "Escribe la función `crearMetronomo(inicio)` que devuelva otra función. Cada vez que se llama, suma 1 a una cuenta que empieza en `inicio` y devuelve la cuenta.",
         probe: 'typeof crearMetronomo !== "function" ? "__nofn" : (() => { const a = crearMetronomo(10); const b = crearMetronomo(0); if (typeof a !== "function") return "__nofnret"; return [a(), a(), b(), a(), b()]; })()',
@@ -875,7 +875,7 @@ export const TRAINING: TrainingSet[] = [
           if (!same(p, ["desafinado", "afinado", "desafinado"])) return no(`Salió ${show(p)} y debía ser ["desafinado","afinado","desafinado"].`);
           return ok("La 440. Perfecto.");
         },
-        hints: ["En el constructor: this.afinado = false;", "afinar() { this.afinado = true; } y estado() con un if o un ternario", 'class Piano {\n  constructor() {\n    this.afinado = false;\n  }\n  afinar() {\n    this.afinado = true;\n  }\n  estado() {\n    if (this.afinado) {\n      return "afinado";\n    }\n    return "desafinado";\n  }\n}'],
+        hints: ["En el constructor: this.afinado = false;", "afinar() solo cambia el dato: this.afinado = true;. Y estado() pregunta con un if: si this.afinado es true, devuelve \"afinado\"; si no, \"desafinado\".", 'class Piano {\n  constructor() {\n    this.afinado = false;\n  }\n  afinar() {\n    this.afinado = true;\n  }\n  estado() {\n    if (this.afinado) {\n      return "afinado";\n    }\n    return "desafinado";\n  }\n}'],
         debrief: "Mi piano lleva desafinado desde 1979. No se lo cuentes a nadie.",
       }),
       ex({
