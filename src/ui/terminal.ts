@@ -211,6 +211,18 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       // Mostrar la salida del primer caso, como lo vería el jugador.
       const first = outs[0];
       for (const l of first.logs.slice(0, 40)) print(`<div class="log">${esc(l)}</div>`);
+      // el ejecutor no arrancó: casi siempre porque se publicó una versión nueva del
+      // juego mientras la pestaña estaba abierta (sus archivos ya no existen)
+      if (crashed?.error?.name === "WorkerError") {
+        print(
+          `<div class="err">LA TERMINAL NO PUDO ARRANCAR</div>` +
+            `<div>No es un fallo de tu código. Hay una versión nueva del juego y esta pestaña es de la anterior. Recarga la página: tu partida y lo que has escrito se guardan.</div>` +
+            `<button class="btn primary reload-btn">RECARGAR AHORA</button>`,
+        );
+        (consoleBox.querySelector(".reload-btn") as HTMLButtonElement).onclick = () => location.reload();
+        fail();
+        return;
+      }
       if (crashed?.error) {
         const fe = translateError(crashed.error.name, crashed.error.message);
         // errores de escritura: JavaScript no da la línea, así que se busca analizando el código

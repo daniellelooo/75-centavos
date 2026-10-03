@@ -23,7 +23,7 @@ export function runMission(missionId: string, code: string): Promise<RunResult> 
     worker.onerror = () => {
       clearTimeout(timer);
       worker.terminate();
-      resolve({ kind: "done", outs: [{ ok: false, logs: [], values: {}, calls: {}, error: { name: "Error", message: "El ejecutor falló" } }] });
+      resolve({ kind: "done", outs: [{ ok: false, logs: [], values: {}, calls: {}, error: { name: "WorkerError", message: "El ejecutor falló" } }] });
     };
     worker.postMessage({ missionId, code });
   });
