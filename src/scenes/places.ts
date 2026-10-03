@@ -344,11 +344,18 @@ const benny: PlaceDef = {
     w.fillStyle(0x2a2140, 1).fillRect(0, 36, ROOM_W, 4);
     w.fillStyle(0x1c1830, 1).fillRect(0, 39, ROOM_W, 1);
     frame(c, undefined, 0x2a2140);
-    // pósteres y la ventana con la persiana bajada
+    // pósteres (naves, ordenadores y anime) y la ventana con la persiana bajada
     c.img("posters", 16, 6, 0).setDepth(3);
-    c.img("posters", 40, 6, 1).setDepth(3);
+    c.img("posters", 40, 6, 3).setDepth(3);
     c.img("window", 120, 2, 1).setDepth(3);
-    c.img("posters", 268, 6, 1).setDepth(3).setFlipX(true);
+    c.img("posters", 162, 6, 2).setDepth(3);
+    c.img("posters", 184, 6, 1).setDepth(3);
+    // dos armarios de servidores en el rincón, con las luces parpadeando
+    for (const [x, d] of [[274, 0], [296, 400]] as const) {
+      const r = c.scene.add.sprite(x, 8, "server_rack", 0).setOrigin(0, 0).setDepth(100 + 50);
+      c.scene.time.delayedCall(d, () => r.play("rack-blink"));
+    }
+    c.solid(274, 40, 44, 10);
     // cama individual sin hacer: cabecera con almohada y la manta
     c.prop("bed", 14, 42);
     c.solid(14, 46, 22, 32);
@@ -360,14 +367,19 @@ const benny: PlaceDef = {
     c.prop("chair", 212, 64);
     c.prop("soda_cans", 254, 60);
     // estantería con manuales, el puf y las cajas de pizza
+    c.prop("kenney", 60, 26, kenney(20, 17));
+    c.prop("kenney", 76, 26, kenney(21, 17));
     c.prop("kenney", 92, 26, kenney(20, 17));
     c.prop("kenney", 108, 26, kenney(21, 17));
-    c.solid(92, 34, 32, 8);
+    c.solid(60, 34, 64, 8);
+    c.prop("book_piles", 126, 30);
+    c.prop("book_piles", 30, 150);
+    c.solid(32, 160, 24, 8);
     c.prop("beanbag", 60, 118);
     c.solid(62, 126, 20, 8);
     c.prop("pizza_boxes", 270, 140);
     c.solid(272, 148, 22, 8);
-    c.prop("trash", 300, 60);
+    c.prop("trash", 300, 100);
   },
   home: [232, 92],
   terminal: { x: 216, y: 74, mark: [213, 30] },
@@ -380,7 +392,21 @@ const benny: PlaceDef = {
       ],
     },
     { id: "pizza", x: 282, y: 156, r: 16, label: "Cajas de pizza", lines: [{ who: "sam", text: "Cinco cajas vacías. Una con una nota: \"no tirar, es arte\"." }] },
-    { id: "manuales", x: 108, y: 48, r: 16, label: "Estantería", lines: [{ who: "sam", text: "El manual de C de Kernighan y Ritchie, tres de UNIX y un cómic de ciencia ficción encima de todo." }] },
+    { id: "manuales", x: 92, y: 48, r: 22, label: "Estanterías", lines: [{ who: "sam", text: "El manual de C de Kernighan y Ritchie, tres de UNIX, uno de LISP y una pila de cómics japoneses encima de todo." }] },
+    {
+      id: "servidores", x: 296, y: 56, r: 18, label: "Servidores",
+      lines: [
+        { who: "sam", text: "¿Tienes dos armarios de servidores en el cuarto?" },
+        { who: "benny", text: "Me los dio la universidad. Bueno, los iban a tirar. Calientan el cuarto gratis." },
+      ],
+    },
+    {
+      id: "posteres", x: 184, y: 46, r: 16, label: "Pósteres",
+      lines: [
+        { who: "sam", text: "Un robot gigante y una chica de ojos enormes. ¿Qué es esto?" },
+        { who: "benny", text: "Anime. De Japón. Me llegan las cintas por correo, subtituladas por un tipo de Ohio.", mood: "alegre" },
+      ],
+    },
   ],
   routine: [
     {

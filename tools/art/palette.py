@@ -70,6 +70,9 @@ PALETTE = {
     # verde de pizarra
     "S": "#2f4a3c",
     "V": "#3d5e4c",
+    # rosa de los pósteres de anime
+    "7": "#f08ab4",
+    "8": "#b4507e",
 }
 
 

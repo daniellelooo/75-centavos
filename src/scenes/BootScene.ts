@@ -34,10 +34,11 @@ export class BootScene extends Phaser.Scene {
     sheet("emotes", "emotes.png", 11, 11);
     sheet("sam_bike", "sam_bike.png", 40, 38);
     sheet("radio_rig", "radio_rig.png", 34, 24);
+    sheet("server_rack", "server_rack.png", 22, 42);
     sheet("posters", "posters.png", 18, 24);
     for (const f of [
       "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
-      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge", "paper_item", "folder_item", "pegboard", "workbench", "qsl_cards", "tire_stack", "pizza_boxes", "beanbag", "soda_cans", "bed",
+      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge", "paper_item", "folder_item", "pegboard", "workbench", "qsl_cards", "tire_stack", "pizza_boxes", "beanbag", "soda_cans", "bed", "book_piles",
     ]) {
       this.load.image(f, A + f + ".png");
     }
@@ -65,6 +66,7 @@ export class BootScene extends Phaser.Scene {
     this.anims.create({ key: "cat-sleep", frames: this.anims.generateFrameNumbers("cat", {}), frameRate: 1.2, repeat: -1 });
     this.anims.create({ key: "cooler-bubble", frames: this.anims.generateFrameNumbers("cooler", {}), frameRate: 6, repeat: 3 });
     this.anims.create({ key: "radio-play", frames: this.anims.generateFrameNumbers("radio", {}), frameRate: 3.5, repeat: -1 });
+    this.anims.create({ key: "rack-blink", frames: this.anims.generateFrameNumbers("server_rack", {}), frameRate: 1.5, repeat: -1 });
     this.anims.create({ key: "radio-rx", frames: this.anims.generateFrameNumbers("radio_rig", {}), frameRate: 2, repeat: -1 });
     this.anims.create({ key: "sam-bike", frames: this.anims.generateFrameNumbers("sam_bike", {}), frameRate: 9, repeat: -1 });
     this.anims.create({ key: "sat-blink", frames: this.anims.generateFrameNumbers("satellite", {}), frameRate: 2, repeat: -1 });

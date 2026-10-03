@@ -139,7 +139,8 @@ def beanbag():
 
 
 def poster(kind):
-    """Pósteres del cuarto de Benny: 0 una nave espacial, 1 un ordenador de los 80."""
+    """Pósteres del cuarto de Benny: 0 una nave espacial, 1 un ordenador de los 80,
+    2 un robot gigante de anime, 3 una chica de anime de ojos enormes."""
     c = Canvas(18, 24)
     c.box(0, 0, 18, 24, "z")
     if kind == 0:
@@ -148,6 +149,32 @@ def poster(kind):
         c.ascii(5, 7, ["...H....", "..HwH...", ".HwuwH..", "HHwwwHH.", "..y.y..."])
         c.rect(2, 19, 14, 3, "y")
         c.hline(4, 20, 10, "a")
+    elif kind == 2:
+        # cabeza de robot gigante: casco blanco, antena en V amarilla y visor verde
+        c.rect(1, 1, 16, 22, "v")
+        c.ascii(2, 2, ["y............y", ".y..........y.", "..yy......yy..", "....yy..yy....", "......yy......"])
+        c.box(4, 7, 10, 9, "W")
+        c.rect(5, 8, 8, 2, "u")
+        c.rect(6, 10, 6, 2, "k")
+        c.ascii(6, 10, ["NN..NN"])
+        c.rect(7, 13, 4, 2, "r")
+        c.ascii(5, 14, ["h......h"])
+        c.rect(1, 18, 16, 5, "r")
+        c.ascii(3, 19, ["W.WW.W.WWW.W", "WW.W.WW.W.WW"])
+    elif kind == 3:
+        # chica de anime: flequillo rosa, ojos enormes y letras japonesas de mentira
+        c.rect(1, 1, 16, 22, "U")
+        c.ascii(14, 2, ["k", "k", ".", "k", "k", "k", ".", "k"])
+        c.rect(3, 4, 10, 12, "7")
+        c.rect(4, 8, 8, 8, "P")
+        c.ascii(3, 7, ["7778777877", "77.7..7.77"])
+        c.ascii(4, 10, ["kkW..kkW", "kuu..kuu", "kuu..kuu"])
+        c.ascii(7, 14, ["rr"])
+        c.ascii(4, 13, ["R......R"])
+        c.rect(2, 14, 2, 6, "7")
+        c.rect(12, 14, 2, 6, "8")
+        c.rect(4, 16, 8, 6, "r")
+        c.ascii(6, 16, ["WWWW"])
     else:
         c.box(3, 4, 12, 9, "H")
         c.rect(5, 6, 8, 5, "u")
@@ -188,6 +215,36 @@ def bed():
     return c
 
 
+def server_rack(frame):
+    """Armario de servidores con las luces parpadeando (dos cuadros)."""
+    c = Canvas(22, 42)
+    c.box(0, 0, 22, 42, "K")
+    c.rect(1, 1, 20, 2, "s")
+    for i in range(6):
+        y = 4 + i * 6
+        c.box(2, y, 18, 5, "g")
+        c.hline(3, y + 1, 16, "G")
+        for j in range(4):
+            on = (i * 3 + j + frame) % 3 != 0
+            c.put(4 + j * 2, y + 3, ("n" if (i + j) % 4 else "A") if on else "s")
+        c.ascii(13, y + 2, ["hhhhh", "s.s.s"])
+    c.rect(2, 40, 18, 1, "s")
+    return c
+
+
+def book_piles():
+    """Pilas de libros y manuales en el suelo."""
+    c = Canvas(26, 18)
+    piles = [(0, ["u", "r", "y", "n", "U"]), (9, ["n", "A", "u"]), (16, ["r", "W", "u", "y", "A", "n"])]
+    for x, cols in piles:
+        for i, col in enumerate(cols):
+            y = 15 - i * 3
+            dx = (i % 2)
+            c.box(x + dx, y, 9, 3, col)
+            c.hline(x + dx + 1, y + 1, 2, "x")
+    return c
+
+
 def main():
     save("radio_rig", strip([radio_rig(0), radio_rig(1)]))
     save("pegboard", pegboard())
@@ -196,7 +253,9 @@ def main():
     save("tire_stack", tire_stack())
     save("pizza_boxes", pizza_boxes())
     save("beanbag", beanbag())
-    save("posters", strip([poster(0), poster(1)]))
+    save("posters", strip([poster(0), poster(1), poster(2), poster(3)]))
+    save("server_rack", strip([server_rack(0), server_rack(1)]))
+    save("book_piles", book_piles())
     save("soda_cans", soda_cans())
     save("bed", bed())
     print("ok mentores")

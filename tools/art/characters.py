@@ -42,6 +42,15 @@ CHARS = {
         "w": "#f4f4ec", "v": "#c8c8be", "r": "#c83a3a", "R": "#ee6a6a", "J": "#6e4c2c",
         "p": "#5c5c66", "P": "#45454f", "b": "#1c1830", "B": "#3e3a5c",
     },
+    # Benny: programador grande y desganado. Pelo castaño revuelto, gafas grandes,
+    # barba de tres días, camiseta verde que le queda justa en la barriga, vaqueros.
+    "benny": {
+        "s": "#f2c79a", "S": "#d9a273", "c": "#c99a74",
+        "H": "#7a5636", "h": "#523620", "d": "#2e1c12",
+        "g": "#3e3a5c", "L": "#cfeeff",
+        "t": "#4f7a46", "T": "#3a5c34", "l": "#689a5c", "y": "#fed018",
+        "p": "#3a4a6e", "P": "#2c3858", "b": "#3a2818", "B": "#5c4030",
+    },
 }
 
 # Cada vista: 13 filas de cabeza + 6 de cuerpo (las piernas van aparte).
@@ -241,6 +250,119 @@ VIEWS = {
             "....kkPppPkk....",
         ],
     },
+    "benny": {
+        "down": [
+            "................",
+            "....kkkkkkkk....",
+            "...kHHhHHhhhk...",
+            "..khHHhHhhhhdk..",
+            "..khdhhhhdhhdk..",
+            "..kdhsshhsshdk..",
+            "..kssssssssssk..",
+            "..kggggssggggk..",
+            "..kgLegssgLegk..",
+            ".kSsggsSSsggsSk.",
+            ".kSssssssssssSk.",
+            ".kSssssrrssssSk.",
+            ".kScsccsscccsSk.",
+            "..kkSSSSSSSSkk..",
+            ".kTttttttttttTk.",
+            "kTttttllllttttTk",
+            "kTtttllyyllttTTk",
+            "ksTtttllllttTTsk",
+            "kssTttttttttTssk",
+        ],
+        "up": [
+            "................",
+            "....kkkkkkkk....",
+            "...kHHhHHhhhk...",
+            "..khHHhHhhhhdk..",
+            "..khhhhhdhhhdk..",
+            "..khhdhhhhhhdk..",
+            "..khhhhhhdhhdk..",
+            "..kghhdhhhhhgk..",
+            "..kshhhhhhhdsk..",
+            ".kSsshhdhhhssSk.",
+            ".kSssshhhhsssSk.",
+            ".kSssssssssssSk.",
+            ".kSSssssssssSSk.",
+            "..kkSSSSSSSSkk..",
+            ".kTttttttttttTk.",
+            "kTttttttttttttTk",
+            "kTtttttttttttTTk",
+            "ksTttttttttttTsk",
+            "kssTttttttttTssk",
+        ],
+        "left": [
+            "................",
+            ".....kkkkkk.....",
+            "....kHHhHhhkk...",
+            "...khHhhhhhhhk..",
+            "..khhhhhdhhhhhk.",
+            "..kdhshhhhdhhhk.",
+            ".kssssshhhhdhhk.",
+            "kgggsssShhhhhk..",
+            "kLegssssShdhhk..",
+            "kgggsssssShhhk..",
+            ".kssssssSShhk...",
+            ".krrsssSSShhk...",
+            ".kcscsSSSSkk....",
+            "..kkSSSSSk......",
+            "..kkTtttTTk.....",
+            ".ktttlttTTTk....",
+            "ktllllttTTTk....",
+            "ktlllltTTTTk....",
+            "ktTlltTTsSTk....",
+        ],
+    },
+}
+
+BENNY_LEGS_FRONT = {
+    "stand": [
+        ".kkTTTTTTTTTTkk.",
+        "...kpppPPpppk...",
+        "...kppPkkPppk...",
+        "...kBbbkkbbBk...",
+        "...kkkk..kkkk...",
+    ],
+    "a": [
+        ".kkTTTTTTTTTTkk.",
+        "...kpppPPpppk...",
+        "...kppPkkbbBk...",
+        "...kBbbk.kkkk...",
+        "...kkkk.........",
+    ],
+    "b": [
+        ".kkTTTTTTTTTTkk.",
+        "...kpppPPpppk...",
+        "...kbbBkkPppk...",
+        "...kkkk.kBbbk...",
+        ".........kkkk...",
+    ],
+}
+
+BENNY_LEGS_SIDE = {
+    "stand": [
+        ".kkTTTTTTTk.....",
+        "...kppppPk......",
+        "...kpPpppk......",
+        "..kBbbbbbk......",
+        "..kkkkkkkk......",
+    ],
+    "a": [
+        ".kkTTTTTTTk.....",
+        "..kppkkPPk......",
+        ".kppk..kPPk.....",
+        "kBbbk...kbbk....",
+        "kkkk.....kkk....",
+    ],
+    "b": [
+        ".kkTTTTTTTk.....",
+        "..kPPkkppk......",
+        ".kPPk..kppk.....",
+        "kbbbk...kBbk....",
+        "kkkk.....kkk....",
+    ],
 }
 
 LEGS_FRONT = {
@@ -370,7 +492,10 @@ def frame_raw(name, view, step):
     rows = VIEWS[name][view]
     if name in ("sam", "ruth"):
         rows = autoshade(rows, "strands" if name == "sam" else "curls")
-    rows = rows + (LEGS_SIDE if view == "left" else LEGS_FRONT)[step]
+    if name == "benny":
+        rows = rows + (BENNY_LEGS_SIDE if view == "left" else BENNY_LEGS_FRONT)[step]
+    else:
+        rows = rows + (LEGS_SIDE if view == "left" else LEGS_FRONT)[step]
     assert len(rows) == 24, (name, view, len(rows))
     im = Image.new("RGBA", (16, 24), (0, 0, 0, 0))
     for y, row in enumerate(rows):
@@ -394,6 +519,11 @@ FACE_EDITS = {
         "sorpresa": [(11, 7, "k"), (11, 8, "k"), (7, 4, "k"), (7, 5, "k"), (7, 10, "k"), (7, 11, "k")],
         "serio": [(11, 7, "S"), (11, 8, "S"), (8, 4, "k"), (8, 5, "k"), (8, 10, "k"), (8, 11, "k")],
         "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (9, 4, "k"), (9, 5, "k"), (9, 10, "k"), (9, 11, "k"), (10, 5, "s"), (10, 10, "s")],
+    },
+    "benny": {
+        "sorpresa": [(11, 7, "k"), (11, 8, "k"), (12, 7, "k"), (12, 8, "k")],
+        "serio": [(11, 7, "k"), (11, 8, "k"), (11, 6, "k"), (11, 9, "k"), (6, 3, "d"), (6, 4, "d"), (6, 11, "d"), (6, 12, "d")],
+        "alegre": [(11, 6, "r"), (11, 7, "W"), (11, 8, "W"), (11, 9, "r"), (10, 3, "R"), (10, 12, "R")],
     },
     "kessler": {
         "sorpresa": [(11, 7, "k"), (11, 8, "k"), (7, 3, "s"), (7, 4, "s"), (7, 11, "s"), (7, 12, "s"), (6, 4, "d"), (6, 5, "d"), (6, 10, "d"), (6, 11, "d")],
@@ -440,7 +570,7 @@ def build_portraits():
 # izquierda (por eso al principio Sam "caminaba al revés").
 
 PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source", "piano_characters.png")
-PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 6, "gus": 3, "benny": 12}
+PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 6, "gus": 3}
 PACK_ROWS = [0, 3, 2, 1]  # abajo, izquierda, arriba, derecha
 
 PACK_SRC = {
