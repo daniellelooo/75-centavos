@@ -9,6 +9,8 @@ const NAMES: Record<Speaker, string> = {
   ruth: "RUTH",
   kessler: "DR. KESSLER",
   margarita: "MARGARITA",
+  gus: "GUS",
+  benny: "BENNY",
   narrador: "",
   sistema: "TERMINAL",
 };
@@ -23,7 +25,7 @@ export function portraitStyle(who: Speaker, mood: Mood = "normal"): string | nul
   const s = 2; // escala del retrato en píxeles de arte
   const col = Math.max(0, MOODS.indexOf(mood));
   return [
-    `background-size: calc(${64 * s} * var(--u)) calc(${80 * s} * var(--u))`,
+    `background-size: calc(${64 * s} * var(--u)) calc(${20 * Object.keys(CHAR).length * s} * var(--u))`,
     `background-position: calc(${4 - col * 16 * s} * var(--u)) calc(${-(CHAR[who as keyof typeof CHAR] * 20 * s)} * var(--u))`,
   ].join(";");
 }

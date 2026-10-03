@@ -14,6 +14,8 @@ import { runMission } from "../game/runner";
 import { translateError, typoHint, nameHint, missingNameHint, TIMEOUT_ERROR } from "../game/errors";
 import { caseReports, hardcodeHint } from "../game/report";
 import { locateSyntax } from "../game/syntax";
+import { setOfExercise } from "../game/training";
+import { MENTORS } from "../game/mentors";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
@@ -50,7 +52,7 @@ const errorLineField = StateField.define<DecorationSet>({
 /** Abre la terminal. Resuelve true si se resolvió. En modo repaso no toca el progreso. */
 export function openTerminal(mission: Mission, opts: { practice?: boolean; training?: { vocabAt: number } } = {}): Promise<boolean> {
   const training = opts.training;
-  // los ejercicios de Margarita se comportan como un repaso: no tocan la historia
+  // los ejercicios de los mentores se comportan como un repaso: no tocan la historia
   const practice = !!opts.practice || !!training;
   const free = mission.id === "libre";
   const draftKey = training ? `t:${mission.id}` : practice ? `p:${mission.id}` : mission.id;
@@ -66,7 +68,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
     bindPeeks(left);
     const hintsShown = practice ? 0 : (save.hintsUsed[mission.id] ?? 0);
     left.innerHTML = `
-      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${free ? "" : training ? "CASA DE MARGARITA · " : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
+      <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${free ? "" : training ? `${placeTag(mission.id)} · ` : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
       <div class="scroll">
         <h3>${esc(mission.lesson.title)}</h3>
         <p>${taskHtml(mission.lesson.body)}</p>
@@ -374,4 +376,10 @@ function normalize(code: string): string {
     .replace(/(["'`])(?:\\.|(?!\1).)*\1/g, "S")
     .replace(/\b\d+(\.\d+)?\b/g, "0")
     .replace(/[\s;]+/g, "");
+}
+
+/** Etiqueta del lugar donde se hace un ejercicio de práctica: "GARAJE DE GUS". */
+function placeTag(id: string): string {
+  const set = setOfExercise(id);
+  return set ? MENTORS[set.mentor].card[0].toUpperCase() : "PRÁCTICA";
 }

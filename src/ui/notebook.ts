@@ -10,6 +10,7 @@ import { el, esc, ui } from "./dom";
 import { badgeHtml, storiesHtml } from "./badge";
 import { exampleHtml, bindPeeks, taskHtml } from "./example";
 import { FREE } from "../game/free";
+import { MENTORS } from "../game/mentors";
 
 const DAY = 24 * 60 * 60 * 1000;
 let openNow = false;
@@ -22,11 +23,11 @@ function needsReview(m: Mission): boolean {
 }
 
 interface NotebookHooks {
-  /** Abre la terminal en modo repaso; con training, como ejercicio de Margarita. */
+  /** Abre la terminal en modo repaso; con training, como ejercicio de un mentor. */
   practice: (m: Mission, training?: { vocabAt: number }) => Promise<void>;
 }
 
-/** Sesiones de Margarita ya terminadas: se pueden repetir desde el cuaderno. */
+/** Sesiones de práctica ya terminadas: se pueden repetir desde el cuaderno. */
 const finishedSets = () => TRAINING.filter((t) => (save.training[t.id] ?? 0) >= t.exercises.length);
 
 export function openNotebook(hooks: NotebookHooks): Promise<void> {
@@ -45,7 +46,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
 
     const learned = (i: number) => i < save.done;
     let selected = Math.max(0, Math.min(save.done - 1, MISSIONS.length - 1));
-    /** Sesión de Margarita elegida (si no, se muestra la misión selected). */
+    /** Sesión de práctica elegida (si no, se muestra la misión selected). */
     let selectedSet: TrainingSet | null = null;
 
     const renderMap = () => {
@@ -69,7 +70,7 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
         if (sets.length) {
           html += `<ol class="nb-line nb-side">`;
           for (const t of sets)
-            html += `<li class="nb-stop done side ${selectedSet === t ? "sel" : ""}" data-set="${t.id}"><span class="nb-node"></span><span class="nb-name">Con Margarita · ${esc(t.title)}</span></li>`;
+            html += `<li class="nb-stop done side ${selectedSet === t ? "sel" : ""}" data-set="${t.id}"><span class="nb-node"></span><span class="nb-name">Con ${MENTORS[t.mentor].name} · ${esc(t.title)}</span></li>`;
           html += `</ol>`;
         }
         html += `</div>`;
@@ -158,13 +159,13 @@ export function openNotebook(hooks: NotebookHooks): Promise<void> {
       };
     };
 
-    /** Página de una sesión de Margarita: sus tres ejercicios para volver a hacerlos. */
+    /** Página de una sesión de práctica: sus tres ejercicios para volver a hacerlos. */
     const renderSet = (t: TrainingSet) => {
       const vocabAt = Math.max(0, MISSIONS.findIndex((m) => m.id === t.before) - 1);
       right.innerHTML = `
-        <div class="nb-tag">ACTO ${t.exercises[0].act} · CASA DE MARGARITA</div>
+        <div class="nb-tag">ACTO ${t.exercises[0].act} · ${esc(MENTORS[t.mentor].card[0].toUpperCase())}</div>
         <h3>${esc(t.title)}</h3>
-        <p>Los ejercicios que te puso Margarita. Repetirlos es la mejor forma de que no se olviden.</p>
+        <p>Los ejercicios que te puso ${MENTORS[t.mentor].name}. Repetirlos es la mejor forma de que no se olviden.</p>
         ${t.exercises
           .map(
             (ex, k) => `<div class="nb-ex">

@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { CHEAT } from "../game/cheats";
 import { TRAINING } from "../game/training";
+import { MENTORS } from "../game/mentors";
 import { rankOf } from "../game/rank";
 import { VIEW_H, VIEW_W } from "../config";
 import { save, writeSave } from "../game/state";
@@ -415,7 +416,7 @@ export class NetScene extends Phaser.Scene {
         .join("")}</div>
       ${(() => {
         const sets = TRAINING.filter((t) => t.exercises[0].act === this.act && (save.training[t.id] ?? 0) >= t.exercises.length);
-        return sets.length ? `<p class="with-marga">Con Margarita: ${sets.map((t) => esc(t.title)).join(" · ")} · ${sets.length * 3} ejercicios de práctica</p>` : "";
+        return sets.length ? `<p class="with-marga">Práctica: ${sets.map((t) => `${esc(MENTORS[t.mentor].name)}, ${esc(t.title)}`).join(" · ")} · ${sets.length * 3} ejercicios</p>` : "";
       })()}
       <table class="stats">${acts.map((m) => {
         const a = save.attempts[m.id] ?? 1;
