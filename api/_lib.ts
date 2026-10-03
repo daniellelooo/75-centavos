@@ -8,7 +8,7 @@ export const sql = neon(process.env.DATABASE_URL!);
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY! });
 
 /** Juegos que existen: no se guarda nada con otro nombre. */
-export const JUEGOS = ["75-centavos"];
+export const JUEGOS = ["75-centavos", "retos"];
 
 export async function userIdOf(req: VercelRequest): Promise<string | null> {
   const h = req.headers.authorization ?? "";

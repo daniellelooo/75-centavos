@@ -2,6 +2,7 @@
 // con lo que puedes cambiar (alias, nombre, si es público) y el enlace para compartirlo.
 import { api, getClerk, type Perfil } from "../shared/auth";
 import { RANKS, STORIES } from "../game/ranks-data";
+import { RETOS } from "../retos/data";
 
 interface Juego { juego: string; misiones: number; terminado: boolean; rango: string; tiempo_ms: number }
 interface Publico { alias: string; nombre: string; desde: string; juegos: Juego[] }
@@ -32,13 +33,23 @@ function card(p: Publico): string {
       <span>${Math.min(j.misiones, t.misiones)} de ${t.misiones} misiones · ${horas(Number(j.tiempo_ms))} jugadas</span>
     </div>`;
   }).join("");
+  const r = p.juegos.find((x) => x.juego === "retos");
+  const retos = r
+    ? `<div class="pg ${r.terminado ? "done" : ""}">
+      <div class="level">RETOS${r.terminado ? " · TODOS RESUELTOS" : ""}</div>
+      <b>Retos de programación</b>
+      <span class="rank">${esc(r.rango || "Empezando")}</span>
+      <div class="bar-prog"><i style="width:${Math.round((Math.min(r.misiones, RETOS.length) / RETOS.length) * 100)}%"></i></div>
+      <span>${Math.min(r.misiones, RETOS.length)} de ${RETOS.length} retos resueltos</span>
+    </div>`
+    : `<div class="pg"><div class="level">RETOS</div><b>Retos de programación</b><span><a href="/retos/">Sin empezar</a></span></div>`;
   const desde = new Date(p.desde).toLocaleDateString("es", { month: "long", year: "numeric" });
   return `
     <div class="pc-head">
       <h1>${esc(p.nombre || p.alias)}</h1>
       <span>@${esc(p.alias)} · jugando desde ${esc(desde)}</span>
     </div>
-    <div class="pc-games">${juegos}</div>`;
+    <div class="pc-games">${juegos}${retos}</div>`;
 }
 
 async function showPublic(alias: string): Promise<void> {
