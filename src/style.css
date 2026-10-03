@@ -197,7 +197,7 @@ html, body {
   position: absolute;
   inset: calc(8 * var(--u));
   display: grid;
-  grid-template-columns: 38% 1fr;
+  grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
   gap: calc(6 * var(--u));
   padding: calc(8 * var(--u));
   background:
@@ -239,6 +239,7 @@ html, body {
   position: relative;
   z-index: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: calc(4 * var(--u));
@@ -841,3 +842,8 @@ html, body {
 .term .case .in { color: #c9d3ea; opacity: 0.85; }
 .term .case .out { color: #c9d3ea; margin-left: calc(6 * var(--u)); }
 .term .case code.v, .term .hint code.v, .term .console code.v { font-family: var(--font-crt); color: #fed018; }
+.term pre.spot { margin: calc(2 * var(--u)) 0; padding: calc(2 * var(--u)) calc(3 * var(--u)); background: rgba(0, 0, 0, 0.35); color: #fff4c9; font-family: var(--font-crt); white-space: pre; overflow-x: auto; }
+.term pre.spot .ln { color: #8a4a1a; }
+/* la consola parte las líneas largas en vez de ensanchar la terminal */
+.term .console { overflow-wrap: anywhere; min-width: 0; }
+.term .console .log { white-space: pre-wrap; }

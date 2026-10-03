@@ -13,6 +13,7 @@ import type { Mission } from "../game/missions";
 import { runMission } from "../game/runner";
 import { translateError, typoHint, nameHint, TIMEOUT_ERROR } from "../game/errors";
 import { caseReports, hardcodeHint } from "../game/report";
+import { locateSyntax } from "../game/syntax";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
@@ -136,6 +137,8 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       parent: wrap,
       extensions: [
         basicSetup,
+        // las líneas largas siguen debajo en vez de empujar la terminal hacia un lado
+        EditorView.lineWrapping,
         javascript(),
         javascriptLanguage.data.of({ autocomplete: vocabFor(training ? training.vocabAt : free ? Math.max(0, save.done - 1) : MISSIONS.indexOf(mission)) }),
         Prec.highest(keymap.of([{ key: "Tab", run: acceptCompletion }])),
@@ -208,9 +211,20 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       for (const l of first.logs.slice(0, 40)) print(`<div class="log">${esc(l)}</div>`);
       if (crashed?.error) {
         const fe = translateError(crashed.error.name, crashed.error.message);
-        const where = crashed.error.line ? ` (línea ${crashed.error.line})` : "";
-        print(`<div class="err">ERROR${where}: ${esc(fe.title)}</div><div>${esc(fe.hint)}</div><div class="muted">${esc(fe.raw)}</div>`);
-        if (crashed.error.line) view.dispatch({ effects: setErrorLine.of(crashed.error.line) });
+        // errores de escritura: JavaScript no da la línea, así que se busca analizando el código
+        const spot = crashed.error.name === "SyntaxError" || !crashed.error.line ? locateSyntax(code) : null;
+        const line = spot?.line ?? crashed.error.line;
+        const where = line ? ` (línea ${line}${spot ? `, columna ${spot.column}` : ""})` : "";
+        print(`<div class="err">ERROR${where}: ${esc(fe.title)}</div>`);
+        if (spot) {
+          const n = String(spot.line);
+          print(
+            `<pre class="spot"><span class="ln">${n} |</span> ${esc(spot.text)}\n${" ".repeat(n.length + 2)} ${" ".repeat(Math.max(0, spot.column - 1))}^</pre>` +
+              `<div>${esc(spot.why)}</div>`,
+          );
+        } else print(`<div>${esc(fe.hint)}</div>`);
+        print(`<div class="muted">${esc(fe.raw)}</div>`);
+        if (line) view.dispatch({ effects: setErrorLine.of(line) });
         typoTip(code);
         fail();
         return;

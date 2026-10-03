@@ -159,3 +159,28 @@ describe("informe de pruebas", () => {
     for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) expect(hardcodeHint(m.hints[m.hints.length - 1], m), m.id).toBeNull();
   });
 });
+
+describe("errores de escritura con su línea", () => {
+  it("encuentra la línea y explica la causa", async () => {
+    const { locateSyntax } = await import("../src/game/syntax");
+    const a = locateSyntax("let total = 0;\nfor (let i = 1; i <= dias; i++ {\n  total = total + i;\n}\nconsole.log(total);")!;
+    expect(a.line).toBe(2);
+    expect(a.why).toMatch(/paréntesis/);
+    const b = locateSyntax("if (x > 3) {\n  console.log(1);\n}}\n")!;
+    expect(b.line).toBe(3);
+    expect(b.why).toMatch(/sobra una llave/);
+    const c = locateSyntax('let nombre = "Ruth;\nconsole.log(nombre);')!;
+    expect(c.line).toBe(1);
+    expect(c.why).toMatch(/comilla|texto/);
+    const d = locateSyntax("function f() {\n  return 1;\n")!;
+    expect(d.line).toBe(1);
+    expect(d.why).toMatch(/nunca lo cerraste/);
+    const e = locateSyntax("if x > 3 {\n}")!;
+    expect(e.why).toMatch(/paréntesis/);
+    expect(locateSyntax("let x = 1;\nconsole.log(x);")).toBeNull();
+  });
+  it("ninguna solución de referencia da error de escritura", async () => {
+    const { locateSyntax } = await import("../src/game/syntax");
+    for (const m of [...MISSIONS, ...TRAINING_EXERCISES]) expect(locateSyntax(m.hints[m.hints.length - 1]), m.id).toBeNull();
+  });
+});
