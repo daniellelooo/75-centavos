@@ -142,5 +142,8 @@ export function missingNameHint(missing: string, code: string, known: string[]):
   if (param)
     return `"${missing}" es el parámetro de la función \`${param.fn}\`: solo existe dentro de sus llaves.${near ? ` Aquí fuera, ¿quisiste decir \`${near}\`?` : ""}`;
   if (near) return `¿Quisiste decir \`${near}\`? Es el nombre más parecido que existe.`;
+  // una palabra suelta que no existe suele ser un texto al que le faltan las comillas
+  const asArgument = new RegExp(`[(,]\\s*${missing}\\s*[,)]`).test(code);
+  if (asArgument && /^[a-záéíóúñ]+$/i.test(missing)) return `Si "${missing}" es un texto, va entre comillas: "${missing}". Sin comillas, JavaScript busca una variable con ese nombre y no la encuentra.`;
   return null;
 }

@@ -196,3 +196,17 @@ describe("nombres que no existen", () => {
     expect(missingNameHint("xyz", "let a = 1;", [])).toBeNull();
   });
 });
+
+describe("textos sin cerrar y palabras sin comillas", () => {
+  it("señala la comilla invertida sin cerrar en su línea, no la llave", async () => {
+    const { locateSyntax } = await import("../src/game/syntax");
+    const s = locateSyntax("function etiqueta(fruta, anio) {\n  return `Mermelada de ${fruta} (${anio}) ;\n}\n\nconsole.log(etiqueta(manzana, 2005));")!;
+    expect(s.line).toBe(2);
+    expect(s.why).toMatch(/comilla invertida/);
+  });
+  it("sugiere comillas solo cuando la palabra va como dato en una llamada", async () => {
+    const { missingNameHint } = await import("../src/game/errors");
+    expect(missingNameHint("manzana", "console.log(etiqueta(manzana, 2005));", [])).toMatch(/"manzana"/);
+    expect(missingNameHint("contador", "contador = contador + 1;", [])).toBeNull();
+  });
+});

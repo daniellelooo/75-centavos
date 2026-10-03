@@ -17,7 +17,7 @@ const NAMES: Record<string, string> = { "(": "un paréntesis (", "{": "una llave
 
 /** Recorre el código saltando textos y comentarios, y devuelve el primer símbolo
  *  que no cuadra: uno que se cerró sin abrirse, o uno que se abrió y nunca se cerró. */
-function brackets(code: string): { kind: "extra" | "unclosed" | "mismatch"; ch: string; want?: string; pos: number } | null {
+function brackets(code: string): { kind: "extra" | "unclosed" | "mismatch" | "string"; ch: string; want?: string; pos: number } | null {
   const stack: { ch: string; pos: number }[] = [];
   for (let i = 0; i < code.length; i++) {
     const c = code[i];
@@ -31,12 +31,15 @@ function brackets(code: string): { kind: "extra" | "unclosed" | "mismatch"; ch: 
       continue;
     }
     if (c === '"' || c === "'" || c === "`") {
+      const start = i;
       i++;
       while (i < code.length && code[i] !== c) {
         if (code[i] === "\\") i++;
-        if (c !== "`" && code[i] === "\n") break;
+        // un texto con comillas normales no puede saltar de línea: si llega al final, está sin cerrar
+        if (c !== "`" && code[i] === "\n") return { kind: "string", ch: c, pos: start };
         i++;
       }
+      if (i >= code.length) return { kind: "string", ch: c, pos: start };
       continue;
     }
     if (c in PAIRS) stack.push({ ch: c, pos: i });
@@ -83,7 +86,14 @@ export function locateSyntax(code: string): SyntaxSpot | null {
 
     const b = brackets(code);
     const q = openQuote(lines[line - 1] ?? "");
-    if (q) {
+    if (b?.kind === "string") {
+      // un texto sin cerrar se "come" todo lo que viene después: se señala donde empieza
+      ({ line, column } = lineCol(code, b.pos));
+      why =
+        b.ch === "`"
+          ? "Aquí abres un texto con la comilla invertida ` y no lo cierras. Falta otra ` al final del texto, antes del ;"
+          : `Aquí abres un texto con ${b.ch} y no lo cierras en la misma línea. Falta otra ${b.ch} al final del texto.`;
+    } else if (q) {
       why = `Esta línea abre un texto con ${q} y no lo cierra. Los textos empiezan y terminan con la misma comilla.`;
     } else if (b?.kind === "extra") {
       ({ line, column } = lineCol(code, b.pos));
