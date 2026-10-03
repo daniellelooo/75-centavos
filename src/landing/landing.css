@@ -180,3 +180,27 @@ footer p { margin: 4px 0; }
 .pc-share { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 15px; color: var(--muted); }
 .pc-share code { font-family: var(--crt); font-size: 18px; color: var(--cream); background: #0b0f1e; padding: 4px 8px; word-break: break-all; }
 .pc-share .copy { font: 600 15px var(--ui); background: none; color: var(--cream); border: 2px solid var(--cream); padding: 4px 10px; cursor: pointer; }
+
+/* aviso de los retos en la landing: los tres mentores en fila */
+.retos-teaser { display: flex; gap: clamp(18px, 3vw, 40px); align-items: center; padding: 32px 0 48px; border-top: 2px dashed #2b3456; }
+.retos-teaser p { margin: 0 0 12px; max-width: 640px; }
+.retos-teaser code { font-family: var(--crt); font-size: 1.12em; color: var(--amber); background: #141b33; padding: 0 4px; }
+.retos-teaser .meta { color: var(--muted); font-size: 16px; }
+.rt-faces { display: flex; gap: 10px; flex: none; }
+.rt-faces .r-face {
+  --s: 4;
+  width: calc(16px * var(--s));
+  height: calc(20px * var(--s));
+  background: #2b3a63 url(/assets/portraits.png) no-repeat;
+  background-size: calc(64px * var(--s)) calc(120px * var(--s));
+  background-position: calc(var(--col) * -16px * var(--s)) calc(var(--fila) * -20px * var(--s));
+  image-rendering: pixelated;
+  border: 3px solid #000;
+  box-shadow: 0 0 0 3px #3a3f52;
+}
+@media (max-width: 860px) {
+  .retos-teaser { flex-direction: column; align-items: flex-start; }
+}
+
+/* los anclajes no quedan debajo de la barra fija */
+section[id] { scroll-margin-top: 80px; }

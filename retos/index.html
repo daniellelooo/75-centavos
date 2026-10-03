@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retos de programación en JavaScript — Eternal Games</title>
+    <meta name="description" content="Retos de JavaScript en español, del primer if a los clásicos de las pruebas técnicas (FizzBuzz, palíndromos, anagramas, Two Sum). Escribes una función y las pruebas te dicen al momento si funciona. Gratis." />
+    <meta name="theme-color" content="#0f1424" />
+    <link rel="canonical" href="https://75-centavos.vercel.app/retos/" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Eternal Games" />
+    <meta property="og:title" content="Retos de programación en JavaScript — Eternal Games" />
+    <meta property="og:description" content="Del primer if a los clásicos de las pruebas técnicas. En español, gratis y desde el navegador." />
+    <meta property="og:url" content="https://75-centavos.vercel.app/retos/" />
+    <meta property="og:image" content="https://75-centavos.vercel.app/og-eternal-games.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://75-centavos.vercel.app/og-eternal-games.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/landing/landing.css" />
+    <link rel="stylesheet" href="/src/retos/retos.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <a class="mark" href="/">ETERNAL<span>GAMES</span></a>
+      <nav>
+        <a href="/#historias">Historias</a>
+        <a href="/retos/" aria-current="page">Retos</a>
+        <a class="play-small" href="/75-centavos/">Jugar</a>
+        <span id="cuenta" class="account"></span>
+      </nav>
+    </header>
+    <main class="retos-page">
+      <div id="retos"><p class="muted">Cargando...</p></div>
+    </main>
+    <footer>
+      <p>Eternal Games es un proyecto de Eternal Growth. Gratis, sin anuncios.</p>
+    </footer>
+    <script type="module" src="/src/landing/main.ts"></script>
+    <script type="module" src="/src/retos/main.ts"></script>
+  </body>
+</html>

@@ -17,7 +17,7 @@ const NAMES: Record<string, string> = { "(": "un paréntesis (", "{": "una llave
 
 /** Recorre el código saltando textos y comentarios, y devuelve el primer símbolo
  *  que no cuadra: uno que se cerró sin abrirse, o uno que se abrió y nunca se cerró. */
-function brackets(code: string): { kind: "extra" | "unclosed" | "mismatch" | "string"; ch: string; want?: string; pos: number } | null {
+function brackets(code: string): { kind: "extra" | "unclosed" | "mismatch" | "string"; ch: string; want?: string; pos: number; openPos?: number } | null {
   const stack: { ch: string; pos: number }[] = [];
   for (let i = 0; i < code.length; i++) {
     const c = code[i];
@@ -46,7 +46,7 @@ function brackets(code: string): { kind: "extra" | "unclosed" | "mismatch" | "st
     else if (c === ")" || c === "}" || c === "]") {
       const top = stack.pop();
       if (!top) return { kind: "extra", ch: c, pos: i };
-      if (PAIRS[top.ch] !== c) return { kind: "mismatch", ch: c, want: PAIRS[top.ch], pos: i };
+      if (PAIRS[top.ch] !== c) return { kind: "mismatch", ch: c, want: PAIRS[top.ch], pos: i, openPos: top.pos };
     }
   }
   const open = stack.pop();
@@ -98,6 +98,10 @@ export function locateSyntax(code: string): SyntaxSpot | null {
     } else if (b?.kind === "extra") {
       ({ line, column } = lineCol(code, b.pos));
       why = `Aquí sobra ${NAMES[b.ch]}: se cierra algo que nunca se abrió.`;
+    } else if (b?.kind === "mismatch" && b.want === ")" && lineCol(code, b.openPos!).line < lineCol(code, b.pos).line) {
+      // un paréntesis sin cerrar en una línea anterior: el fallo está donde se abrió
+      ({ line, column } = lineCol(code, b.openPos!));
+      why = "En esta línea abriste un paréntesis ( y no lo cerraste. Falta un ) antes de lo que sigue.";
     } else if (b?.kind === "mismatch") {
       ({ line, column } = lineCol(code, b.pos));
       why = `Aquí se cierra con ${NAMES[b.ch]}, pero lo último que abriste necesita ${NAMES[b.want!]}.`;
