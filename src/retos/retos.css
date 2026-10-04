@@ -53,7 +53,7 @@
 .r-level-head h2 { margin: 2px 0 4px; }
 .r-level-head p { margin: 0; }
 .r-temas { font-family: var(--crt); font-size: 19px; color: var(--muted); }
-.r-level.soon { opacity: 0.75; }
+.r-more { margin: 28px 0 0; padding-top: 22px; border-top: 2px dashed #2b3456; }
 .r-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; }
 .r-list li { display: flex; }
 .r-list a {

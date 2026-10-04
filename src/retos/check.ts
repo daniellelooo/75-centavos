@@ -35,16 +35,20 @@ export function igual(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
-/** Un valor como se escribiría en JavaScript: los textos con comillas. */
+const IDENT = /^[A-Za-z_$][\w$]*$/;
+
+/** Un valor como se escribiría en JavaScript: textos con comillas, objetos con { clave: valor }. */
 export function mostrar(v: unknown): string {
   if (v === undefined) return "undefined";
-  if (typeof v === "number" && !Number.isFinite(v)) return String(v);
-  try {
-    return JSON.stringify(v, null, 0).replace(/,(?=\S)/g, ", ");
-  } catch {
-    return String(v);
-  }
+  if (typeof v === "string") return JSON.stringify(v);
+  if (typeof v !== "object" || v === null) return String(v);
+  if (Array.isArray(v)) return `[${v.map(mostrar).join(", ")}]`;
+  const pares = Object.entries(v).map(([k, x]) => `${IDENT.test(k) ? k : JSON.stringify(k)}: ${mostrar(x)}`);
+  return pares.length ? `{ ${pares.join(", ")} }` : "{}";
 }
+
+/** El código sin comentarios, para buscar atajos prohibidos solo en lo que se ejecuta. */
+const sinComentarios = (code: string) => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
 
 const llamada = (r: Reto, args: unknown[]) => `${r.fn}(${args.map(mostrar).join(", ")})`;
 
@@ -71,6 +75,8 @@ function enWorker(code: string, reto: Reto): Promise<RunOutput[] | null> {
 
 /** Revisa la lista de salidas del Worker contra los casos del reto. */
 export function corregir(reto: Reto, code: string, outs: RunOutput[] | null): Resultado {
+  if (reto.prohibido && reto.prohibido.patron.test(sinComentarios(code)))
+    return { tipo: "error", titulo: "Ese atajo no vale aquí", detalle: reto.prohibido.mensaje, logs: outs?.[0]?.logs ?? [] };
   if (!outs) return { tipo: "error", titulo: TIMEOUT_ERROR.title, detalle: TIMEOUT_ERROR.hint, logs: [] };
   const logs = outs[0]?.logs ?? [];
   const first = outs[0];

@@ -35,6 +35,8 @@ export interface Reto {
   pistas: string[];
   /** Comentario del personaje del nivel en el banner. */
   dice: string;
+  /** Atajo que el enunciado no deja usar (p. ej. Math.max): si aparece, se avisa. */
+  prohibido?: { patron: RegExp; mensaje: string };
 }
 
 export const NIVELES: Nivel[] = [
@@ -51,6 +53,13 @@ export const NIVELES: Nivel[] = [
     temas: "arrays · recorrer listas · filter y map · textos a fondo · objetos como contador",
     personaje: "gus",
     intro: "Aquí ya se trabaja con listas, como mi cuaderno de contactos. Y caen los clásicos de entrevista. Cambio.",
+  },
+  {
+    n: 3,
+    titulo: "Objetos y algoritmos",
+    temas: "objetos · recursión · pilas · búsqueda binaria · clásicos de entrevista",
+    personaje: "rochy",
+    intro: "Ugh. Los difíciles. Los que preguntan en las entrevistas para ver si sabes pensar. Venga, que tengo una pizza enfriándose.",
   },
 ];
 
@@ -119,6 +128,7 @@ export const RETOS: Reto[] = [
       { args: [-1, -5, -3], esperado: -1 },
       { args: [4, 4, 2], esperado: 4 },
     ],
+    prohibido: { patron: /Math\.max/, mensaje: "Este reto se hace con if, sin Math.max: la gracia es practicar las comparaciones." },
     pistas: [
       "Guarda el primero como el mayor y compáralo con los otros dos: si alguno es más grande, pasa a ser el mayor.",
       "let mayor = a;\nif (b > mayor) mayor = b;\nif (c > mayor) mayor = c;\nreturn mayor;",
@@ -260,6 +270,7 @@ export const RETOS: Reto[] = [
       { args: [[1, 1, 1]], esperado: 1 },
       { args: [[10, 50, 20, 50]], esperado: 50 },
     ],
+    prohibido: { patron: /Math\.max/, mensaje: "Este reto se hace recorriendo la lista, sin Math.max." },
     pistas: [
       "No empieces con `let mayor = 0`: si todos son negativos, devolverías 0. Empieza con el primero: `lista[0]`.",
       "let mayor = lista[0];\nfor (const n of lista) {\n  if (n > mayor) mayor = n;\n}\nreturn mayor;",
@@ -422,5 +433,207 @@ export const RETOS: Reto[] = [
       "for (let i = 0; i < numeros.length; i++) {\n  for (let j = i + 1; j < numeros.length; j++) {\n    if (numeros[i] + numeros[j] === objetivo) return [i, j];\n  }\n}",
     ],
     dice: "Este lo preguntan en todas las entrevistas, me dice mi sobrino. Él trabaja en una empresa de computadoras. Cambio.",
+  },
+
+  // ------------------------------------------------------------------ nivel 3
+  {
+    id: "contar-letras",
+    nivel: 3,
+    titulo: "Contar cada letra",
+    fn: "contarLetras",
+    enunciado:
+      "Escribe `contarLetras(texto)` que devuelve un objeto con cuántas veces aparece cada letra. Los espacios no se cuentan, y las mayúsculas cuentan aparte de las minúsculas.",
+    inicio: "function contarLetras(texto) {\n  \n}\n",
+    ejemplos: ['contarLetras("hola")    → { h: 1, o: 1, l: 1, a: 1 }', 'contarLetras("banana")  → { b: 1, a: 3, n: 2 }'],
+    casos: [
+      { args: ["hola"], esperado: { h: 1, o: 1, l: 1, a: 1 } },
+      { args: ["banana"], esperado: { b: 1, a: 3, n: 2 } },
+      { args: [""], esperado: {} },
+      { args: ["a a"], esperado: { a: 2 } },
+      { args: ["Aa"], esperado: { A: 1, a: 1 } },
+    ],
+    pistas: [
+      "Empieza con un objeto vacío `{}` y recorre el texto letra a letra. Un objeto sirve de contador: la letra es la clave y el número, el valor.",
+      "Si la letra todavía no está en el objeto, `cuenta[letra]` vale undefined. `(cuenta[letra] ?? 0) + 1` empieza en 1 la primera vez.",
+      'const cuenta = {};\nfor (const letra of texto) {\n  if (letra === " ") continue;\n  cuenta[letra] = (cuenta[letra] ?? 0) + 1;\n}\nreturn cuenta;',
+    ],
+    dice: "Así cuento las cajas de pizza. Bueno, así las contaría si las contara.",
+  },
+  {
+    id: "mas-caro",
+    nivel: 3,
+    titulo: "El más caro",
+    fn: "masCaro",
+    enunciado:
+      "Recibes una lista de productos, cada uno un objeto con `nombre` y `precio`. Escribe `masCaro(productos)` que devuelve el nombre del más caro. Si hay empate, el que aparece primero. La lista nunca está vacía.",
+    inicio: "function masCaro(productos) {\n  \n}\n",
+    ejemplos: ['masCaro([\n  { nombre: "pizza", precio: 12 },\n  { nombre: "teclado", precio: 45 },\n])  → "teclado"'],
+    casos: [
+      { args: [[{ nombre: "pizza", precio: 12 }, { nombre: "refresco", precio: 2 }, { nombre: "teclado", precio: 45 }]], esperado: "teclado" },
+      { args: [[{ nombre: "disquete", precio: 3 }]], esperado: "disquete" },
+      { args: [[{ nombre: "cable", precio: 5 }, { nombre: "enchufe", precio: 5 }]], esperado: "cable" },
+      { args: [[{ nombre: "módem", precio: 300 }, { nombre: "ratón", precio: 20 }, { nombre: "monitor", precio: 250 }]], esperado: "módem" },
+    ],
+    pistas: [
+      "Como el mayor de una lista, pero guardando el producto entero: `let mejor = productos[0];` y comparas `p.precio > mejor.precio`.",
+      "Usa `>` y no `>=`: así, si hay empate, se queda el primero.",
+      "let mejor = productos[0];\nfor (const p of productos) {\n  if (p.precio > mejor.precio) mejor = p;\n}\nreturn mejor.nombre;",
+    ],
+    dice: "El módem. Siempre es el módem. Trescientos dólares para oír pitidos.",
+  },
+  {
+    id: "fibonacci",
+    nivel: 3,
+    titulo: "Fibonacci",
+    clasico: true,
+    fn: "fibonacci",
+    enunciado:
+      "En la serie de Fibonacci cada número es la suma de los dos anteriores: 0, 1, 1, 2, 3, 5, 8, 13... Escribe `fibonacci(n)` que devuelve el número que ocupa la posición `n`, contando desde 0.",
+    inicio: "function fibonacci(n) {\n  \n}\n",
+    ejemplos: ["fibonacci(0)   → 0", "fibonacci(6)   → 8", "fibonacci(10)  → 55"],
+    casos: [
+      { args: [0], esperado: 0 },
+      { args: [1], esperado: 1 },
+      { args: [2], esperado: 1 },
+      { args: [10], esperado: 55 },
+      { args: [20], esperado: 6765 },
+      { args: [25], esperado: 75025 },
+    ],
+    pistas: [
+      "Los dos primeros son fáciles: si `n` es 0 o 1, devuelve `n`.",
+      "Para el resto, avanza con dos variables, `a` y `b` (los dos últimos números), y en cada paso calcula el siguiente. La versión recursiva (`fibonacci(n - 1) + fibonacci(n - 2)`) también vale, pero repite muchísimo trabajo.",
+      "if (n < 2) return n;\nlet a = 0;\nlet b = 1;\nfor (let i = 2; i <= n; i++) {\n  const siguiente = a + b;\n  a = b;\n  b = siguiente;\n}\nreturn b;",
+    ],
+    dice: "La versión recursiva tarda tanto que me da tiempo a echarme la siesta. Por eso me gusta.",
+  },
+  {
+    id: "primer-no-repetido",
+    nivel: 3,
+    titulo: "La primera que no se repite",
+    clasico: true,
+    fn: "primerNoRepetido",
+    enunciado:
+      "Escribe `primerNoRepetido(texto)` que devuelve el primer carácter que aparece una sola vez en el texto. Si todos se repiten, devuelve un texto vacío `\"\"`.",
+    inicio: "function primerNoRepetido(texto) {\n  \n}\n",
+    ejemplos: ['primerNoRepetido("abacabad")  → "c"', 'primerNoRepetido("aabb")      → ""'],
+    casos: [
+      { args: ["abacabad"], esperado: "c" },
+      { args: ["aabb"], esperado: "" },
+      { args: ["leetcode"], esperado: "l" },
+      { args: ["Rochy"], esperado: "R" },
+      { args: [""], esperado: "" },
+      { args: ["xxyzz"], esperado: "y" },
+    ],
+    pistas: [
+      "Un carácter aparece una sola vez si la primera y la última vez que aparece están en la misma posición: `texto.indexOf(c) === texto.lastIndexOf(c)`.",
+      "Otra forma: cuenta primero cada letra con un objeto (como en el reto de contar letras) y luego busca la primera con cuenta 1.",
+      'for (const c of texto) {\n  if (texto.indexOf(c) === texto.lastIndexOf(c)) return c;\n}\nreturn "";',
+    ],
+    dice: "Como mis calcetines. Siempre hay uno que no tiene pareja.",
+  },
+  {
+    id: "romanos",
+    nivel: 3,
+    titulo: "Números romanos",
+    clasico: true,
+    fn: "romanoANumero",
+    enunciado:
+      "Escribe `romanoANumero(romano)` que pasa un número romano a número normal. I=1, V=5, X=10, L=50, C=100, D=500, M=1000. Normalmente se suman, pero si un símbolo va antes de otro mayor, se resta: IV es 4 y IX es 9.",
+    inicio: "function romanoANumero(romano) {\n  \n}\n",
+    ejemplos: ['romanoANumero("III")      → 3', 'romanoANumero("IX")       → 9', 'romanoANumero("MCMXCIV")  → 1994'],
+    casos: [
+      { args: ["III"], esperado: 3 },
+      { args: ["IV"], esperado: 4 },
+      { args: ["IX"], esperado: 9 },
+      { args: ["XL"], esperado: 40 },
+      { args: ["LVIII"], esperado: 58 },
+      { args: ["MCMXCIV"], esperado: 1994 },
+      { args: ["MMXXVI"], esperado: 2026 },
+    ],
+    pistas: [
+      "Guarda los valores en un objeto: `const valor = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };`.",
+      "Recorre las letras con su posición. Si la letra vale menos que la siguiente, réstala; si no, súmala.",
+      "const valor = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };\nlet total = 0;\nfor (let i = 0; i < romano.length; i++) {\n  const actual = valor[romano[i]];\n  const siguiente = valor[romano[i + 1]] ?? 0;\n  if (actual < siguiente) total -= actual;\n  else total += actual;\n}\nreturn total;",
+    ],
+    dice: "Los créditos de las películas vienen en romanos para que no sepas lo vieja que es. A mí no me engañan.",
+  },
+  {
+    id: "parentesis",
+    nivel: 3,
+    titulo: "Paréntesis equilibrados",
+    clasico: true,
+    fn: "equilibrados",
+    enunciado:
+      "Escribe `equilibrados(texto)` que devuelve `true` si los paréntesis `()`, corchetes `[]` y llaves `{}` del texto están bien cerrados: cada uno que se abre se cierra, y en el orden correcto. Lo demás del texto se ignora.",
+    inicio: "function equilibrados(texto) {\n  \n}\n",
+    ejemplos: ['equilibrados("([])")  → true', 'equilibrados("(]")    → false', 'equilibrados(")(")    → false'],
+    casos: [
+      { args: ["()"], esperado: true },
+      { args: ["([])"], esperado: true },
+      { args: ["{[()()]}"], esperado: true },
+      { args: ["(]"], esperado: false },
+      { args: ["(("], esperado: false },
+      { args: [")("], esperado: false },
+      { args: [""], esperado: true },
+      { args: ["if (x[0]) { y(); }"], esperado: true },
+    ],
+    pistas: [
+      "Usa una pila: una lista donde metes con `push` cada símbolo que abre y sacas con `pop` el último cuando llega uno que cierra.",
+      "Al cerrar, lo que sacas tiene que ser su pareja: `)` con `(`, `]` con `[`, `}` con `{`. Al final, la pila tiene que quedar vacía.",
+      'const pila = [];\nconst pareja = { ")": "(", "]": "[", "}": "{" };\nfor (const c of texto) {\n  if ("([{".includes(c)) pila.push(c);\n  else if (c in pareja && pila.pop() !== pareja[c]) return false;\n}\nreturn pila.length === 0;',
+    ],
+    dice: "Esto es lo que hace el compilador cuando te olvidas una llave. Y luego me echan la culpa a mí.",
+  },
+  {
+    id: "busqueda-binaria",
+    nivel: 3,
+    titulo: "Búsqueda binaria",
+    clasico: true,
+    fn: "buscar",
+    enunciado:
+      "Recibes una lista de números ordenada de menor a mayor. Escribe `buscar(lista, objetivo)` que devuelve la posición del objetivo, o `-1` si no está. Hazlo con búsqueda binaria: mira el del medio y descarta la mitad donde no puede estar. Sin `indexOf` ni `includes`.",
+    inicio: "function buscar(lista, objetivo) {\n  \n}\n",
+    ejemplos: ["buscar([1, 3, 5, 7, 9], 7)  → 3", "buscar([1, 3, 5, 7, 9], 4)  → -1"],
+    casos: [
+      { args: [[1, 3, 5, 7, 9], 7], esperado: 3 },
+      { args: [[1, 3, 5, 7, 9], 1], esperado: 0 },
+      { args: [[1, 3, 5, 7, 9], 9], esperado: 4 },
+      { args: [[1, 3, 5, 7, 9], 4], esperado: -1 },
+      { args: [[], 3], esperado: -1 },
+      { args: [[2, 4, 6, 8, 10, 12, 14, 16], 14], esperado: 6 },
+    ],
+    prohibido: { patron: /\.(indexOf|includes|findIndex|find)\(/, mensaje: "Este reto se hace con búsqueda binaria, sin indexOf, includes ni find: la idea es partir la lista por la mitad." },
+    pistas: [
+      "Lleva dos marcas, `izq = 0` y `der = lista.length - 1`. Mientras `izq <= der`, mira el del medio: `Math.floor((izq + der) / 2)`.",
+      "Si el del medio es menor que el objetivo, el objetivo está a la derecha: `izq = medio + 1`. Si es mayor, a la izquierda: `der = medio - 1`.",
+      "let izq = 0;\nlet der = lista.length - 1;\nwhile (izq <= der) {\n  const medio = Math.floor((izq + der) / 2);\n  if (lista[medio] === objetivo) return medio;\n  if (lista[medio] < objetivo) izq = medio + 1;\n  else der = medio - 1;\n}\nreturn -1;",
+    ],
+    dice: "Así busco en la guía telefónica. Abro por la mitad y tiro hacia donde sea. Es lo más rápido que hago en todo el día.",
+  },
+  {
+    id: "aplanar",
+    nivel: 3,
+    titulo: "Aplanar una lista",
+    clasico: true,
+    fn: "aplanar",
+    enunciado:
+      "Una lista puede tener listas dentro, y esas, otras más. Escribe `aplanar(lista)` que devuelve una sola lista con todos los elementos, en orden y sin listas dentro. Sin usar `.flat()`: hazlo con recursión, una función que se llama a sí misma.",
+    inicio: "function aplanar(lista) {\n  \n}\n",
+    ejemplos: ["aplanar([1, [2, [3, 4]], 5])  → [1, 2, 3, 4, 5]", "aplanar([[1], [2], [3]])      → [1, 2, 3]"],
+    casos: [
+      { args: [[1, [2, [3, 4]], 5]], esperado: [1, 2, 3, 4, 5] },
+      { args: [[]], esperado: [] },
+      { args: [[[1], [2], [3]]], esperado: [1, 2, 3] },
+      { args: [[1, 2, 3]], esperado: [1, 2, 3] },
+      { args: [[[[["hondo"]]]]], esperado: ["hondo"] },
+      { args: [[1, [], [2, []]]], esperado: [1, 2] },
+    ],
+    prohibido: { patron: /\.flat(Map)?\(/, mensaje: "Este reto se hace sin .flat(): la gracia es escribir tú la recursión." },
+    pistas: [
+      "Recorre la lista. Si un elemento no es una lista, lo añades al resultado. `Array.isArray(x)` te dice si lo es.",
+      "Si el elemento es una lista, llama a `aplanar(x)` con él (la función se llama a sí misma) y añade todo lo que devuelve: `resultado.push(...aplanar(x))`.",
+      "const resultado = [];\nfor (const x of lista) {\n  if (Array.isArray(x)) resultado.push(...aplanar(x));\n  else resultado.push(x);\n}\nreturn resultado;",
+    ],
+    dice: "Mi cuarto, pero con datos: cajas dentro de cajas dentro de cajas. Este es el último. Luego, siesta.",
   },
 ];

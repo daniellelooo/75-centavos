@@ -65,12 +65,7 @@ function lista(): void {
       </div>
     </section>
     ${NIVELES.map(nivelHtml).join("")}
-    <section class="r-level soon">
-      <div class="r-level-head">
-        ${retrato("rochy", "serio", "small")}
-        <div><div class="level">NIVEL 3 · PRÓXIMAMENTE</div><h2>Objetos y algoritmos</h2><p class="muted">Rochy está preparando los siguientes: objetos, recursión y más clásicos de entrevista. Dice que los hará cuando termine de compilar.</p></div>
-      </div>
-    </section>`;
+    <p class="r-more muted">Más niveles en camino. Si ya los has hecho todos, prueba a resolver alguno de otra forma: casi siempre hay más de una.</p>`;
   bindEntrar();
 }
 

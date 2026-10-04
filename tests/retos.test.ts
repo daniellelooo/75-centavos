@@ -71,3 +71,25 @@ describe("errores de escritura", () => {
     expect(s?.why).toMatch(/paréntesis/);
   });
 });
+
+describe("retos: atajos prohibidos y valores legibles", () => {
+  it("búsqueda binaria con indexOf avisa", () => {
+    const res = correr("busqueda-binaria", "function buscar(lista, objetivo) { return lista.indexOf(objetivo); }");
+    expect(res.tipo).toBe("error");
+    if (res.tipo === "error") expect(res.titulo).toMatch(/atajo/);
+  });
+  it("un atajo dentro de un comentario no cuenta", () => {
+    const code = solucion("aplanar").replace("{\n", "{\n  // sin .flat() a propósito\n");
+    expect(correr("aplanar", code).tipo).toBe("ok");
+  });
+  it("los objetos se muestran como en JavaScript", async () => {
+    const { mostrar } = await import("../src/retos/check");
+    expect(mostrar({ h: 1, "dos palabras": "x" })).toBe('{ h: 1, "dos palabras": "x" }');
+    expect(mostrar([1, [2, "a"]])).toBe('[1, [2, "a"]]');
+    expect(mostrar({})).toBe("{}");
+  });
+  it("fibonacci recursivo ingenuo también pasa", () => {
+    const res = correr("fibonacci", "function fibonacci(n) { return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2); }");
+    expect(res.tipo).toBe("ok");
+  });
+});
