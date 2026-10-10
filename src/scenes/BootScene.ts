@@ -36,6 +36,9 @@ export class BootScene extends Phaser.Scene {
     sheet("radio_rig", "radio_rig.png", 34, 24);
     sheet("server_rack", "server_rack.png", 22, 42);
     sheet("posters", "posters.png", 18, 24);
+    sheet("xmas_tree", "xmas_tree.png", 20, 32);
+    sheet("map_table", "map_table.png", 52, 28);
+    sheet("card_sorter", "card_sorter.png", 40, 26);
     for (const f of [
       "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
       "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge", "paper_item", "folder_item", "pegboard", "workbench", "qsl_cards", "tire_stack", "pizza_boxes", "beanbag", "soda_cans", "bed", "book_piles",
@@ -69,6 +72,9 @@ export class BootScene extends Phaser.Scene {
     this.anims.create({ key: "rack-blink", frames: this.anims.generateFrameNumbers("server_rack", {}), frameRate: 1.5, repeat: -1 });
     this.anims.create({ key: "radio-rx", frames: this.anims.generateFrameNumbers("radio_rig", {}), frameRate: 2, repeat: -1 });
     this.anims.create({ key: "sam-bike", frames: this.anims.generateFrameNumbers("sam_bike", {}), frameRate: 9, repeat: -1 });
+    this.anims.create({ key: "tree-lights", frames: this.anims.generateFrameNumbers("xmas_tree", {}), frameRate: 1.5, repeat: -1 });
+    this.anims.create({ key: "map-route", frames: this.anims.generateFrameNumbers("map_table", { frames: [0] }), frameRate: 1, repeat: -1 });
+    this.anims.create({ key: "sorter-run", frames: this.anims.generateFrameNumbers("card_sorter", {}), frameRate: 2.5, repeat: -1 });
     this.anims.create({ key: "sat-blink", frames: this.anims.generateFrameNumbers("satellite", {}), frameRate: 2, repeat: -1 });
     // sombra suave bajo personajes: elipse pixelada
     const g = this.add.graphics();
@@ -78,6 +84,9 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(2, 3, 8, 1);
     g.generateTexture("shadow", 12, 4);
     g.destroy();
-    this.scene.start("lab", { mode: "title" });
+    // las páginas de las otras historias dicen cuál cargar en <body data-story="...">
+    const story = document.body.dataset.story;
+    if (story) this.scene.start("story", { id: story });
+    else this.scene.start("lab", { mode: "title" });
   }
 }

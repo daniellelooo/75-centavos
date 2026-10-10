@@ -5,11 +5,13 @@ import { StateEffect, StateField, Prec } from "@codemirror/state";
 import { acceptCompletion, completionStatus } from "@codemirror/autocomplete";
 import { indentWithTab } from "@codemirror/commands";
 import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
+import { sql as sqlLanguage, SQLite } from "@codemirror/lang-sql";
 import { MISSIONS } from "../game/missions";
 import { vocabFor } from "../game/vocab";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
-import type { Mission } from "../game/missions";
+import type { Exercise } from "../game/types";
+import { translateSqlError, type SqlTable } from "../game/sandbox-sql";
 import { runMission } from "../game/runner";
 import { translateError, typoHint, nameHint, missingNameHint, TIMEOUT_ERROR } from "../game/errors";
 import { caseReports, hardcodeHint } from "../game/report";
@@ -53,7 +55,7 @@ const errorLineField = StateField.define<DecorationSet>({
 /** Abre la terminal. Resuelve true si se resolvió. En modo repaso no toca el progreso. */
 /** Lo que ya está cargado en la máquina. Si solo se sabe el nombre, se enseña un
  *  ejemplo real del valor para que se vea la forma de los datos. */
-function borrowedHtml(mission: Mission): string {
+function borrowedHtml(mission: Exercise): string {
   const { described, shown } = borrowedFor(mission);
   if (!described.length && !shown.length) return "";
   const desc = described.length ? `<p class="borrowed">Ya cargado en la máquina: ${described.map((b) => `<code>${esc(b)}</code>`).join(", ")}</p>` : "";
@@ -63,7 +65,40 @@ function borrowedHtml(mission: Mission): string {
   return desc + ej;
 }
 
-export function openTerminal(mission: Mission, opts: { practice?: boolean; training?: { vocabAt: number } } = {}): Promise<boolean> {
+/** Dónde guarda la terminal borradores, pistas e intentos. Por defecto, la partida de 75 Centavos. */
+export interface TermStore {
+  drafts: Record<string, string>;
+  hintsUsed: Record<string, number>;
+  attempts: Record<string, number>;
+  persist(): void;
+}
+
+/** Otras historias: su propio guardado, su prompt y su historia para el Worker. */
+export interface TermStory {
+  id: string;
+  /** Lo que sale arriba del editor: "LENA@NEBULA:~$ editor". */
+  prompt: string;
+  store: TermStore;
+  /** Hasta qué punto del vocabulario de JavaScript se autocompleta. */
+  vocabAt: number;
+}
+
+/** Una tabla de resultados de SQL, como la imprimiría la máquina. */
+function sqlTableHtml(t: SqlTable | null): string {
+  if (!t) return `<div class="muted">La consulta se ejecutó y no devolvió filas.</div>`;
+  const rows = t.rows.slice(0, 30);
+  const cell = (v: unknown) => `<td>${v === null ? `<i>vacío</i>` : esc(String(v))}</td>`;
+  return (
+    `<table class="sqlres"><thead><tr>${t.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>` +
+    `<tbody>${rows.map((r) => `<tr>${r.map(cell).join("")}</tr>`).join("")}</tbody></table>` +
+    `<div class="muted">${t.rows.length} fila${t.rows.length === 1 ? "" : "s"}${t.rows.length > rows.length ? ` (se muestran ${rows.length})` : ""}</div>`
+  );
+}
+
+export function openTerminal(mission: Exercise, opts: { practice?: boolean; training?: { vocabAt: number }; story?: TermStory } = {}): Promise<boolean> {
+  const story = opts.story;
+  const store: TermStore = story?.store ?? { drafts: save.drafts, hintsUsed: save.hintsUsed, attempts: save.attempts, persist: () => writeSave(save) };
+  const lang = mission.sandbox ?? "js";
   const training = opts.training;
   // los ejercicios de los mentores se comportan como un repaso: no tocan la historia
   const practice = !!opts.practice || !!training;
@@ -79,7 +114,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
 
     const ex = exampleHtml(mission.lesson.example);
     bindPeeks(left);
-    const hintsShown = practice ? 0 : (save.hintsUsed[mission.id] ?? 0);
+    const hintsShown = practice ? 0 : (store.hintsUsed[mission.id] ?? 0);
     left.innerHTML = `
       <div class="head"><span class="t-title">${esc(mission.title)}</span><span class="tag">${free ? "" : training ? `${placeTag(mission.id)} · ` : practice ? "REPASO · " : ""}${esc(mission.concept.toUpperCase())}</span></div>
       <div class="scroll">
@@ -98,13 +133,18 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
     `;
 
     right.innerHTML = `
-      <div class="head"><span>SAM@LBL-VAX:~$ editor</span><span class="tag">JAVASCRIPT</span></div>
-      <div class="keybar" title="Teclas difíciles de escribir en algunos teclados">
+      <div class="head"><span>${esc(story?.prompt ?? "SAM@LBL-VAX:~$ editor")}</span><span class="tag">${lang === "sql" ? "SQL" : lang === "dom" ? "JAVASCRIPT · PAGINA" : "JAVASCRIPT"}</span></div>
+      ${
+        lang === "sql"
+          ? `<div class="keybar" title="Símbolos de SQL"><span>INSERTAR</span><button data-k="*">*</button><button data-k="''">' '</button><button data-k="()">( )</button><button data-k=",">,</button><button data-k="<>">&lt;&gt;</button><button data-k=";">;</button></div>`
+          : `<div class="keybar" title="Teclas difíciles de escribir en algunos teclados">
         <span>INSERTAR</span>
         <button data-k="\`">\`</button><button data-k="\${}">\${ }</button><button data-k="{}">{ }</button><button data-k="[]">[ ]</button><button data-k="=>">=&gt;</button><button data-k=";">;</button>
         <span class="kb-tip">Ctrl + ' escribe \`</span>
-      </div>
+      </div>`
+      }
       <div class="editor-wrap"></div>
+      ${lang === "dom" ? `<div class="page-wrap"><div class="page-head"><span>NÉBULA 0.9 · vista previa</span><span class="page-state">página original</span></div><iframe class="page" sandbox="" title="Vista previa de la página"></iframe></div>` : ""}
       <div class="actions"><button class="btn primary run-btn">EJECUTAR</button><span class="shortcut">Tab autocompleta · Ctrl + Enter ejecuta</span></div>
       <div class="console"><span class="muted">Escribe tu código y pulsa EJECUTAR.</span></div>
     `;
@@ -116,6 +156,15 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
     const runBtn = right.querySelector(".run-btn") as HTMLButtonElement;
     const consoleBox = right.querySelector(".console") as HTMLDivElement;
     const wrap = right.querySelector(".editor-wrap") as HTMLDivElement;
+    const pageFrame = right.querySelector<HTMLIFrameElement>("iframe.page");
+    const pageState = right.querySelector<HTMLElement>(".page-state");
+    /** La página de la misión tal como queda (sin ejecutar nada dentro del marco). */
+    const showPage = (html: unknown, label: string) => {
+      if (!pageFrame || typeof html !== "string") return;
+      pageFrame.srcdoc = html;
+      if (pageState) pageState.textContent = label;
+    };
+    if (lang === "dom") showPage(mission.cases[0]?.globals().__html, "página original");
 
     const renderHints = (n: number) => {
       hintsBox.innerHTML = mission.hints
@@ -135,10 +184,10 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
         sfx("select");
         return;
       }
-      const n = (save.hintsUsed[mission.id] ?? 0) + 1;
-      save.hintsUsed[mission.id] = Math.min(n, mission.hints.length);
-      writeSave(save);
-      renderHints(save.hintsUsed[mission.id]);
+      const n = (store.hintsUsed[mission.id] ?? 0) + 1;
+      store.hintsUsed[mission.id] = Math.min(n, mission.hints.length);
+      store.persist();
+      renderHints(store.hintsUsed[mission.id]);
       sfx("select");
       const s = left.querySelector(".scroll") as HTMLElement;
       s.scrollTop = s.scrollHeight;
@@ -146,14 +195,20 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
 
     let running = false;
     const view = new EditorView({
-      doc: save.drafts[draftKey] ?? mission.starter,
+      doc: store.drafts[draftKey] ?? mission.starter,
       parent: wrap,
       extensions: [
         basicSetup,
         // las líneas largas siguen debajo en vez de empujar la terminal hacia un lado
         EditorView.lineWrapping,
-        javascript(),
-        javascriptLanguage.data.of({ autocomplete: vocabFor(training ? training.vocabAt : free ? Math.max(0, save.done - 1) : MISSIONS.indexOf(mission)) }),
+        ...(lang === "sql"
+          ? [sqlLanguage({ dialect: SQLite, upperCaseKeywords: true })]
+          : [
+              javascript(),
+              javascriptLanguage.data.of({
+                autocomplete: vocabFor(story ? story.vocabAt : training ? training.vocabAt : free ? Math.max(0, save.done - 1) : MISSIONS.indexOf(mission as (typeof MISSIONS)[number])),
+              }),
+            ]),
         Prec.highest(keymap.of([{ key: "Tab", run: acceptCompletion }])),
         keymap.of([indentWithTab]),
         syntaxHighlighting(amber),
@@ -165,8 +220,8 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
         ]),
         EditorView.updateListener.of((u) => {
           if (u.docChanged) {
-            save.drafts[draftKey] = u.state.doc.toString();
-            writeSave(save);
+            store.drafts[draftKey] = u.state.doc.toString();
+            store.persist();
             if (Math.random() < 0.6) sfx("key");
           }
         }),
@@ -174,7 +229,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
     });
     // Barra de teclas difíciles: inserta en el cursor (y deja el cursor dentro de los pares).
     const insert = (text: string) => {
-      const pairs: Record<string, [string, number]> = { "${}": ["${}", 2], "{}": ["{}", 1], "[]": ["[]", 1] };
+      const pairs: Record<string, [string, number]> = { "${}": ["${}", 2], "{}": ["{}", 1], "[]": ["[]", 1], "()": ["()", 1], "''": ["''", 1] };
       const [ins, back] = pairs[text] ?? [text === "=>" ? " => " : text, 0];
       const { from, to } = view.state.selection.main;
       view.dispatch({ changes: { from, to, insert: ins }, selection: { anchor: from + ins.length - back } });
@@ -202,12 +257,12 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       running = true;
       runBtn.disabled = true;
       sfx("run");
-      if (!practice) save.attempts[mission.id] = (save.attempts[mission.id] ?? 0) + 1;
-      writeSave(save);
+      if (!practice) store.attempts[mission.id] = (store.attempts[mission.id] ?? 0) + 1;
+      store.persist();
       view.dispatch({ effects: setErrorLine.of(null) });
       consoleBox.innerHTML = `<div class="muted">ejecutando...</div>`;
       const code = view.state.doc.toString();
-      const result = await runMission(mission.id, code);
+      const result = await runMission(mission.id, code, story ? { id: story.id, mission } : undefined);
       await wait(250);
       consoleBox.innerHTML = "";
 
@@ -234,6 +289,14 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
         fail();
         return;
       }
+      if (crashed?.error?.name === "SQLError") {
+        const fe = translateSqlError(crashed.error.message);
+        print(`<div class="err">ERROR: ${esc(fe.title)}</div><div>${esc(fe.hint)}</div><div class="muted">${esc(crashed.error.message)}</div>`);
+        fail();
+        return;
+      }
+      if (lang === "dom") showPage(first.values.__html, crashed ? "hasta donde llegó tu código" : "después de tu código");
+      if (lang === "sql") print(sqlTableHtml((first.values.__result as SqlTable | null) ?? null));
       if (crashed?.error) {
         const fe = translateError(crashed.error.name, crashed.error.message);
         // errores de escritura: JavaScript no da la línea, así que se busca analizando el código
@@ -277,7 +340,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       if (!verdict.pass) {
         print(`<div class="err">NO CUADRA</div><div>${taskHtml(verdict.feedback)}</div>`);
         // cada prueba por separado: con qué datos, qué imprimió y si pasó
-        if (mission.cases.length > 1) {
+        if (mission.cases.length > 1 && lang !== "sql") {
           const reps = caseReports(mission, outs);
           print(`<div class="muted">Tu código se probó con estos datos:</div>`);
           for (const r of reps)
@@ -288,10 +351,12 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
           if (reps.some((r) => r.pass) && reps.some((r) => !r.pass))
             print(`<div class="hint">Acierta con unas pruebas y falla con otras. El juego cambia los datos en cada prueba para comprobar que tu código sirve en general, no solo para un caso.</div>`);
         }
-        const hc = hardcodeHint(code, mission);
-        if (hc) print(`<div class="hint">${taskHtml(hc)}</div>`);
-        quoteHint(code);
-        typoTip(code);
+        if (lang !== "sql") {
+          const hc = hardcodeHint(code, mission);
+          if (hc) print(`<div class="hint">${taskHtml(hc)}</div>`);
+          quoteHint(code);
+          typoTip(code);
+        }
         fail();
         return;
       }

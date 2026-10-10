@@ -1,6 +1,6 @@
 // Informe de pruebas para el jugador: con qué datos se probó su código, qué salió
 // en cada prueba y por qué falla. Así no hay que adivinar qué espera el juego.
-import type { Mission, TestCase } from "./types";
+import type { Exercise as Mission, TestCase } from "./types";
 import type { RunOutput } from "./sandbox";
 
 export interface CaseReport {

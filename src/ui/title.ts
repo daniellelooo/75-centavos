@@ -1,12 +1,19 @@
 import { sfx } from "../audio/sfx";
 import { el, ui } from "./dom";
 
-export function showTitle(opts: { canContinue: boolean; onNew: () => void; onContinue: () => void }): void {
+export function showTitle(opts: {
+  canContinue: boolean;
+  onNew: () => void;
+  onContinue: () => void;
+  /** Otras historias: su lugar, su título y su frase. */
+  texts?: { kicker: string; title: string; sub: string };
+}): void {
   const t = el("div", "title");
+  const x = opts.texts ?? { kicker: "BERKELEY · 1986", title: "75 CENTAVOS", sub: "Aprende JavaScript resolviendo un caso inspirado en hechos reales." };
   t.innerHTML = `
-    <div class="kicker">BERKELEY · 1986</div>
-    <h1>75 CENTAVOS</h1>
-    <div class="sub">Aprende JavaScript resolviendo un caso inspirado en hechos reales.</div>
+    <div class="kicker">${x.kicker}</div>
+    <h1>${x.title.toUpperCase()}</h1>
+    <div class="sub">${x.sub}</div>
     <div class="menu">
       ${opts.canContinue ? `<button class="btn continue">CONTINUAR</button>` : ""}
       <button class="btn new">${opts.canContinue ? "NUEVA PARTIDA" : "EMPEZAR"}</button>

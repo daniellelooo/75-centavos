@@ -1,7 +1,7 @@
 // Lo que la máquina le "presta" al jugador en cada misión. Si la misión solo da el
 // nombre (p. ej. "contactos"), se enseña su valor real del primer caso, para que
 // se vea la forma de los datos sin tener que hacer un console.log primero.
-import type { Mission } from "./missions";
+import type { Exercise as Mission } from "./types";
 
 const IDENT = /^[A-Za-z_$][\w$]*$/;
 const MAX_ITEMS = 3;

@@ -65,7 +65,7 @@ export interface PlaceDef {
 
 // ------------------------------------------------------------------ piezas comunes
 
-function frame(c: BuildCtx, exit = { x0: 144, x1: 176 }, doorColor = 0x4a2e1e) {
+export function frame(c: BuildCtx, exit = { x0: 144, x1: 176 }, doorColor = 0x4a2e1e) {
   const ROOM_H = 192;
   for (let y = -8; y < ROOM_H; y += 16) {
     c.img("wall_cap_v", -8, y).setDepth(5000);
@@ -78,7 +78,7 @@ function frame(c: BuildCtx, exit = { x0: 144, x1: 176 }, doorColor = 0x4a2e1e) {
 }
 
 /** La terminal de los ejercicios sobre un escritorio, a la derecha. */
-function terminalDesk(c: BuildCtx) {
+export function terminalDesk(c: BuildCtx) {
   c.prop("desk", 196, 46);
   c.scene.add.sprite(204, 36, "terminal", 0).setOrigin(0, 0).setDepth(100 + 72).play("term-on");
   c.solid(196, 56, 48, 14);
@@ -138,7 +138,7 @@ const margarita: PlaceDef = {
     c.prop("kenney", 120, 100, kenney(14, 9));
     c.solid(120, 106, 16, 10);
     c.prop("table", 140, 102);
-    c.prop("mug", 149, 103);
+    c.prop("mug", 149, 103).setDepth(100 + 103 + 30);
     c.solid(140, 108, 26, 10);
     c.prop("kenney", 170, 100, kenney(14, 9)).setFlipX(true);
     c.solid(170, 106, 16, 10);
@@ -262,8 +262,8 @@ const gus: PlaceDef = {
     c.solid(40, 160, 18, 8);
     // mesa plegable con un termo y revistas de radio
     c.prop("table", 112, 100);
-    c.prop("mug", 118, 101);
-    c.prop("papers", 126, 99);
+    c.prop("mug", 118, 101).setDepth(100 + 101 + 30);
+    c.prop("papers", 126, 99).setDepth(100 + 99 + 30);
     c.solid(112, 106, 26, 10);
     c.prop("chair", 140, 100);
   },

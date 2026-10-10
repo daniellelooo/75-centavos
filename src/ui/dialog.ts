@@ -1,19 +1,10 @@
-import { CHAR } from "../config";
+import { CHAR, CHAR_NAMES } from "../config";
 import type { Line, Speaker } from "../game/missions";
 import type { Mood } from "../game/types";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui } from "./dom";
 
-const NAMES: Record<Speaker, string> = {
-  sam: "SAM",
-  ruth: "RUTH",
-  kessler: "DR. KESSLER",
-  margarita: "MARGARITA",
-  gus: "GUS",
-  rochy: "ROCHY",
-  narrador: "",
-  sistema: "TERMINAL",
-};
+const NAMES: Record<Speaker, string> = { ...CHAR_NAMES, narrador: "", sistema: "TERMINAL" };
 
 let open = false;
 export const isDialogOpen = () => open;

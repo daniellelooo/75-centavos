@@ -325,6 +325,19 @@ html, body {
 .term .cm-errorLine { background: rgba(232, 52, 78, 0.18); }
 
 .term .actions { display: flex; gap: calc(4 * var(--u)); align-items: center; }
+
+/* vista previa de la página (Diez días): la web de 1995 tal como queda */
+.term .page-wrap { flex: 1.1; min-height: 0; display: flex; flex-direction: column; border: var(--u) solid var(--amber-dim); }
+.term .page-head { display: flex; justify-content: space-between; padding: calc(1 * var(--u)) calc(3 * var(--u)); background: #c0c0c0; color: #000; text-shadow: none; font-size: calc(7.5 * var(--u)); }
+.term .page-state { color: #000080; }
+.term iframe.page { flex: 1; min-height: 0; width: 100%; border: 0; background: #fff; }
+.term .editor-wrap:has(+ .page-wrap) { flex: 0.9; }
+
+/* resultados de SQL */
+.term table.sqlres { border-collapse: collapse; margin: calc(2 * var(--u)) 0; color: var(--cream); }
+.term table.sqlres th, .term table.sqlres td { border: var(--u) solid var(--amber-dim); padding: 0 calc(3 * var(--u)); text-align: left; font-weight: normal; }
+.term table.sqlres th { color: #120806; background: var(--amber); text-shadow: none; }
+.term table.sqlres i { color: #c9905a; }
 .btn {
   font-family: var(--font-crt);
   font-size: calc(9 * var(--u));
@@ -822,6 +835,7 @@ html, body {
 .badge-pips i.on { background: #fed018; }
 .badge-sign { border-top: var(--u) dashed #b4a78c; padding: var(--u) calc(4 * var(--u)); font-size: calc(6.5 * var(--u)); color: #6a5f4a; font-style: italic; text-align: right; }
 .badge-next { margin: 0 0 calc(6 * var(--u)); padding: calc(2 * var(--u)) calc(4 * var(--u)); border: var(--u) dashed #8e8268; font-family: var(--font-crt); font-size: calc(8.5 * var(--u)); color: #6a5f4a; }
+a.badge-next { display: block; text-decoration: none; }
 .badge-next span { display: block; font-family: var(--font-ui); font-size: calc(6.5 * var(--u)); }
 .badge-pop { position: absolute; inset: 0; display: grid; place-content: center; gap: calc(4 * var(--u)); background: rgba(5, 4, 10, 0.6); z-index: 40; animation: fadein 0.2s steps(3) both; cursor: pointer; }
 .badge-pop .badge { width: calc(200 * var(--u)); animation: rise 0.25s steps(4) both; }
@@ -838,6 +852,7 @@ html, body {
 .term details.alt { margin-top: calc(3 * var(--u)); color: #c9d3ea; }
 .term details.alt summary { cursor: pointer; color: var(--amber); }
 .term details.alt pre { margin: calc(2 * var(--u)) 0; padding: calc(3 * var(--u)); background: rgba(0, 0, 0, 0.35); color: #fed018; white-space: pre-wrap; font-family: var(--font-crt); }
+.title a.btn { display: block; text-align: center; text-decoration: none; }
 .title .btn.danger { background: #a31d33; color: #fffbe8; border-color: #fffbe8; }
 .nb-free { display: block; width: 100%; margin: 0 0 calc(6 * var(--u)); text-align: left; }
 .nb-free span { display: block; font-family: var(--font-ui); font-size: calc(6 * var(--u)); opacity: 0.8; }
