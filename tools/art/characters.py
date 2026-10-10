@@ -51,6 +51,23 @@ CHARS = {
         "t": "#4f7a46", "T": "#3a5c34", "l": "#689a5c", "y": "#fed018",
         "p": "#3a4a6e", "P": "#2c3858", "b": "#3a2818", "B": "#5c4030",
     },
+    # Wilson (Medianoche): programador veterano del banco, pelo negro con canas en las
+    # sienes, bigote espeso, gafas de pasta de los ochenta, camisa de manga corta y corbata.
+    "wilson": {
+        "s": "#c98e64", "S": "#a8704c",
+        "h": "#2e2830", "H": "#4e4856", "G": "#a4a4b0", "M": "#2e2830", "m": "#2e2830",
+        "g": "#6e4c2c", "L": "#cfeeff", "e": "#1c1830",
+        "w": "#bcd8ec", "r": "#8e2a2a",
+        "p": "#4a4a5c", "P": "#34344a", "b": "#2a1c14", "B": "#4a3426",
+    },
+    # Camilo (Medianoche): practicante de sistemas, flaco, pelo negro revuelto,
+    # buzo de lana vinotinto sobre camisa blanca, bluyín y tenis.
+    "camilo": {
+        "s": "#d9a273", "S": "#b8845a",
+        "h": "#231c26", "H": "#463c4a", "r": "#b4504a", "e": "#1c1830",
+        "v": "#7a2a3a", "V": "#5a1e2a", "w": "#f4ecd8",
+        "p": "#3d5a8a", "P": "#2b4266", "b": "#e8e0d0", "B": "#b4a78c",
+    },
 }
 
 # Cada vista: 13 filas de cabeza + 6 de cuerpo (las piernas van aparte).
@@ -315,6 +332,136 @@ VIEWS = {
             "ktTlltTTsSTk....",
         ],
     },
+    "camilo": {
+        "down": [
+            "....k.kk.kk.....",
+            "...khkhhkhhk....",
+            "..khhhhHhhhhkk..",
+            ".khhhHHhhhhhhhk.",
+            ".khhhhhhhhhhhhk.",
+            ".khhhhhhhhhhhhk.",
+            ".khhssshhssshhk.",
+            ".khsssssssssshk.",
+            ".kssssssssssssk.",
+            ".ksseesssseessk.",
+            ".kSssssssssssSk.",
+            "..kSsssrrsssSk..",
+            "...kkSSSSSSkk...",
+            "...kkvwwwwvkk...",
+            "..kvvVwwwwVvvk..",
+            ".kvvkvvvvvvkvvk.",
+            ".kvVkvVvvVvkVvk.",
+            ".ksSkvvvvvvkSsk.",
+            "..kkkPppppPkkk..",
+        ],
+        "up": [
+            "....k.kk.kk.....",
+            "...khkhhkhhk....",
+            "..khhhhHhhhhkk..",
+            ".khhhHHhhhhhhhk.",
+            ".khhhhhhhhhhhhk.",
+            ".khhhhhhhhhhhhk.",
+            ".khhhhhhhhhhhhk.",
+            ".khhhhhhhhhhhhk.",
+            ".kshhhhhhhhhhsk.",
+            ".kshhhhhhhhhhsk.",
+            ".kSshhhhhhhhsSk.",
+            "..kSshhhhhhsSk..",
+            "...kkSSSSSSkk...",
+            "...kkvvvvvvkk...",
+            "..kvvVvvvvVvvk..",
+            ".kvvkvvvvvvkvvk.",
+            ".kvVkvVvvVvkVvk.",
+            ".ksSkvvvvvvkSsk.",
+            "..kkkPppppPkkk..",
+        ],
+        "left": [
+            ".......k.kk.....",
+            ".....kkhkhhk....",
+            "....khhhhHhhkk..",
+            "...khhhHHhhhhhk.",
+            "..khhhhhhhhhhhk.",
+            "..khhhhhhhhhhhk.",
+            "..khsshhhhhhhhk.",
+            ".kssssshhhhhhk..",
+            ".ksssssShhhhhk..",
+            ".kseessSShhhhk..",
+            ".kssssSSShhhk...",
+            "..krsssSShhk....",
+            "...kkSSSSkk.....",
+            "....kkvwvvkk....",
+            "...kvvvwvvvvk...",
+            "...kvvVkvvvvk...",
+            "...kvVvkvVvvk...",
+            "...kvvksSkvvk...",
+            "....kkPpppkk....",
+        ],
+    },
+    "wilson": {
+        "down": [
+            "................",
+            ".....kkkkkk.....",
+            "...kkhhhhHhkk...",
+            "..khhhhhHHhhhk..",
+            ".khhhhhhhhhhhhk.",
+            ".kGhhssssshhhGk.",
+            ".kGssssssssssGk.",
+            ".ksMMssssssMMsk.",
+            ".kgggggssgggggk.",
+            ".kgLeLgssgLeLgk.",
+            ".kSggggSSggggSk.",
+            "..kSsmmmmmmsSk..",
+            "...kkSSrrSSkk...",
+            "...kkwwrrwwkk...",
+            "..kwwwwrrwwwwk..",
+            ".kwwkwwrrwwkwwk.",
+            ".ksskwwrrwwksSk.",
+            ".kSskwwwwwwkSsk.",
+            "..kkkPppppPkkk..",
+        ],
+        "up": [
+            "................",
+            ".....kkkkkk.....",
+            "...kkhhhhHhkk...",
+            "..khhhhhHHhhhk..",
+            ".khhhhhhhhhhhhk.",
+            ".kGhhhhhhhhhhGk.",
+            ".kGhhhhhhhhhhGk.",
+            ".kshhhhhhhhhhsk.",
+            ".kshhhhhhhhhhsk.",
+            ".kSGhhhhhhhhGSk.",
+            ".kSsGGhhhhGGsSk.",
+            "..kSssssssssSk..",
+            "...kkSSSSSSkk...",
+            "...kkwwwwwwkk...",
+            "..kwwwwwwwwwwk..",
+            ".kwwkwwwwwwkwwk.",
+            ".ksskwwwwwwksSk.",
+            ".kSskwwwwwwkSsk.",
+            "..kkkPppppPkkk..",
+        ],
+        "left": [
+            "................",
+            "......kkkkk.....",
+            "....kkhhHhhkk...",
+            "...khhhHHhhhhk..",
+            "..khhhhhhhhhhhk.",
+            "..kshhhhhhhhhGk.",
+            ".kssssshhhhhGGk.",
+            ".kMMsssShhhhGk..",
+            "kgggggsShhhhGk..",
+            "kLeLggsSShhhhk..",
+            "kgggsssSSShhk...",
+            ".kmmmmsSSShk....",
+            "..kkSSSSSkk.....",
+            "....kkwrwwkk....",
+            "...kwwwrwwwwk...",
+            "...kwwwkwwwwk...",
+            "...kwwwkwwwwk...",
+            "...kSskssSkwk...",
+            "....kkPpppkk....",
+        ],
+    },
 }
 
 ROCHY_LEGS_FRONT = {
@@ -510,6 +657,16 @@ MOODS = ["normal", "sorpresa", "serio", "alegre"]
 
 # Cambios de cara por expresión: (fila, columna, carácter) sobre la vista de frente.
 FACE_EDITS = {
+    "camilo": {
+        "sorpresa": [(11, 7, "k"), (11, 8, "k"), (12, 7, "k"), (12, 8, "k")],
+        "serio": [(11, 6, "k"), (11, 7, "k"), (11, 8, "k"), (11, 9, "k")],
+        "alegre": [(11, 6, "r"), (11, 7, "w"), (11, 8, "w"), (11, 9, "r")],
+    },
+    "wilson": {
+        "sorpresa": [(12, 7, "k"), (12, 8, "k"), (10, 3, "s"), (10, 12, "s")],
+        "serio": [(7, 4, "M"), (7, 11, "M"), (12, 7, "S"), (12, 8, "S")],
+        "alegre": [(12, 6, "r"), (12, 7, "w"), (12, 8, "w"), (12, 9, "r")],
+    },
     "sam": {
         "sorpresa": [(11, 7, "k"), (11, 8, "k"), (12, 7, "k"), (12, 8, "k")],
         "serio": [(11, 7, "S"), (11, 8, "S"), (7, 5, "d"), (7, 6, "d"), (7, 9, "d"), (7, 10, "d")],
@@ -533,9 +690,39 @@ FACE_EDITS = {
 }
 
 
+# Mismo orden que CHAR en src/config.ts.
+ORDER = [
+    "sam", "ruth", "kessler", "margarita", "gus", "rochy",
+    "lena", "kraus", "wes", "nora", "fenton", "pat",
+    "iris", "penrose", "hale", "camilo", "beatriz", "wilson",
+]
+
+
+def auto_moods(name):
+    """Expresiones de los personajes nuevos del pack: se busca la boca (el color de boca
+    en la cara) y se abre (sorpresa), se cierra en una raya (serio) o sonríe (alegre)."""
+    im = pack_frame(name, 0, 0)
+    found = [(y, x) for y in range(9, 14) for x in range(6, 10)
+             if im.getpixel((x, y))[:3] == hex2rgba(MOUTH)[:3]]
+    if not found:
+        return {}
+    # la boca es la fila con más píxeles de boca en el centro (las mejillas quedan fuera)
+    row = max({y for y, _ in found}, key=lambda r: sum(1 for y, _ in found if y == r))
+    mouth = [(y, x) for y, x in found if y == row]
+    ink, teeth = "#1c1830", "#fffbe8"
+    xs = sorted({x for _, x in mouth})
+    y0 = min(y for y, _ in mouth)
+    return {
+        "sorpresa": [(y, x, ink) for y, x in mouth] + [(y0 + 1, x, ink) for x in xs],
+        "serio": [(y0, x, ink) for x in range(xs[0] - (len(xs) < 3), xs[-1] + 1 + (len(xs) < 3))],
+        "alegre": [(y0, x, teeth) for x in xs[1:-1] or xs] + [(y0, xs[0] - 1, MOUTH), (y0, xs[-1] + 1, MOUTH)],
+    }
+
+
 def portrait(name, mood):
     if name in PACK_INDEX:
-        return pack_frame(name, 0, 0, PACK_MOODS[name].get(mood, [])).crop((0, 0, 16, 20))
+        moods = PACK_MOODS.get(name) or auto_moods(name)
+        return pack_frame(name, 0, 0, moods.get(mood, [])).crop((0, 0, 16, 20))
     rows = [list(r) for r in VIEWS[name]["down"]]
     for y, x, ch in FACE_EDITS[name].get(mood, []):
         rows[y][x] = ch
@@ -552,7 +739,7 @@ def portrait(name, mood):
 
 
 def build_portraits():
-    order = ["sam", "ruth", "kessler", "margarita", "gus", "rochy"]
+    order = ORDER
     sheet = Image.new("RGBA", (16 * len(MOODS), 20 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for m, mood in enumerate(MOODS):
@@ -570,7 +757,71 @@ def build_portraits():
 # izquierda (por eso al principio Sam "caminaba al revés").
 
 PACK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "source", "piano_characters.png")
-PACK_INDEX = {"sam": 5, "ruth": 8, "margarita": 6, "gus": 3}
+PACK_INDEX = {
+    "sam": 5, "ruth": 8, "margarita": 6, "gus": 3,
+    "lena": 7, "kraus": 4, "wes": 10, "nora": 0, "fenton": 11, "pat": 13,
+    "iris": 2, "penrose": 14, "hale": 12, "beatriz": 1,
+}
+
+# Personajes de las otras historias hechos sobre bases del pack que no usa nadie más.
+# Para cada símbolo del pack: color en la cabeza (filas 0-12) y en el cuerpo. Un valor
+# (corte, arriba, abajo) usa "arriba" hasta esa fila: el mismo símbolo puede ser pelo
+# arriba y boca o mejillas más abajo. Con un cuarto elemento "frente", el corte solo
+# vale mirando de frente (de lado o de espaldas ese símbolo es todo pelo).
+SKIN, SKIN_S, MOUTH = "#f6d0a8", "#dca27e", "#b4504a"
+RECOLOR = {
+    # Lena (Diez días, 1995): pelo castaño oscuro con coletero verde agua, camisa de
+    # cuadros roja sobre camiseta, falda de bluyín.
+    "lena": {
+        "head": {"o": "#4a2e1e", "s": (5, "#6e4630", SKIN_S), "S": SKIN, "r": "#2f9a8e", "p": MOUTH, "W": "#fffbe8", "b": "#3d5a8a"},
+        "body": {"o": "#4a2e1e", "r": "#b8392f", "W": "#f4ecd8", "b": "#3d5a8a", "S": SKIN, "s": SKIN_S, "p": "#8e2a2a"},
+    },
+    # Kraus (Diez días): cofundador, pelo rubio peinado hacia atrás, gafas de sol, traje negro, corbata azul.
+    "kraus": {
+        "head": {"y": "#d8b878", "o": "#9a7a44", "W": "#f4e4b0", "s": SKIN, "r": MOUTH},
+        "body": {"s": SKIN, "r": "#2b4fa0", "y": "#d8b878", "o": "#9a7a44", "W": "#f4ecd8"},
+    },
+    # Wes (Diez días): diseñador, pelo de punta teñido de verde agua, camisa morada.
+    "wes": {
+        "head": {"r": "#2fb3a8", "p": (8, "#7ee0d4", MOUTH), "S": SKIN, "s": SKIN_S, "b": "#6a3d9a", "B": "#8f5cc2", "y": "#fed018", "o": "#5c402c"},
+        "body": {"b": "#6a3d9a", "B": "#8f5cc2", "y": "#fed018", "o": "#3a281c", "S": SKIN, "s": SKIN_S, "p": "#8e2a2a", "r": "#2fb3a8"},
+    },
+    # Nora (La consulta, 1974): melena caoba, vestido mostaza de los setenta.
+    "nora": {
+        "head": {"y": "#a0522d", "s": (7, "#c46a3c", SKIN_S), "S": SKIN, "p": MOUTH, "B": "#c9962e", "b": "#9a6e1e", "W": "#f4ecd8"},
+        "body": {"B": "#c9962e", "b": "#9a6e1e", "S": SKIN, "s": SKIN_S, "p": "#5c402c", "W": "#f4ecd8", "y": "#a0522d"},
+    },
+    # Dr. Fenton (La consulta): matemático calvo con canas a los lados y bigote, chaqueta de tweed.
+    "fenton": {
+        "head": {"p": (10, "#c4c4cc", MOUTH, "frente"), "s": SKIN, "S": "#fbe2c4", "b": "#6a6a76", "B": "#8a8a96"},
+        "body": {"p": "#7a5a40", "B": "#5c402c", "S": "#e8e0d0", "s": "#6a6a76", "b": "#45454f"},
+    },
+    # Pat (La consulta): jefa del archivo, melena negra lisa, vestido verde oliva con cinturón naranja.
+    "pat": {
+        "head": {"W": (6, "#4a4458", "#f4ecd8"), "s": SKIN, "S": "#fbe2c4", "p": MOUTH, "r": MOUTH, "y": "#d35600"},
+        "body": {"r": "#6a7a3a", "y": "#d35600", "W": "#f4ecd8", "S": SKIN, "s": SKIN_S, "p": "#5c402c"},
+    },
+    # Iris (Código Cuervo, 1941): pelo castaño recogido con cinta verde, uniforme caqui.
+    "iris": {
+        "head": {"b": (2, "#2f5a3c", "#4a2e1e"), "B": (2, "#4a7a5c", "#6e4630"), "r": "#2f5a3c", "p": (9, "#2f5a3c", MOUTH, "frente"), "S": SKIN, "s": SKIN_S, "W": "#fffbe8"},
+        "body": {"W": "#b4a078", "B": "#8a7a54", "y": "#3a281c", "S": SKIN, "s": SKIN_S, "p": "#8a7a54", "r": "#2f5a3c", "b": "#4a2e1e"},
+    },
+    # Penrose (Código Cuervo): criptoanalista despeinado, chaleco de tweed verde.
+    "penrose": {
+        "head": {"y": "#b8a07a", "o": "#7a6446", "S": SKIN, "s": SKIN_S, "p": MOUTH, "k": "#1c1830"},
+        "body": {"o": "#3a4a2a", "b": "#5a6a3a", "B": "#7a8a4a", "r": "#6e4c2c", "S": "#e8e0d0", "s": SKIN_S, "y": "#b8a07a"},
+    },
+    # Comandante Hale (Código Cuervo): pelo gris corto, uniforme azul marino.
+    "hale": {
+        "head": {"p": (9, "#5c5c66", "#c97a62", "frente"), "S": SKIN, "s": SKIN_S, "B": "#2e2a48"},
+        "body": {"B": "#34447a", "b": "#24305a", "s": "#24305a", "p": "#1c2440", "S": SKIN},
+    },
+    # Doña Beatriz (Medianoche, 1999): peinado voluminoso castaño, saco vinotinto, blusa crema.
+    "beatriz": {
+        "head": {"b": "#4a2e24", "B": "#6e4636", "p": (7, "#4a2e24", MOUTH, "frente"), "r": "#6e4636", "S": SKIN, "s": SKIN_S, "W": "#f4ecd8"},
+        "body": {"W": "#f4ecd8", "B": "#7a2a3a", "y": "#2a1c14", "S": SKIN, "s": SKIN_S, "p": "#7a2a3a", "b": "#5a1e2a"},
+    },
+}
 PACK_ROWS = [0, 3, 2, 1]  # abajo, izquierda, arriba, derecha
 
 PACK_SRC = {
@@ -579,10 +830,22 @@ PACK_SRC = {
 }
 
 
-def pack_color(name, ch, y):
-    """Color nuevo según personaje, símbolo original y fila (cabeza o cuerpo)."""
+def pack_color(name, ch, y, view=0):
+    """Color nuevo según personaje, símbolo original y fila (cabeza o cuerpo).
+    view: fila del pack (0 de frente, 1 y 3 de lado, 2 de espaldas)."""
     head = y <= 12
     skin, skin_s, skin_l = "#f6d0a8", "#dca27e", "#fbe2c4"
+    if name in RECOLOR:
+        part = RECOLOR[name]["head" if head else "body"]
+        v = part.get(ch, RECOLOR[name]["body" if head else "head"].get(ch))
+        if v is None:
+            return "#1c1830" if ch == "k" else "#ff00ff"
+        if isinstance(v, tuple):
+            cut, top, bottom = v[:3]
+            if len(v) == 4 and view != 0:
+                return top
+            return top if y <= cut else bottom
+        return v
     if ch == "k":
         return "#1c1830"
     if name == "gus":
@@ -618,6 +881,36 @@ def pack_color(name, ch, y):
     return {"r": "#cc4a2e", "p": "#f08a5a", "B": "#f4ecd8", "b": "#d8c7a4", "o": "#4a3426", "y": "#efe4cc", "D": "#2f7a74", "E": "#22605c"}[ch]
 
 
+# Lazos del pack que en el personaje nuevo no pegan (parecían cuernos u orejas de gato):
+# se quitan las filas de arriba y la cabeza se vuelve a perfilar.
+TRIM = {"iris": 2, "beatriz": 2}
+TRIM_HAIR = {"iris": "b", "beatriz": "b"}
+
+
+def trim_top(grid, rows, hair):
+    for y in range(rows + 1):
+        grid[y] = ["."] * 16
+    # lo que quede de lazo en las filas de abajo pasa a ser pelo
+    for y in range(rows + 1, rows + 6):
+        for x in range(16):
+            if grid[y][x] in ("r", "p") and (x <= 3 or x >= 12):
+                grid[y][x] = hair
+    # nueva línea de contorno arriba: todo píxel sin nada encima
+    for y in range(rows + 1, rows + 6):
+        for x in range(16):
+            if grid[y][x] != "." and grid[y - 1][x] == ".":
+                grid[y][x] = "k"
+    # y fuera píxeles sueltos (restos de cinta) que hayan quedado aislados
+    for y in range(rows + 1, rows + 7):
+        for x in range(16):
+            if grid[y][x] == ".":
+                continue
+            n = sum(1 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                    if 0 <= x + dx < 16 and 0 <= y + dy < 24 and grid[y + dy][x + dx] != ".")
+            if n <= 1:
+                grid[y][x] = "."
+
+
 def pack_frame(name, row, col, edits=()):
     src = Image.open(PACK).convert("RGBA")
     base_y = PACK_INDEX[name] * 96 + row * 24
@@ -629,6 +922,8 @@ def pack_frame(name, row, col, edits=()):
             c = src.getpixel((col * 16 + x, base_y + y))
             line.append("." if c[3] == 0 else PACK_SRC["#%02x%02x%02x" % c[:3]])
         grid.append(line)
+    if name in TRIM:
+        trim_top(grid, TRIM[name], TRIM_HAIR[name])
     if name == "ruth":
         # el uniforme marino del pack pasa a vestido (solo el interior, no el contorno)
         def edge_r(x, y):
@@ -666,7 +961,7 @@ def pack_frame(name, row, col, edits=()):
             ch = grid[y][x]
             if ch == ".":
                 continue
-            color = ch if ch.startswith("#") else pack_color(name, ch, y)
+            color = ch if ch.startswith("#") else pack_color(name, ch, y, row)
             im.putpixel((x, y), hex2rgba(color))
     return im
 
@@ -701,7 +996,7 @@ PACK_MOODS = {
 
 
 def build():
-    order = ["sam", "ruth", "kessler", "margarita", "gus", "rochy"]
+    order = ORDER
     sheet = Image.new("RGBA", (64, 24 * 4 * len(order)), (0, 0, 0, 0))
     for c, name in enumerate(order):
         for d, view in enumerate(["down", "left", "up", "right"]):
