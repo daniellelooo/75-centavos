@@ -880,3 +880,23 @@ a.badge-next { display: block; text-decoration: none; }
 .term .task-pin { flex: none; display: flex; flex-direction: column; gap: calc(2 * var(--u)); padding-top: calc(3 * var(--u)); border-top: var(--u) dashed rgba(254, 208, 24, 0.25); }
 .term .task-pin h3 { margin: 0; }
 .term .task-pin .borrowed { margin: 0; }
+
+/* cuenta atrás de medianoche (Medianoche) */
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 60;
+  pointer-events: none;
+  font-family: var(--font-title, "Press Start 2P"), monospace;
+  font-size: calc(48 * var(--u));
+  color: var(--cream, #fff4c9);
+  text-shadow: calc(2 * var(--u)) calc(2 * var(--u)) 0 #d35600, calc(4 * var(--u)) calc(4 * var(--u)) 0 #1c1830;
+}
+.countdown.beat { animation: countdown-beat 0.5s steps(4) both; }
+.countdown.year { color: #fed018; font-size: calc(56 * var(--u)); }
+@keyframes countdown-beat {
+  from { transform: scale(1.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

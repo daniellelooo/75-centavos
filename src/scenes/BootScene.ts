@@ -39,9 +39,16 @@ export class BootScene extends Phaser.Scene {
     sheet("xmas_tree", "xmas_tree.png", 20, 32);
     sheet("map_table", "map_table.png", 52, 28);
     sheet("card_sorter", "card_sorter.png", 40, 26);
+    sheet("projector_screen", "projector_screen.png", 60, 42);
+    sheet("audience", "audience.png", 100, 22);
+    sheet("directors", "directors.png", 100, 22);
+    sheet("wall_map", "wall_map.png", 112, 32);
+    sheet("teller", "teller.png", 112, 40);
+    sheet("pesebre", "pesebre.png", 48, 30);
+    sheet("stove", "stove.png", 20, 40);
     for (const f of [
       "wall", "wall_cap_v", "wall_cap_h", "chalkboard", "clock", "mug", "filing", "poster",
-      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge", "paper_item", "folder_item", "pegboard", "workbench", "qsl_cards", "tire_stack", "pizza_boxes", "beanbag", "soda_cans", "bed", "book_piles",
+      "calendar", "phone", "papers", "trash", "desk", "chair", "table", "rug", "telescope", "coatrack", "bicycle", "postit", "fridge", "paper_item", "folder_item", "pegboard", "workbench", "qsl_cards", "tire_stack", "pizza_boxes", "beanbag", "soda_cans", "bed", "book_piles", "long_table",
     ]) {
       this.load.image(f, A + f + ".png");
     }
@@ -74,6 +81,13 @@ export class BootScene extends Phaser.Scene {
     this.anims.create({ key: "sam-bike", frames: this.anims.generateFrameNumbers("sam_bike", {}), frameRate: 9, repeat: -1 });
     this.anims.create({ key: "tree-lights", frames: this.anims.generateFrameNumbers("xmas_tree", {}), frameRate: 1.5, repeat: -1 });
     this.anims.create({ key: "map-route", frames: this.anims.generateFrameNumbers("map_table", { frames: [0] }), frameRate: 1, repeat: -1 });
+    // público: murmullo lento y, al final, aplausos rápidos
+    this.anims.create({ key: "crowd-murmur", frames: this.anims.generateFrameNumbers("audience", {}), frameRate: 0.8, repeat: -1 });
+    this.anims.create({ key: "crowd-clap", frames: this.anims.generateFrameNumbers("audience", {}), frameRate: 8, repeat: -1 });
+    this.anims.create({ key: "board-murmur", frames: this.anims.generateFrameNumbers("directors", {}), frameRate: 0.6, repeat: -1 });
+    this.anims.create({ key: "board-clap", frames: this.anims.generateFrameNumbers("directors", {}), frameRate: 7, repeat: -1 });
+    this.anims.create({ key: "stove-fire", frames: this.anims.generateFrameNumbers("stove", {}), frameRate: 3, repeat: -1 });
+    this.anims.create({ key: "pesebre-star", frames: this.anims.generateFrameNumbers("pesebre", {}), frameRate: 1.2, repeat: -1 });
     this.anims.create({ key: "sorter-run", frames: this.anims.generateFrameNumbers("card_sorter", {}), frameRate: 2.5, repeat: -1 });
     this.anims.create({ key: "sat-blink", frames: this.anims.generateFrameNumbers("satellite", {}), frameRate: 2, repeat: -1 });
     // sombra suave bajo personajes: elipse pixelada
