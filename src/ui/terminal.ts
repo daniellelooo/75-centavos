@@ -16,6 +16,7 @@ import { caseReports, hardcodeHint } from "../game/report";
 import { locateSyntax } from "../game/syntax";
 import { setOfExercise } from "../game/training";
 import { MENTORS } from "../game/mentors";
+import { borrowedFor } from "../game/borrowed";
 import { save, writeSave } from "../game/state";
 import { sfx } from "../audio/sfx";
 import { el, esc, ui, wait } from "./dom";
@@ -50,6 +51,18 @@ const errorLineField = StateField.define<DecorationSet>({
 
 /** Abre la terminal. Resuelve true si el jugador resolvió la misión. */
 /** Abre la terminal. Resuelve true si se resolvió. En modo repaso no toca el progreso. */
+/** Lo que ya está cargado en la máquina. Si solo se sabe el nombre, se enseña un
+ *  ejemplo real del valor para que se vea la forma de los datos. */
+function borrowedHtml(mission: Mission): string {
+  const { described, shown } = borrowedFor(mission);
+  if (!described.length && !shown.length) return "";
+  const desc = described.length ? `<p class="borrowed">Ya cargado en la máquina: ${described.map((b) => `<code>${esc(b)}</code>`).join(", ")}</p>` : "";
+  const ej = shown.length
+    ? `<p class="borrowed">${described.length ? "Y también" : "Ya cargado en la máquina"}, por ejemplo (en cada prueba cambian los datos, no la forma):</p><pre class="borrowed-val">${esc(shown.join("\n"))}</pre>`
+    : "";
+  return desc + ej;
+}
+
 export function openTerminal(mission: Mission, opts: { practice?: boolean; training?: { vocabAt: number } } = {}): Promise<boolean> {
   const training = opts.training;
   // los ejercicios de los mentores se comportan como un repaso: no tocan la historia
@@ -79,11 +92,7 @@ export function openTerminal(mission: Mission, opts: { practice?: boolean; train
       <div class="task-pin">
         <h3>Encargo</h3>
         <div class="task">${taskHtml(mission.task)}</div>
-        ${
-          mission.borrowed.length
-            ? `<p class="borrowed">Ya cargado en la máquina: ${mission.borrowed.map((b) => `<code>${esc(b)}</code>`).join(", ")}</p>`
-            : ""
-        }
+        ${borrowedHtml(mission)}
       </div>
       <div class="actions"><button class="btn hint-btn">PISTA</button><button class="btn close-btn">SALIR [ESC]</button></div>
     `;

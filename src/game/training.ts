@@ -691,7 +691,7 @@ export const TRAINING: TrainingSet[] = [
           body: "`lista.map((x) => ...)` devuelve una lista nueva del mismo tamaño, con lo que devuelve la flecha para cada elemento.",
           example: "let precios = [2, 4];\nlet dobles = precios.map((p) => p * 2); // [4,8]",
         },
-        task: "Crea `indicativos` con el indicativo de cada contacto de `contactos`, usando `map`, y muéstralo.",
+        task: "Cada contacto de `contactos` es un objeto con su `indicativo` y su `senal`. Crea `indicativos` con solo el indicativo de cada contacto, usando `map`, y muéstralo.",
         borrowed: ["contactos"],
         cases: [
           { label: "esta tarde", globals: () => ({ contactos: [{ indicativo: "JA1ABC", senal: 8 }, { indicativo: "OH2AB", senal: 4 }, { indicativo: "PY2XYZ", senal: 9 }] }) },

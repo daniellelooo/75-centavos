@@ -288,6 +288,17 @@ html, body {
 .term .task::before { content: "TAREA  "; color: var(--amber); }
 .term .borrowed { color: #c9905a; font-size: calc(8 * var(--u)); }
 .term .borrowed code { color: var(--cream); font-family: var(--font-crt); }
+.term pre.borrowed-val {
+  margin: calc(1 * var(--u)) 0 0;
+  padding: calc(2 * var(--u)) calc(3 * var(--u));
+  font-family: var(--font-crt);
+  font-size: calc(8.5 * var(--u));
+  line-height: 1.1;
+  color: var(--cream);
+  white-space: pre-wrap;
+  background: rgba(0, 0, 0, 0.35);
+  border-left: var(--u) solid #c9905a;
+}
 .term .hint { color: var(--blue); text-shadow: 0 0 calc(2 * var(--u)) rgba(143, 211, 255, 0.4); white-space: pre-wrap; }
 
 .term .editor-wrap {

@@ -210,3 +210,17 @@ describe("textos sin cerrar y palabras sin comillas", () => {
     expect(missingNameHint("contador", "contador = contador + 1;", [])).toBeNull();
   });
 });
+
+describe("lo cargado en la máquina se ve con su forma", () => {
+  it("los ejercicios que solo nombran un dato enseñan un ejemplo de su valor", async () => {
+    const { borrowedFor } = await import("../src/game/borrowed");
+    const ex = TRAINING_EXERCISES.find((e) => e.id === "t6b")!;
+    const b = borrowedFor(ex);
+    expect(b.shown.join("\n")).toMatch(/indicativo: "JA1ABC", senal: 8/);
+    expect(b.described).toEqual([]);
+  });
+  it("las misiones que ya describen el dato lo dejan tal cual", async () => {
+    const { borrowedFor } = await import("../src/game/borrowed");
+    for (const m of MISSIONS) expect(borrowedFor(m).shown).toEqual([]);
+  });
+});
