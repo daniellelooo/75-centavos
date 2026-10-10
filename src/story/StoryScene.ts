@@ -300,7 +300,7 @@ export class StoryScene extends Phaser.Scene {
     for (const n of this.npcs) {
       this.things.push({
         id: n.who, x: n.sprite.x, y: n.sprite.y + 6, r: 14,
-        label: () => `Hablar con ${pretty(n.who)}`.replace("con el ", "con el "),
+        label: () => `Hablar con ${pretty(n.who)}`,
         use: () => this.talkTo(n),
       });
     }
