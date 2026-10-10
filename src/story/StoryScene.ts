@@ -41,8 +41,10 @@ interface Npc {
   last: number;
 }
 
-/** "Doña Beatriz", "Dr. Fenton": el nombre de los diálogos, en minúsculas de frase. */
+/** Cómo se nombra a alguien dentro de una frase: "Doña Beatriz", "el Dr. Fenton". */
+const IN_TEXT: Partial<Record<CharName, string>> = { hale: "el comandante Hale", fenton: "el Dr. Fenton" };
 const pretty = (who: CharName) =>
+  IN_TEXT[who] ??
   CHAR_NAMES[who]
     .toLowerCase()
     .replace(/(^|\s|\.)(\p{L})/gu, (_, a: string, b: string) => a + b.toUpperCase());
@@ -298,7 +300,7 @@ export class StoryScene extends Phaser.Scene {
     for (const n of this.npcs) {
       this.things.push({
         id: n.who, x: n.sprite.x, y: n.sprite.y + 6, r: 14,
-        label: () => `Hablar con ${pretty(n.who)}`,
+        label: () => `Hablar con ${pretty(n.who)}`.replace("con el ", "con el "),
         use: () => this.talkTo(n),
       });
     }
