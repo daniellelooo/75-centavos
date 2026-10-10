@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Eternal Games — juegos para aprender a programar, en español y gratis</title>
-    <meta name="description" content="Historias en pixel art que se resuelven programando. Empieza con 75 Centavos: aprende JavaScript desde cero en un laboratorio de Berkeley en 1986. Gratis y desde el navegador." />
+    <meta name="description" content="Cinco historias en pixel art que se resuelven programando: JavaScript desde cero, el DOM, SQL y bases de datos, textos y fechas. En español, gratis y desde el navegador." />
     <meta name="theme-color" content="#0f1424" />
     <link rel="canonical" href="https://75-centavos.vercel.app/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -45,6 +45,50 @@
             "isAccessibleForFree": true,
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
             "publisher": { "@type": "Organization", "name": "Eternal Growth" }
+          },
+          {
+            "@type": "VideoGame",
+            "name": "Diez días",
+            "url": "https://75-centavos.vercel.app/diez-dias/",
+            "description": "Juego pixel art para aprender el DOM y los eventos de JavaScript. Mountain View, 1995.",
+            "inLanguage": "es",
+            "genre": ["Educativo", "Aventura"],
+            "gamePlatform": "Navegador web",
+            "isAccessibleForFree": true,
+            "publisher": { "@type": "Organization", "name": "Eternal Growth" }
+          },
+          {
+            "@type": "VideoGame",
+            "name": "La consulta",
+            "url": "https://75-centavos.vercel.app/la-consulta/",
+            "description": "Juego pixel art para aprender SQL y bases de datos desde cero. San José, 1974.",
+            "inLanguage": "es",
+            "genre": ["Educativo", "Aventura"],
+            "gamePlatform": "Navegador web",
+            "isAccessibleForFree": true,
+            "publisher": { "@type": "Organization", "name": "Eternal Growth" }
+          },
+          {
+            "@type": "VideoGame",
+            "name": "Código Cuervo",
+            "url": "https://75-centavos.vercel.app/codigo-cuervo/",
+            "description": "Juego pixel art para aprender a trabajar con textos en JavaScript descifrando mensajes. Inglaterra, 1941.",
+            "inLanguage": "es",
+            "genre": ["Educativo", "Aventura"],
+            "gamePlatform": "Navegador web",
+            "isAccessibleForFree": true,
+            "publisher": { "@type": "Organization", "name": "Eternal Growth" }
+          },
+          {
+            "@type": "VideoGame",
+            "name": "Medianoche",
+            "url": "https://75-centavos.vercel.app/medianoche/",
+            "description": "Juego pixel art para aprender fechas y pruebas en JavaScript con el efecto 2000. Bogotá, 1999.",
+            "inLanguage": "es",
+            "genre": ["Educativo", "Aventura"],
+            "gamePlatform": "Navegador web",
+            "isAccessibleForFree": true,
+            "publisher": { "@type": "Organization", "name": "Eternal Growth" }
           }
         ]
       }
@@ -78,7 +122,7 @@
 
       <section id="historias" class="stories">
         <h2>Las historias</h2>
-        <p class="lead">Cada historia es un nivel. Empiezas sin saber programar y terminas cada una sabiendo un poco más.</p>
+        <p class="lead">Cinco historias, cinco épocas, cinco lugares. Cada una es un nivel: empiezas sin saber programar con 75 Centavos y en cada historia aprendes algo nuevo, de JavaScript a las bases de datos.</p>
 
         <article class="story">
           <a class="cover" href="/75-centavos/"><img src="/img/viaje.webp" width="1440" height="810" alt="Sam en bicicleta por una calle de Berkeley, camino a una sesión de práctica." loading="lazy" /></a>
@@ -92,15 +136,54 @@
           </div>
         </article>
 
-        <article class="story soon">
-          <div class="cover locked"><div class="soon-screen"><b>Diez días</b><span>PRÓXIMAMENTE</span></div></div>
+        <article class="story">
+          <a class="cover" href="/diez-dias/"><img src="/img/diez-dias.webp" width="806" height="453" alt="Lena en la oficina de Nébula, con Kraus en su escritorio y Wes junto a su terminal." loading="lazy" /></a>
           <div class="story-text">
             <div class="level">NIVEL 2 · MOUNTAIN VIEW, 1995</div>
             <h3>Diez días</h3>
-            <p>Una empresa de navegadores le da a un programador diez días para inventar un lenguaje que haga vivas las páginas web antes del lanzamiento. Tu código transforma una página de 1995 ante tus ojos. Inspirada en cómo nació JavaScript; en construcción.</p>
-            <p class="learn">Aprenderás: el DOM · eventos · módulos</p>
+            <p>Lena acaba de entrar en Nébula, una empresa que hace un navegador. Tienen diez días para que las páginas web, hasta ahora papel quieto, respondan a los clics. Tu código transforma una página de 1995 y la ves cambiar en la terminal. Inspirada en cómo nació JavaScript.</p>
+            <p class="learn">Aprendes: el DOM · querySelector · clases y estilos · eventos · formularios · crear y borrar elementos</p>
+            <p class="meta">3 actos · 12 misiones · alrededor de una hora</p>
+            <a class="play" href="/diez-dias/">Jugar</a>
           </div>
         </article>
+
+        <article class="story">
+          <a class="cover" href="/la-consulta/"><img src="/img/la-consulta.webp" width="806" height="453" alt="Nora en el laboratorio de 1974, con las unidades de cinta al fondo y el archivo de tarjetas de Pat." loading="lazy" /></a>
+          <div class="story-text">
+            <div class="level">NIVEL 3 · SAN JOSÉ, 1974</div>
+            <h3>La consulta</h3>
+            <p>Los datos viven en cintas y tarjetas perforadas, y cada pregunta cuesta un programa nuevo. Un matemático propone guardarlo todo en tablas y preguntar en un idioma casi humano. Nora tiene que demostrarlo antes de que la aerolínea pierda la paciencia. Con SQL de verdad, sin instalar nada.</p>
+            <p class="learn">Aprendes: tablas · SELECT · WHERE · ORDER BY · COUNT, SUM y AVG · GROUP BY · JOIN · UPDATE</p>
+            <p class="meta">3 actos · 12 misiones · alrededor de una hora</p>
+            <a class="play" href="/la-consulta/">Jugar</a>
+          </div>
+        </article>
+
+        <article class="story">
+          <a class="cover" href="/codigo-cuervo/"><img src="/img/codigo-cuervo.webp" width="806" height="453" alt="Iris en Hawthorn Hall, con Penrose junto a la radio de escucha y el comandante Hale ante la carta de los convoyes." loading="lazy" /></a>
+          <div class="story-text">
+            <div class="level">NIVEL 4 · INGLATERRA, 1941</div>
+            <h3>Código Cuervo</h3>
+            <p>Iris ganó un concurso de crucigramas y la reclutaron sin decirle para qué. En una mansión del campo llegan mensajes cifrados que esconden la ruta de los convoyes. Descifrarlos a tiempo es cuestión de horas, y de saber trabajar con textos.</p>
+            <p class="learn">Aprendes: recorrer textos · mayúsculas y búsquedas · objetos como contadores · ordenar · split y join · funciones que usan funciones</p>
+            <p class="meta">3 actos · 12 misiones · alrededor de una hora</p>
+            <a class="play" href="/codigo-cuervo/">Jugar</a>
+          </div>
+        </article>
+
+        <article class="story">
+          <a class="cover" href="/medianoche/"><img src="/img/medianoche.webp" width="806" height="453" alt="Camilo en la sala de cómputo del banco, con doña Beatriz, Wilson, los servidores y el arbolito de Navidad." loading="lazy" /></a>
+          <div class="story-text">
+            <div class="level">NIVEL 5 · BOGOTÁ, 1999</div>
+            <h3>Medianoche</h3>
+            <p>En el Banco Cafetero del Sur los programas guardan el año con dos cifras. Cuando el reloj pase de 99 a 00, el sistema creerá que es 1900. Camilo, el practicante, tiene hasta la medianoche del 31 de diciembre para que nada se rompa.</p>
+            <p class="learn">Aprendes: fechas · split y padStart · años bisiestos · Date · toFixed · try y catch · ordenar · probar el código</p>
+            <p class="meta">3 actos · 12 misiones · alrededor de una hora</p>
+            <a class="play" href="/medianoche/">Jugar</a>
+          </div>
+        </article>
+
       </section>
 
       <section id="retos" class="retos-teaser">

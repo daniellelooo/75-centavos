@@ -29,7 +29,11 @@ export function badgeHtml(done = save.done): string {
 /** Lo que viene después: las siguientes historias, cada una un nivel. */
 export function storiesHtml(): string {
   return STORIES.slice(1)
-    .map((s) => `<div class="badge-next">NIVEL ${s.level} · ${esc(s.title)} <span>${esc(s.place)} · próximamente</span></div>`)
+    .map((s) =>
+      s.open
+        ? `<a class="badge-next" href="/${s.id}/" target="_blank" rel="noopener">NIVEL ${s.level} · ${esc(s.title)} <span>${esc(s.place)} · ya se puede jugar</span></a>`
+        : `<div class="badge-next">NIVEL ${s.level} · ${esc(s.title)} <span>${esc(s.place)} · próximamente</span></div>`,
+    )
     .join("");
 }
 

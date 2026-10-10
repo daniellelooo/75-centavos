@@ -10,6 +10,10 @@ interface Publico { alias: string; nombre: string; desde: string; juegos: Juego[
 const root = document.querySelector<HTMLElement>("#perfil")!;
 const TOTAL: Record<string, { title: string; level: number; misiones: number }> = {
   "75-centavos": { title: "75 Centavos", level: 1, misiones: 30 },
+  "diez-dias": { title: "Diez días", level: 2, misiones: 12 },
+  "la-consulta": { title: "La consulta", level: 3, misiones: 12 },
+  "codigo-cuervo": { title: "Código Cuervo", level: 4, misiones: 12 },
+  medianoche: { title: "Medianoche", level: 5, misiones: 12 },
 };
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const horas = (ms: number) => {
@@ -19,11 +23,11 @@ const horas = (ms: number) => {
 
 function card(p: Publico): string {
   const juegos = STORIES.map((s) => {
-    const key = s.title === "75 Centavos" ? "75-centavos" : "";
+    const key = s.id;
     const j = p.juegos.find((x) => x.juego === key);
     const t = TOTAL[key];
     if (!t) return `<div class="pg locked"><div class="level">NIVEL ${s.level} · ${esc(s.place.split(" · ")[0])}</div><b>${esc(s.title)}</b><span>Próximamente</span></div>`;
-    if (!j) return `<div class="pg"><div class="level">NIVEL ${t.level}</div><b>${esc(t.title)}</b><span>Sin empezar</span></div>`;
+    if (!j) return `<div class="pg"><div class="level">NIVEL ${t.level}</div><b>${esc(t.title)}</b><span><a href="/${key}/">Sin empezar</a></span></div>`;
     const pct = Math.round((Math.min(j.misiones, t.misiones) / t.misiones) * 100);
     return `<div class="pg ${j.terminado ? "done" : ""}">
       <div class="level">NIVEL ${t.level}${j.terminado ? " · COMPLETADO" : ""}</div>
