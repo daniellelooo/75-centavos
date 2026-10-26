@@ -1,6 +1,6 @@
 // Landing: el botón de cuenta de la barra. Sin sesión, "Entrar"; con sesión,
 // el avatar de Clerk y el enlace a tu perfil.
-import { getClerk, hasAccounts } from "../shared/auth";
+import { entrar, getClerk, hasAccounts } from "../shared/auth";
 
 const slot = document.querySelector<HTMLElement>("#cuenta");
 
@@ -13,7 +13,7 @@ async function paint(): Promise<void> {
     clerk.mountUserButton(slot.querySelector("#avatar") as HTMLDivElement, { afterSignOutUrl: "/" } as never);
   } else {
     slot.innerHTML = `<button class="enter" type="button">Entrar</button>`;
-    (slot.querySelector(".enter") as HTMLButtonElement).onclick = () => clerk.openSignIn({ forceRedirectUrl: "/perfil/" } as never);
+    (slot.querySelector(".enter") as HTMLButtonElement).onclick = () => void entrar({ forceRedirectUrl: "/perfil/" });
   }
 }
 

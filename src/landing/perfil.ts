@@ -1,6 +1,6 @@
 // Página de perfil. Con ?u=alias: el perfil público de cualquiera. Sin nada: el tuyo,
 // con lo que puedes cambiar (alias, nombre, si es público) y el enlace para compartirlo.
-import { api, getClerk, type Perfil } from "../shared/auth";
+import { api, entrar, getClerk, type Perfil } from "../shared/auth";
 import { RANKS, STORIES } from "../game/ranks-data";
 import { RETOS } from "../retos/data";
 
@@ -75,7 +75,7 @@ async function showMine(): Promise<void> {
   }
   if (!clerk.isSignedIn) {
     root.innerHTML = `<h1>Tu perfil</h1><p>Entra con Google o con tu correo para guardar tu partida en la nube, seguir desde cualquier ordenador y tener un perfil que puedes compartir.</p><button class="play" id="entrar">Entrar</button><p class="muted">Jugar sin cuenta sigue siendo posible.</p>`;
-    (root.querySelector("#entrar") as HTMLButtonElement).onclick = () => clerk.openSignIn({});
+    (root.querySelector("#entrar") as HTMLButtonElement).onclick = () => void entrar();
     return;
   }
   const yo = await api<Perfil & { desde: string; juegos: Juego[] }>("/api/perfil");

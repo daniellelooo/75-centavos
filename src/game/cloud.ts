@@ -1,6 +1,6 @@
 // Guardado en la nube para quien tiene cuenta. Sin cuenta, el juego funciona
 // igual que siempre (solo en este navegador).
-import { api, getClerk, type Perfil } from "../shared/auth";
+import { api, entrar, getClerk, type Perfil } from "../shared/auth";
 import { MISSIONS } from "./missions";
 import { rankOf } from "./rank";
 import { loadSave, onSaveWritten, save, type SaveData, writeSave } from "./state";
@@ -90,6 +90,6 @@ document.addEventListener("visibilitychange", () => {
 export async function accountAction(): Promise<void> {
   const clerk = await getClerk();
   if (!clerk) return;
-  if (!clerk.isSignedIn) clerk.openSignIn({});
+  if (!clerk.isSignedIn) await entrar();
   else window.open("/perfil/", "_blank");
 }

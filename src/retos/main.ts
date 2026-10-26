@@ -8,7 +8,7 @@ import { indentWithTab } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as t } from "@lezer/highlight";
-import { getClerk } from "../shared/auth";
+import { entrar } from "../shared/auth";
 import { NIVELES, PERSONAJES, RETOS, type Nivel, type Personaje, type Reto } from "./data";
 import { comprobar, type Resultado } from "./check";
 import { conectar, enLaNube, guardarCodigo, marcarResuelto, nivelAlcanzado, progreso } from "./progreso";
@@ -99,7 +99,7 @@ function nivelHtml(nv: Nivel): string {
 
 function bindEntrar(): void {
   root.querySelectorAll<HTMLButtonElement>("[data-entrar]").forEach((b) => {
-    b.onclick = async () => (await getClerk())?.openSignIn({ forceRedirectUrl: location.href } as never);
+    b.onclick = () => void entrar({ forceRedirectUrl: location.href });
   });
 }
 
