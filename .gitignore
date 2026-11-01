@@ -4,3 +4,4 @@ dist
 .vercel
 .playwright-mcp
 .env*
+!.env.example
